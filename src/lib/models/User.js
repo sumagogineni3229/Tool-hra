@@ -90,6 +90,22 @@ const UserSchema = new mongoose.Schema({
   },
   resetCodeExpires: {
     type: Date,
+  },
+  college: {
+    type: String,
+    default: '',
+  },
+  course: {
+    type: String,
+    default: '',
+  },
+  startDate: {
+    type: String,
+    default: '',
+  },
+  endDate: {
+    type: String,
+    default: '',
   }
 }, {
   timestamps: true,
@@ -102,7 +118,11 @@ if (mongoose.models.User && (
   !mongoose.models.User.schema.paths.aadhaarNumber || 
   !mongoose.models.User.schema.paths.userPhoto ||
   !mongoose.models.User.schema.paths.aadhaarPhoto ||
-  !mongoose.models.User.schema.paths.resetCode
+  !mongoose.models.User.schema.paths.resetCode ||
+  !mongoose.models.User.schema.paths.college ||
+  !mongoose.models.User.schema.paths.course ||
+  !mongoose.models.User.schema.paths.startDate ||
+  !mongoose.models.User.schema.paths.endDate
 )) {
   delete mongoose.models.User;
 }

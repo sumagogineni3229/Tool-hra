@@ -1900,6 +1900,384 @@ export const apiClient = {
       return { success: true, offline: true };
     }
     return { success: false, message: "Window environment not available" };
+  },
+
+  // ─── Reports ──────────────────────────────────────────────
+  getReports: async (params = {}) => {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`/api/reports${queryString ? "?" + queryString : ""}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.reports || [];
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Getting reports from localStorage...", err);
+    }
+    if (typeof window !== "undefined") {
+      return JSON.parse(localStorage.getItem("hra_reports") || "[]");
+    }
+    return [];
+  },
+
+  submitReport: async (reportData) => {
+    try {
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reportData)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_reports") || "[]");
+          stored.unshift(data.report);
+          localStorage.setItem("hra_reports", JSON.stringify(stored));
+        }
+        return { success: true, report: data.report };
+      }
+      const err = await response.json();
+      return { success: false, message: err.message };
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Saving report to localStorage...", err);
+    }
+    if (typeof window !== "undefined") {
+      const newReport = { ...reportData, _id: `local-${Date.now()}`, id: `local-${Date.now()}`, createdAt: new Date().toISOString() };
+      const stored = JSON.parse(localStorage.getItem("hra_reports") || "[]");
+      stored.unshift(newReport);
+      localStorage.setItem("hra_reports", JSON.stringify(stored));
+      return { success: true, report: newReport, offline: true };
+    }
+    return { success: false, message: "Submission failed" };
+  },
+
+  updateReport: async (reportData) => {
+    try {
+      const response = await fetch("/api/reports", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reportData)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_reports") || "[]");
+          const idx = stored.findIndex(r => r._id === reportData.id || r.id === reportData.id);
+          if (idx !== -1) { stored[idx] = { ...stored[idx], ...reportData }; }
+          localStorage.setItem("hra_reports", JSON.stringify(stored));
+        }
+        return { success: true, report: data.report };
+      }
+      const err = await response.json();
+      return { success: false, message: err.message };
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Updating report in localStorage...", err);
+    }
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_reports") || "[]");
+      const idx = stored.findIndex(r => r._id === reportData.id || r.id === reportData.id);
+      if (idx !== -1) { stored[idx] = { ...stored[idx], ...reportData }; localStorage.setItem("hra_reports", JSON.stringify(stored)); }
+      return { success: true, offline: true };
+    }
+    return { success: false, message: "Update failed" };
+  },
+
+  deleteReport: async (id) => {
+    try {
+      const response = await fetch(`/api/reports?id=${id}`, { method: "DELETE" });
+      if (response.ok) {
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_reports") || "[]");
+          localStorage.setItem("hra_reports", JSON.stringify(stored.filter(r => r._id !== id && r.id !== id)));
+        }
+        return { success: true };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Deleting report from localStorage...", err);
+    }
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_reports") || "[]");
+      localStorage.setItem("hra_reports", JSON.stringify(stored.filter(r => r._id !== id && r.id !== id)));
+      return { success: true, offline: true };
+    }
+    return { success: false };
+  },
+
+  getTrainings: async () => {
+    try {
+      const response = await fetch("/api/trainings");
+      if (response.ok) {
+        const list = await response.json();
+        if (typeof window !== "undefined") {
+          localStorage.setItem("hra_trainings", JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Getting trainings from localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("hra_trainings");
+      if (stored) return JSON.parse(stored);
+      
+      const defaults = [
+        { id: "t-1", _id: "t-1", name: "Company Orientation", description: "Standard welcome pack and policies handbook.", category: "Onboarding", duration: "1 hour", status: "Active", materials: [{ name: "Intern Handbook.pdf", type: "PDF", url: "#" }] },
+        { id: "t-2", _id: "t-2", name: "Internship Guidelines", description: "Rules, milestones, and grading structure.", category: "Onboarding", duration: "1.5 hours", status: "Active", materials: [{ name: "Guidelines.pdf", type: "PDF", url: "#" }] },
+        { id: "t-3", _id: "t-3", name: "Workplace Ethics", description: "Best practices, communication, and harassment policies.", category: "Ethics", duration: "1 hour", status: "Active", materials: [{ name: "Ethics PPT.ppt", type: "PPT", url: "#" }] },
+        { id: "t-4", _id: "t-4", name: "React Basics", description: "Components, hooks, state, and props.", category: "Development", duration: "3 hours", status: "Active", materials: [{ name: "React learning links", type: "Link", url: "https://react.dev" }] },
+        { id: "t-5", _id: "t-5", name: "Node.js Fundamentals", description: "Express, APIs, middleware, and mongoose.", category: "Development", duration: "4 hours", status: "Active", materials: [{ name: "Node docs", type: "Link", url: "https://nodejs.org" }] }
+      ];
+      localStorage.setItem("hra_trainings", JSON.stringify(defaults));
+      return defaults;
+    }
+    return [];
+  },
+
+  createTraining: async (trainingData) => {
+    try {
+      const response = await fetch("/api/trainings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(trainingData)
+      });
+      if (response.ok) {
+        const newTraining = await response.json();
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_trainings") || "[]");
+          stored.push(newTraining);
+          localStorage.setItem("hra_trainings", JSON.stringify(stored));
+        }
+        return { success: true, training: newTraining };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Creating training module in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_trainings") || "[]");
+      const mockId = `training-${Date.now()}`;
+      const mockTraining = {
+        id: mockId,
+        _id: mockId,
+        name: trainingData.name,
+        description: trainingData.description || "",
+        category: trainingData.category || "General",
+        duration: trainingData.duration || "1 hour",
+        status: trainingData.status || "Active",
+        materials: trainingData.materials || []
+      };
+      stored.push(mockTraining);
+      localStorage.setItem("hra_trainings", JSON.stringify(stored));
+      return { success: true, training: mockTraining, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  assignTraining: async (assignmentData) => {
+    try {
+      const response = await fetch("/api/trainings/assign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(assignmentData)
+      });
+      if (response.ok) {
+        const result = await response.json();
+        // Force refresh local assignments from server
+        try {
+          const assignmentsRes = await fetch("/api/trainings/assign");
+          if (assignmentsRes.ok) {
+            const list = await assignmentsRes.json();
+            if (typeof window !== "undefined") {
+              localStorage.setItem("hra_training_assignments", JSON.stringify(list));
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to fetch fresh assignments list", e);
+        }
+        return { success: true, message: result.message };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Simulating training assignment in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const trainings = JSON.parse(localStorage.getItem("hra_trainings") || "[]");
+      const users = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      const teams = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+      const assignments = JSON.parse(localStorage.getItem("hra_training_assignments") || "[]");
+
+      const training = trainings.find(t => t._id === assignmentData.trainingId || t.id === assignmentData.trainingId);
+      if (!training) {
+        return { success: false, message: "Training module not found" };
+      }
+
+      let targets = [];
+      if (assignmentData.assignedToType === "all") {
+        targets = users.filter(u => u.role === "Intern");
+      } else if (assignmentData.assignedToType === "team") {
+        const team = teams.find(t => t._id === assignmentData.assignedToValue || t.id === assignmentData.assignedToValue);
+        if (team && Array.isArray(team.members)) {
+          // members in offline mode can be objects or string IDs
+          const memberEmailsOrIds = team.members.map(m => typeof m === "object" ? m.email : m);
+          targets = users.filter(u => u.role === "Intern" && (memberEmailsOrIds.includes(u.email) || memberEmailsOrIds.includes(u.id) || memberEmailsOrIds.includes(u._id)));
+        }
+      } else if (assignmentData.assignedToType === "department") {
+        targets = users.filter(u => u.role === "Intern" && u.department === assignmentData.assignedToValue);
+      } else if (assignmentData.assignedToType === "individual") {
+        const targetUser = users.find(u => u.email === assignmentData.assignedToValue || u.id === assignmentData.assignedToValue || u._id === assignmentData.assignedToValue);
+        if (targetUser && targetUser.role === "Intern") {
+          targets = [targetUser];
+        }
+      }
+
+      if (targets.length === 0) {
+        return { success: false, message: "No interns found matching target criteria" };
+      }
+
+      let count = 0;
+      targets.forEach(intern => {
+        const exists = assignments.some(a => (a.trainingId === training._id || a.trainingId === training.id) && a.internEmail === intern.email);
+        if (!exists) {
+          const assignId = `assignment-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+          assignments.push({
+            id: assignId,
+            _id: assignId,
+            trainingId: training._id || training.id,
+            trainingName: training.name,
+            internId: intern.id || intern._id,
+            internName: intern.name,
+            internEmail: intern.email,
+            dueDate: assignmentData.dueDate,
+            status: "Not Started",
+            completionPercentage: 0,
+            createdAt: new Date().toISOString()
+          });
+          count++;
+        }
+      });
+
+      localStorage.setItem("hra_training_assignments", JSON.stringify(assignments));
+      return { success: true, message: `Assigned training successfully to ${count} intern(s) (Offline mode)` };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  getTrainingAssignments: async (params = {}) => {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`/api/trainings/assign${queryString ? "?" + queryString : ""}`);
+      if (response.ok) {
+        const list = await response.json();
+        // Only update local storage for all assignments if it was not filtered by internEmail specifically
+        if (typeof window !== "undefined" && !params.internEmail) {
+          localStorage.setItem("hra_training_assignments", JSON.stringify(list));
+        }
+        return list;
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Getting training assignments from localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_training_assignments") || "[]");
+      if (params.internEmail) {
+        const emailLower = params.internEmail.toLowerCase().trim();
+        return stored.filter(a => a.internEmail.toLowerCase().trim() === emailLower);
+      }
+      return stored;
+    }
+    return [];
+  },
+
+  updateTrainingProgress: async (assignmentId, progressData) => {
+    try {
+      const response = await fetch("/api/trainings/progress", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignmentId, ...progressData })
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_training_assignments") || "[]");
+          const idx = stored.findIndex(a => a._id === assignmentId || a.id === assignmentId);
+          if (idx !== -1) {
+            stored[idx] = updated;
+          } else {
+            stored.push(updated);
+          }
+          localStorage.setItem("hra_training_assignments", JSON.stringify(stored));
+        }
+        return { success: true, assignment: updated };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Updating training progress in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_training_assignments") || "[]");
+      const idx = stored.findIndex(a => a._id === assignmentId || a.id === assignmentId);
+      if (idx !== -1) {
+        const oldVal = stored[idx];
+        const completionPercentage = progressData.completionPercentage !== undefined ? Number(progressData.completionPercentage) : oldVal.completionPercentage;
+        const status = progressData.status !== undefined ? progressData.status : (completionPercentage === 100 ? "Completed" : oldVal.status);
+        const updated = {
+          ...oldVal,
+          status,
+          completionPercentage,
+          completedAt: status === "Completed" ? new Date().toISOString() : oldVal.completedAt,
+          certificateUrl: status === "Completed" ? `/certificates/cert-${assignmentId}.pdf` : oldVal.certificateUrl
+        };
+        stored[idx] = updated;
+        localStorage.setItem("hra_training_assignments", JSON.stringify(stored));
+        return { success: true, assignment: updated, offline: true };
+      }
+      return { success: false, message: "Assignment not found in localStorage" };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  updateUserInternInfo: async (userId, internData) => {
+    try {
+      const response = await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: userId, ...internData })
+      });
+      if (response.ok) {
+        const resData = await response.json();
+        // Sync updated user back to localStorage users array
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_users") || "[]");
+          const idx = stored.findIndex(u => u._id === userId || u.id === userId);
+          if (idx !== -1) {
+            stored[idx] = { ...stored[idx], ...resData.user };
+            localStorage.setItem("hra_users", JSON.stringify(stored));
+          }
+        }
+        return { success: true, user: resData.user };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Updating user info in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      const idx = stored.findIndex(u => u._id === userId || u.id === userId);
+      if (idx !== -1) {
+        const updatedUser = {
+          ...stored[idx],
+          ...internData,
+          verificationStatus: internData.verificationStatus || stored[idx].verificationStatus || "Approved"
+        };
+        stored[idx] = updatedUser;
+        localStorage.setItem("hra_users", JSON.stringify(stored));
+        return { success: true, user: updatedUser, offline: true };
+      }
+      return { success: false, message: "User not found in localStorage" };
+    }
+    return { success: false, message: "Window environment not available" };
   }
 };
 

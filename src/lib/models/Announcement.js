@@ -44,6 +44,13 @@ const AnnouncementSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Optional: target a specific user by email (used for report notifications)
+    targetUserEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      default: "",
+    },
   },
   { timestamps: true }
 );

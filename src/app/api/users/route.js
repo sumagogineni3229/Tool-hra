@@ -37,7 +37,11 @@ export async function GET(request) {
         emergencyContactPhone: user.emergencyContactPhone || '',
         aadhaarNumber: user.aadhaarNumber || '',
         userPhoto: user.userPhoto || '',
-        aadhaarPhoto: user.aadhaarPhoto || ''
+        aadhaarPhoto: user.aadhaarPhoto || '',
+        college: user.college || '',
+        course: user.course || '',
+        startDate: user.startDate || '',
+        endDate: user.endDate || ''
       };
       return NextResponse.json(sanitized, { status: 200 });
     }
@@ -69,7 +73,11 @@ export async function GET(request) {
         address: user.address || '',
         emergencyContactName: user.emergencyContactName || '',
         emergencyContactPhone: user.emergencyContactPhone || '',
-        aadhaarNumber: user.aadhaarNumber || ''
+        aadhaarNumber: user.aadhaarNumber || '',
+        college: user.college || '',
+        course: user.course || '',
+        startDate: user.startDate || '',
+        endDate: user.endDate || ''
       };
 
       if (includePhotos) {
@@ -263,6 +271,18 @@ export async function PUT(req) {
 
     // Default update support
     if (status) user.status = status;
+    if (body.name !== undefined) user.name = body.name;
+    if (body.email !== undefined) user.email = body.email;
+    if (body.role !== undefined) user.role = body.role;
+    if (body.department !== undefined) user.department = body.department;
+    if (phone !== undefined) user.phone = phone;
+    if (dob !== undefined) user.dob = dob;
+    if (address !== undefined) user.address = address;
+    if (body.college !== undefined) user.college = body.college;
+    if (body.course !== undefined) user.course = body.course;
+    if (body.startDate !== undefined) user.startDate = body.startDate;
+    if (body.endDate !== undefined) user.endDate = body.endDate;
+
     await user.save();
     return NextResponse.json({ message: 'User updated successfully', user }, { status: 200 });
 

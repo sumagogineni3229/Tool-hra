@@ -25,7 +25,8 @@ import {
   X,
   ChevronRight,
   Award,
-  Network
+  Network,
+  GraduationCap
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -68,6 +69,7 @@ function HRLayoutContent({ children }) {
     { name: "Org Management", href: "/hr/org-management", icon: Network },
     { name: "Create User", href: "/hr/create-user", icon: UserPlus },
     { name: "Employees Directory", href: "/hr/employees", icon: Users },
+    { name: "Intern Management", href: "/hr/interns", icon: GraduationCap },
     { name: "Profile Verifications", href: "/hr/verifications", icon: ShieldCheck },
     { name: "Attendance Manage", href: "/hr/attendance", icon: Clock },
     { name: "Leave Approvals", href: "/hr/leaves", icon: CalendarDays },

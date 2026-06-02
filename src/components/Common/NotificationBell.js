@@ -26,8 +26,13 @@ export default function NotificationBell({ currentUser }) {
       try {
         const list = await apiClient.getAnnouncements();
         
-        // Filter based on targetRole
+        // Filter based on targetRole AND optionally targetUserEmail
         const filtered = list.filter((a) => {
+          // If scoped to a specific user email, only show to that user
+          if (a.targetUserEmail && a.targetUserEmail !== "") {
+            return a.targetUserEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim();
+          }
+          // Otherwise filter by role
           if (a.targetRole === "All" || !a.targetRole) return true;
           if (currentUser.role === "Admin" || currentUser.role === "HR") return true;
           return a.targetRole === currentUser.role;

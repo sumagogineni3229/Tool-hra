@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  ClipboardList,
   CalendarDays,
   LogOut,
   Bell,
@@ -18,7 +17,8 @@ import {
   X,
   ChevronRight,
   CheckSquare,
-  Briefcase
+  Briefcase,
+  TrendingUp
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -97,10 +97,10 @@ function EmployeeLayoutContent({ children }) {
     { name: "My Dashboard", href: "/employee/dashboard", icon: LayoutDashboard },
     { name: "Attendance", href: "/employee/attendance", icon: Clock },
     { name: "Leave Request", href: "/employee/leaves", icon: CalendarDays },
-    { name: "Log Timesheet", href: "/employee/timesheet", icon: ClipboardList },
     { name: "Calender", href: "/employee/calendar", icon: Calendar },
     { name: "My Tasks", href: "/employee/tasks", icon: CheckSquare },
     { name: "My Projects", href: "/employee/projects", icon: Briefcase },
+    { name: "Reports", href: "/employee/reports", icon: TrendingUp },
     { name: "Payroll", href: "/employee/payroll", icon: CreditCard },
     { name: "Feedback", href: "/employee/feedback", icon: MessageSquare }
   ];
