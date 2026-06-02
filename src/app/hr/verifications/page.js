@@ -25,9 +25,7 @@ export default function HRVerificationsPage() {
   async function loadPendingUsers() {
     setIsLoading(true);
     try {
-      const users = await apiClient.getUsers();
-      // Filter list to only show users pending verification
-      const pending = users.filter(u => u.verificationStatus === "Pending");
+      const pending = await apiClient.getUsers({ verificationStatus: "Pending", includePhotos: true });
       setPendingUsers(pending);
     } catch (err) {
       console.error("Failed to load pending verifications:", err);

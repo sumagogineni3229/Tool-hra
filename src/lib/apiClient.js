@@ -187,14 +187,14 @@ export const apiClient = {
   requestPasswordCode: async (email) => {
     initializeLocalStorage();
     const normalizedEmail = email.toLowerCase().trim();
-    
+
     try {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "request_code", email: normalizedEmail })
       });
-      
+
       const data = await response.json();
       if (response.ok) {
         return { success: true, code: data.code, message: data.message };
@@ -203,14 +203,14 @@ export const apiClient = {
       }
     } catch (err) {
       console.warn("MongoDB API unreachable. Simulating code generation locally...", err);
-      
+
       if (typeof window !== "undefined") {
         const users = JSON.parse(localStorage.getItem("hra_users") || "[]");
         const userExists = users.some(u => u.email.toLowerCase().trim() === normalizedEmail);
         if (!userExists) {
           return { success: false, message: "No registered workspace account found with that email address." };
         }
-        
+
         const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
         const updatedUsers = users.map(u => {
           if (u.email.toLowerCase().trim() === normalizedEmail) {
@@ -219,11 +219,11 @@ export const apiClient = {
           return u;
         });
         localStorage.setItem("hra_users", JSON.stringify(updatedUsers));
-        
-        return { 
-          success: true, 
-          code: mockCode, 
-          message: "Offline local simulation mode: A secure code has been generated." 
+
+        return {
+          success: true,
+          code: mockCode,
+          message: "Offline local simulation mode: A secure code has been generated."
         };
       }
     }
@@ -345,11 +345,12 @@ export const apiClient = {
   },
 
   // Get list of all accounts
-  getUsers: async () => {
+  getUsers: async (params = {}) => {
     initializeLocalStorage();
 
     try {
-      const response = await fetch("/api/users");
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`/api/users${queryString ? "?" + queryString : ""}`);
       if (response.ok) {
         const users = await response.json();
         // Sync with local storage
@@ -360,7 +361,10 @@ export const apiClient = {
             const match = localUsers.find(lu => lu.email === u.email);
             return match ? { ...u, password: match.password } : u;
           });
-          localStorage.setItem("hra_users", JSON.stringify(synced));
+          // Only overwrite local list if we queried all users
+          if (!params.verificationStatus && !params.id) {
+            localStorage.setItem("hra_users", JSON.stringify(synced));
+          }
         }
         return users;
       }
@@ -495,7 +499,7 @@ export const apiClient = {
       const initialLength = localUsers.length;
       // Filter out by either id (for local-*) or possible db _id
       const updatedUsers = localUsers.filter(u => u.id !== id && u._id !== id);
-      
+
       if (updatedUsers.length < initialLength) {
         localStorage.setItem("hra_users", JSON.stringify(updatedUsers));
         return { success: true, message: "User deleted successfully from local storage context" };
@@ -573,7 +577,7 @@ export const apiClient = {
             currentUser.verificationStatus = "Pending";
             localStorage.setItem("currentUser", JSON.stringify(currentUser));
           }
-          
+
           // Update local storage user list
           const localUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
           const idx = localUsers.findIndex(u => u.id === id || u._id === id);
@@ -844,7 +848,7 @@ export const apiClient = {
     if (typeof window !== "undefined") {
       const existing = localStorage.getItem("hra_payrolls") || "[]";
       const payrollsList = JSON.parse(existing);
-      
+
       const newPayroll = {
         id: `PAY-${Date.now()}`,
         ...payrollData,
@@ -1131,6 +1135,772 @@ export const apiClient = {
       return { success: true, message: "Deleted successfully from local storage", offline: true };
     }
     return { success: false, message: "System environment unavailable" };
+  },
+
+  // -------------------------------------------------------------
+  // Organization Management API Client Methods
+  // -------------------------------------------------------------
+
+  // Get all departments
+  getDepartments: async () => {
+    try {
+      const response = await fetch("/api/departments");
+      if (response.ok) {
+        const departments = await response.json();
+        if (typeof window !== "undefined") {
+          localStorage.setItem("hra_departments", JSON.stringify(departments));
+        }
+        return departments;
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Getting departments list from LocalStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      return JSON.parse(localStorage.getItem("hra_departments") || "[]");
+    }
+    return [];
+  },
+
+  // Create new department
+  createDepartment: async (deptData) => {
+    const currentUser = apiClient.getCurrentSession();
+    const emailQuery = currentUser ? `?email=${encodeURIComponent(currentUser.email)}` : "";
+    try {
+      const response = await fetch(`/api/departments${emailQuery}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...deptData, email: currentUser?.email })
+      });
+      if (response.ok) {
+        const newDept = await response.json();
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+          stored.push(newDept);
+          localStorage.setItem("hra_departments", JSON.stringify(stored));
+        }
+        return { success: true, department: newDept };
+      } else {
+        const err = await response.json();
+        return { success: false, message: err.message || "Failed to create department" };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Saving department locally...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+      const newDept = { id: `local-${Date.now()}`, ...deptData };
+      stored.push(newDept);
+      localStorage.setItem("hra_departments", JSON.stringify(stored));
+      return { success: true, department: newDept, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Delete department
+  deleteDepartment: async (id) => {
+    const currentUser = apiClient.getCurrentSession();
+    const emailQuery = currentUser ? `&email=${encodeURIComponent(currentUser.email)}` : "";
+    try {
+      const response = await fetch(`/api/departments?id=${id}${emailQuery}`, {
+        method: "DELETE"
+      });
+      if (response.ok) {
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+          const filtered = stored.filter(d => d.id !== id && d._id !== id);
+          localStorage.setItem("hra_departments", JSON.stringify(filtered));
+        }
+        return { success: true };
+      } else {
+        const err = await response.json();
+        return { success: false, message: err.message || "Failed to delete department" };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Deleting department locally...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+      const filtered = stored.filter(d => d.id !== id && d._id !== id);
+      localStorage.setItem("hra_departments", JSON.stringify(filtered));
+      return { success: true, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Get all teams
+  getTeams: async () => {
+    try {
+      const response = await fetch("/api/teams");
+      if (response.ok) {
+        const teams = await response.json();
+        if (typeof window !== "undefined") {
+          localStorage.setItem("hra_teams", JSON.stringify(teams));
+        }
+        return teams;
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Getting teams list from LocalStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      return JSON.parse(localStorage.getItem("hra_teams") || "[]");
+    }
+    return [];
+  },
+
+  // Create new team
+  createTeam: async (teamData) => {
+    const currentUser = apiClient.getCurrentSession();
+    const emailQuery = currentUser ? `?email=${encodeURIComponent(currentUser.email)}` : "";
+    try {
+      const response = await fetch(`/api/teams${emailQuery}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...teamData, email: currentUser?.email })
+      });
+      if (response.ok) {
+        const newTeam = await response.json();
+        
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+          stored.push(newTeam);
+          localStorage.setItem("hra_teams", JSON.stringify(stored));
+
+          // Sync users locally
+          const depts = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+          const dept = depts.find(d => d.id === teamData.departmentId || d._id === teamData.departmentId);
+          const deptName = dept ? dept.name : teamData.departmentId;
+
+          if (deptName) {
+            const users = JSON.parse(localStorage.getItem("hra_users") || "[]");
+            const allAssigned = [teamData.managerId, ...(teamData.members || [])];
+            users.forEach((u, i) => {
+              if (allAssigned.includes(u.id) || allAssigned.includes(u._id)) {
+                users[i].department = deptName;
+              }
+            });
+            localStorage.setItem("hra_users", JSON.stringify(users));
+          }
+        }
+        return { success: true, team: newTeam };
+      } else {
+        const err = await response.json();
+        return { success: false, message: err.message || "Failed to create team" };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Saving team locally...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+      const newTeam = { id: `local-${Date.now()}`, ...teamData };
+      stored.push(newTeam);
+      localStorage.setItem("hra_teams", JSON.stringify(stored));
+
+      // Sync users locally
+      const depts = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+      const dept = depts.find(d => d.id === teamData.departmentId || d._id === teamData.departmentId);
+      const deptName = dept ? dept.name : teamData.departmentId;
+
+      if (deptName) {
+        const users = JSON.parse(localStorage.getItem("hra_users") || "[]");
+        const allAssigned = [teamData.managerId, ...(teamData.members || [])];
+        users.forEach((u, i) => {
+          if (allAssigned.includes(u.id) || allAssigned.includes(u._id)) {
+            users[i].department = deptName;
+          }
+        });
+        localStorage.setItem("hra_users", JSON.stringify(users));
+      }
+
+      return { success: true, team: newTeam, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Update an existing team
+  updateTeam: async (id, teamData) => {
+    const currentUser = apiClient.getCurrentSession();
+    const emailQuery = currentUser ? `?email=${encodeURIComponent(currentUser.email)}` : "";
+    try {
+      const response = await fetch(`/api/teams${emailQuery}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...teamData, email: currentUser?.email })
+      });
+      if (response.ok) {
+        const updatedTeam = await response.json();
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+          const idx = stored.findIndex(t => t.id === id || t._id === id);
+          if (idx !== -1) {
+            stored[idx] = updatedTeam;
+            localStorage.setItem("hra_teams", JSON.stringify(stored));
+          }
+
+          // Sync users locally
+          const depts = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+          const dept = depts.find(d => d.id === teamData.departmentId || d._id === teamData.departmentId);
+          const deptName = dept ? dept.name : teamData.departmentId;
+
+          if (deptName) {
+            const users = JSON.parse(localStorage.getItem("hra_users") || "[]");
+            const prevTeam = stored.find(t => t.id === id || t._id === id);
+            const oldUsers = prevTeam ? [prevTeam.managerId, ...(prevTeam.members || [])].map(uid => uid.id || uid._id || uid) : [];
+            const newUsers = [teamData.managerId, ...(teamData.members || [])].map(uid => uid.id || uid._id || uid);
+            const removedUsers = oldUsers.filter(uid => !newUsers.includes(uid));
+
+            users.forEach((u, i) => {
+              const uIdStr = u.id || u._id;
+              if (newUsers.includes(uIdStr)) {
+                users[i].department = deptName;
+              } else if (removedUsers.includes(uIdStr)) {
+                users[i].department = "Operations";
+              }
+            });
+            localStorage.setItem("hra_users", JSON.stringify(users));
+          }
+        }
+        return { success: true, team: updatedTeam };
+      } else {
+        const err = await response.json();
+        return { success: false, message: err.message || "Failed to update team" };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Updating team locally...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+      const idx = stored.findIndex(t => t.id === id || t._id === id);
+      const prevTeam = idx !== -1 ? stored[idx] : null;
+
+      const newTeam = { id, ...teamData };
+      if (idx !== -1) {
+        stored[idx] = newTeam;
+      } else {
+        stored.push(newTeam);
+      }
+      localStorage.setItem("hra_teams", JSON.stringify(stored));
+
+      // Sync users locally
+      const depts = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+      const dept = depts.find(d => d.id === teamData.departmentId || d._id === teamData.departmentId);
+      const deptName = dept ? dept.name : teamData.departmentId;
+
+      if (deptName) {
+        const users = JSON.parse(localStorage.getItem("hra_users") || "[]");
+        const oldUsers = prevTeam ? [prevTeam.managerId, ...(prevTeam.members || [])].map(uid => uid.id || uid._id || uid) : [];
+        const newUsers = [teamData.managerId, ...(teamData.members || [])].map(uid => uid.id || uid._id || uid);
+        const removedUsers = oldUsers.filter(uid => !newUsers.includes(uid));
+
+        users.forEach((u, i) => {
+          const uIdStr = u.id || u._id;
+          if (newUsers.includes(uIdStr)) {
+            users[i].department = deptName;
+          } else if (removedUsers.includes(uIdStr)) {
+            users[i].department = "Operations";
+          }
+        });
+        localStorage.setItem("hra_users", JSON.stringify(users));
+      }
+
+      return { success: true, team: newTeam, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Delete a team
+  deleteTeam: async (id) => {
+    const currentUser = apiClient.getCurrentSession();
+    const emailQuery = currentUser ? `&email=${encodeURIComponent(currentUser.email)}` : "";
+    try {
+      const response = await fetch(`/api/teams?id=${id}${emailQuery}`, {
+        method: "DELETE"
+      });
+      if (response.ok) {
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+          const team = stored.find(t => t.id === id || t._id === id);
+          if (team) {
+            const teamUsers = [team.managerId, ...(team.members || [])].map(uid => uid.id || uid._id || uid);
+            const users = JSON.parse(localStorage.getItem("hra_users") || "[]");
+            users.forEach((u, i) => {
+              if (teamUsers.includes(u.id) || teamUsers.includes(u._id)) {
+                users[i].department = "Operations";
+              }
+            });
+            localStorage.setItem("hra_users", JSON.stringify(users));
+          }
+
+          const filtered = stored.filter(t => t.id !== id && t._id !== id);
+          localStorage.setItem("hra_teams", JSON.stringify(filtered));
+        }
+        return { success: true };
+      } else {
+        const err = await response.json();
+        return { success: false, message: err.message || "Failed to delete team" };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Deleting team locally...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+      const team = stored.find(t => t.id === id || t._id === id);
+      if (team) {
+        const teamUsers = [team.managerId, ...(team.members || [])].map(uid => uid.id || uid._id || uid);
+        const users = JSON.parse(localStorage.getItem("hra_users") || "[]");
+        users.forEach((u, i) => {
+          if (teamUsers.includes(u.id) || teamUsers.includes(u._id)) {
+            users[i].department = "Operations";
+          }
+        });
+        localStorage.setItem("hra_users", JSON.stringify(users));
+      }
+
+      const filtered = stored.filter(t => t.id !== id && t._id !== id);
+      localStorage.setItem("hra_teams", JSON.stringify(filtered));
+      return { success: true, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Get tasks with local storage fallback
+  getTasks: async (params = {}) => {
+    const userEmail = params.email || "";
+    try {
+      const queryString = userEmail ? `?email=${encodeURIComponent(userEmail)}` : "";
+      const response = await fetch(`/api/tasks${queryString}`);
+      if (response.ok) {
+        const data = await response.json();
+        const tasks = data.tasks || [];
+        if (typeof window !== "undefined") {
+          localStorage.setItem("hra_tasks", JSON.stringify(tasks));
+        }
+        return tasks;
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Loading tasks from localStorage fallback...", err);
+    }
+
+    if (typeof window !== "undefined" && userEmail) {
+      const allTasks = JSON.parse(localStorage.getItem("hra_tasks") || "[]");
+      const localUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      const normalizedEmail = userEmail.toLowerCase().trim();
+      const currentUser = localUsers.find(u => u.email.toLowerCase().trim() === normalizedEmail);
+      const role = currentUser ? currentUser.role : "Employee";
+
+      if (role === "Manager") {
+        return allTasks.filter(t => t.assignedByEmail?.toLowerCase().trim() === normalizedEmail);
+      } else if (role === "Employee" || role === "Intern") {
+        // Resolve manager ID / team details in local storage
+        const teams = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+        const userTeams = teams.filter(t => 
+          t.members?.some(m => {
+            const mId = m.id || m._id || m;
+            const uId = currentUser?.id || currentUser?._id;
+            return mId?.toString() === uId?.toString();
+          })
+        );
+        const managerEmails = userTeams.map(t => {
+          const mId = t.managerId?.id || t.managerId?._id || t.managerId;
+          const mgr = localUsers.find(lu => (lu.id || lu._id)?.toString() === mId?.toString());
+          return mgr ? mgr.email.toLowerCase().trim() : "";
+        }).filter(Boolean);
+
+        return allTasks.filter(t => {
+          const directMatch = t.assignedTo?.toLowerCase().trim() === normalizedEmail;
+          const roleAndManagerMatch = t.assignedTo === "all" &&
+            (t.assigneeRole === "All" || t.assigneeRole === role) &&
+            managerEmails.includes(t.assignedByEmail?.toLowerCase().trim());
+          return directMatch || roleAndManagerMatch;
+        });
+      } else if (role === "Admin" || role === "HR") {
+        return allTasks;
+      }
+      return allTasks;
+    }
+    return [];
+  },
+
+  // Create a new task with local storage fallback
+  createTask: async (taskData) => {
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(taskData)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const newTask = data.task;
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_tasks") || "[]");
+          stored.unshift(newTask);
+          localStorage.setItem("hra_tasks", JSON.stringify(stored));
+        }
+        return { success: true, task: newTask };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Creating task in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_tasks") || "[]");
+      const localUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      const creatorEmail = taskData.managerEmail?.toLowerCase().trim();
+      const creator = localUsers.find(u => u.email.toLowerCase().trim() === creatorEmail);
+
+      const newTask = {
+        id: `task-${Date.now()}`,
+        _id: `task-${Date.now()}`,
+        title: taskData.title,
+        description: taskData.description || "",
+        assignedBy: creator ? (creator.id || creator._id) : "local-manager",
+        assignedByEmail: creatorEmail,
+        assignedTo: taskData.assignedTo ? taskData.assignedTo.toLowerCase().trim() : "all",
+        assigneeRole: taskData.assigneeRole || "All",
+        dueDate: taskData.dueDate ? new Date(taskData.dueDate).toISOString() : null,
+        status: "pending",
+        progress: 0,
+        completionNotes: "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      stored.unshift(newTask);
+      localStorage.setItem("hra_tasks", JSON.stringify(stored));
+      return { success: true, task: newTask, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Update a task with local storage fallback
+  updateTask: async (id, taskData) => {
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...taskData })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const updatedTask = data.task;
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_tasks") || "[]");
+          const idx = stored.findIndex(t => (t.id === id || t._id === id));
+          if (idx !== -1) {
+            stored[idx] = updatedTask;
+            localStorage.setItem("hra_tasks", JSON.stringify(stored));
+          }
+        }
+        return { success: true, task: updatedTask };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Updating task in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_tasks") || "[]");
+      const idx = stored.findIndex(t => (t.id === id || t._id === id));
+      if (idx !== -1) {
+        const updated = {
+          ...stored[idx],
+          ...taskData,
+          updatedAt: new Date().toISOString()
+        };
+        stored[idx] = updated;
+        localStorage.setItem("hra_tasks", JSON.stringify(stored));
+        return { success: true, task: updated, offline: true };
+      }
+      return { success: false, message: "Task not found locally" };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Delete a task with local storage fallback
+  deleteTask: async (id) => {
+    try {
+      const response = await fetch(`/api/tasks?id=${id}`, {
+        method: "DELETE"
+      });
+      if (response.ok) {
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_tasks") || "[]");
+          const filtered = stored.filter(t => t.id !== id && t._id !== id);
+          localStorage.setItem("hra_tasks", JSON.stringify(filtered));
+        }
+        return { success: true };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Deleting task in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_tasks") || "[]");
+      const filtered = stored.filter(t => t.id !== id && t._id !== id);
+      localStorage.setItem("hra_tasks", JSON.stringify(filtered));
+      return { success: true, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Get projects with local storage fallback
+  getProjects: async (params = {}) => {
+    const userEmail = params.email || "";
+    try {
+      const queryString = userEmail ? `?email=${encodeURIComponent(userEmail)}` : "";
+      const response = await fetch(`/api/projects${queryString}`);
+      if (response.ok) {
+        const data = await response.json();
+        const projects = data.projects || [];
+        if (typeof window !== "undefined") {
+          localStorage.setItem("hra_projects", JSON.stringify(projects));
+        }
+        return projects;
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Loading projects from localStorage fallback...", err);
+    }
+
+    if (typeof window !== "undefined" && userEmail) {
+      const allProjects = JSON.parse(localStorage.getItem("hra_projects") || "[]");
+      const localUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      const normalizedEmail = userEmail.toLowerCase().trim();
+      const currentUser = localUsers.find(u => u.email.toLowerCase().trim() === normalizedEmail);
+      const role = currentUser ? currentUser.role : "Employee";
+
+      if (role === "Manager") {
+        return allProjects.filter(p => p.assignedByEmail?.toLowerCase().trim() === normalizedEmail);
+      } else if (role === "Employee" || role === "Intern") {
+        return allProjects.filter(p => 
+          p.assignedMembers?.some(m => m.email?.toLowerCase().trim() === normalizedEmail)
+        );
+      } else if (role === "Admin" || role === "HR") {
+        return allProjects;
+      }
+      return allProjects.filter(p => 
+        p.assignedMembers?.some(m => m.email?.toLowerCase().trim() === normalizedEmail)
+      );
+    }
+    return [];
+  },
+
+  // Create project with local storage fallback
+  createProject: async (projectData) => {
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(projectData)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const newProj = data.project;
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_projects") || "[]");
+          stored.unshift(newProj);
+          localStorage.setItem("hra_projects", JSON.stringify(stored));
+        }
+        return { success: true, project: newProj };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Creating project in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_projects") || "[]");
+      const localUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      const creatorEmail = projectData.managerEmail?.toLowerCase().trim();
+      const creator = localUsers.find(u => u.email.toLowerCase().trim() === creatorEmail);
+
+      const newProj = {
+        id: `proj-${Date.now()}`,
+        _id: `proj-${Date.now()}`,
+        name: projectData.name,
+        description: projectData.description || "",
+        assignedBy: creator ? (creator.id || creator._id) : "local-manager",
+        assignedByEmail: creatorEmail,
+        assignedMembers: projectData.assignedMembers || [],
+        startDate: projectData.startDate ? new Date(projectData.startDate).toISOString() : null,
+        dueDate: projectData.dueDate ? new Date(projectData.dueDate).toISOString() : null,
+        priority: projectData.priority || "Medium",
+        status: "Not Started",
+        progress: 0,
+        attachedFiles: projectData.attachedFiles || [],
+        comments: [],
+        deliverables: [],
+        activityTimeline: [
+          {
+            text: `Project created by ${creator ? creator.name : creatorEmail}`,
+            user: creatorEmail,
+            createdAt: new Date().toISOString()
+          }
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      stored.unshift(newProj);
+      localStorage.setItem("hra_projects", JSON.stringify(stored));
+      return { success: true, project: newProj, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Update project with local storage fallback
+  updateProject: async (id, projectData) => {
+    try {
+      const response = await fetch("/api/projects", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...projectData })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const updatedProj = data.project;
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_projects") || "[]");
+          const idx = stored.findIndex(p => (p.id === id || p._id === id));
+          if (idx !== -1) {
+            stored[idx] = updatedProj;
+            localStorage.setItem("hra_projects", JSON.stringify(stored));
+          }
+        }
+        return { success: true, project: updatedProj };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Updating project in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_projects") || "[]");
+      const idx = stored.findIndex(p => (p.id === id || p._id === id));
+      if (idx !== -1) {
+        const current = stored[idx];
+        const userEmail = projectData.updaterEmail || "system@hraconnect.com";
+        const newTimeline = [...(current.activityTimeline || [])];
+
+        // Mirror backend PUT changes for comments, deliverables, member contributions
+        if (projectData.comment) {
+          if (!current.comments) current.comments = [];
+          current.comments.push({
+            author: projectData.comment.author || "User",
+            email: projectData.comment.email || userEmail,
+            text: projectData.comment.text,
+            createdAt: new Date().toISOString()
+          });
+          newTimeline.push({
+            text: `Comment added by ${projectData.comment.author || userEmail}`,
+            user: userEmail,
+            createdAt: new Date().toISOString()
+          });
+        }
+
+        if (projectData.deliverable) {
+          if (!current.deliverables) current.deliverables = [];
+          current.deliverables.push({
+            name: projectData.deliverable.name,
+            url: projectData.deliverable.url,
+            size: projectData.deliverable.size,
+            submittedBy: projectData.deliverable.submittedBy || userEmail,
+            submittedAt: new Date().toISOString()
+          });
+          newTimeline.push({
+            text: `Deliverable "${projectData.deliverable.name}" uploaded by ${projectData.deliverable.submittedBy || userEmail}`,
+            user: userEmail,
+            createdAt: new Date().toISOString()
+          });
+        }
+
+        if (projectData.memberEmail && projectData.contributionProgress !== undefined) {
+          if (current.assignedMembers) {
+            const member = current.assignedMembers.find(
+              m => m.email.toLowerCase().trim() === projectData.memberEmail.toLowerCase().trim()
+            );
+            if (member) {
+              const oldVal = member.contributionProgress;
+              member.contributionProgress = Number(projectData.contributionProgress);
+              newTimeline.push({
+                text: `Contribution progress of ${member.name} updated from ${oldVal}% to ${projectData.contributionProgress}%`,
+                user: userEmail,
+                createdAt: new Date().toISOString()
+              });
+            }
+          }
+        }
+
+        // Handle general fields updates
+        if (projectData.name !== undefined && current.name !== projectData.name) {
+          newTimeline.push({ text: `Project name updated to "${projectData.name}"`, user: userEmail, createdAt: new Date().toISOString() });
+          current.name = projectData.name;
+        }
+        if (projectData.description !== undefined) current.description = projectData.description;
+        if (projectData.startDate !== undefined) current.startDate = projectData.startDate;
+        if (projectData.dueDate !== undefined) current.dueDate = projectData.dueDate;
+        if (projectData.priority !== undefined && current.priority !== projectData.priority) {
+          newTimeline.push({ text: `Priority changed from ${current.priority} to ${projectData.priority}`, user: userEmail, createdAt: new Date().toISOString() });
+          current.priority = projectData.priority;
+        }
+        if (projectData.status !== undefined && current.status !== projectData.status) {
+          newTimeline.push({ text: `Status updated to "${projectData.status}"`, user: userEmail, createdAt: new Date().toISOString() });
+          current.status = projectData.status;
+        }
+        if (projectData.progress !== undefined && current.progress !== Number(projectData.progress)) {
+          newTimeline.push({ text: `Progress updated from ${current.progress}% to ${projectData.progress}%`, user: userEmail, createdAt: new Date().toISOString() });
+          current.progress = Number(projectData.progress);
+        }
+        if (projectData.assignedMembers !== undefined) {
+          current.assignedMembers = projectData.assignedMembers;
+          newTimeline.push({ text: `Assigned team members updated`, user: userEmail, createdAt: new Date().toISOString() });
+        }
+        if (projectData.attachedFiles !== undefined) {
+          current.attachedFiles = projectData.attachedFiles;
+          newTimeline.push({ text: `Attached files list updated`, user: userEmail, createdAt: new Date().toISOString() });
+        }
+
+        current.activityTimeline = newTimeline;
+        current.updatedAt = new Date().toISOString();
+
+        stored[idx] = current;
+        localStorage.setItem("hra_projects", JSON.stringify(stored));
+        return { success: true, project: current, offline: true };
+      }
+      return { success: false, message: "Project not found locally" };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  // Delete project with local storage fallback
+  deleteProject: async (id) => {
+    try {
+      const response = await fetch(`/api/projects?id=${id}`, {
+        method: "DELETE"
+      });
+      if (response.ok) {
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_projects") || "[]");
+          const filtered = stored.filter(p => p.id !== id && p._id !== id);
+          localStorage.setItem("hra_projects", JSON.stringify(filtered));
+        }
+        return { success: true };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Deleting project in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_projects") || "[]");
+      const filtered = stored.filter(p => p.id !== id && p._id !== id);
+      localStorage.setItem("hra_projects", JSON.stringify(filtered));
+      return { success: true, offline: true };
+    }
+    return { success: false, message: "Window environment not available" };
   }
 };
+
 

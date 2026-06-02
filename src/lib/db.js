@@ -14,7 +14,7 @@ if (!MONGODB_URI) {
 let cached = global.mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.mongoose = { conn: null, promise: null, lastAttemptFailed: false, failedAt: 0 };
 }
 
 async function seedIfEmpty() {
@@ -123,20 +123,31 @@ async function dbConnect() {
     return cached.conn;
   }
 
+  // Fail-fast: If the connection attempt failed within the last 15s, fail instantly to save loading time
+  const now = Date.now();
+  if (cached.lastAttemptFailed && (now - cached.failedAt < 15000)) {
+    console.warn("⚠️ MongoDB Atlas is cached offline. Failing fast instantly (0ms) to trigger LocalStorage fallback...");
+    throw new Error("Database is temporarily offline (cooldown cache)");
+  }
+
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 2500, // Fail-fast: fallback to LocalStorage if unreachable within 2.5s
     };
 
     console.log('🔄 Connecting to MongoDB...');
     cached.promise = mongoose.connect(MONGODB_URI, opts).then(async (mongooseInstance) => {
       console.log('MongoDB connected successfully');
+      cached.lastAttemptFailed = false;
       // Perform auto-seed verification
       await seedIfEmpty();
       return mongooseInstance;
     }).catch((err) => {
       console.error('MongoDB connection failed:', err.message);
       cached.promise = null;
+      cached.lastAttemptFailed = true;
+      cached.failedAt = Date.now();
       throw err;
     });
   }

@@ -4,33 +4,81 @@ import User from '@/lib/models/User';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 
-export async function GET() {
+export async function GET(request) {
   try {
     await dbConnect();
-    const users = await User.find({}).sort({ createdAt: -1 });
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const includePhotos = searchParams.get('includePhotos') === 'true';
+    const verificationStatus = searchParams.get('verificationStatus');
 
-    const sanitizedUsers = users.map(user => ({
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      department: user.department,
-      permissions: user.permissions,
-      status: user.status,
-      session: user.session,
-      initials: user.initials || user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
-      badgeColor: user.badgeColor || 'bg-slate-900 text-white',
-      profileCompleted: user.profileCompleted || false,
-      verificationStatus: user.verificationStatus || 'Unsubmitted',
-      phone: user.phone || '',
-      dob: user.dob || '',
-      address: user.address || '',
-      emergencyContactName: user.emergencyContactName || '',
-      emergencyContactPhone: user.emergencyContactPhone || '',
-      aadhaarNumber: user.aadhaarNumber || '',
-      userPhoto: user.userPhoto || '',
-      aadhaarPhoto: user.aadhaarPhoto || ''
-    }));
+    if (id) {
+      const user = await User.findById(id);
+      if (!user) {
+        return NextResponse.json({ message: 'User not found' }, { status: 404 });
+      }
+      const sanitized = {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+        permissions: user.permissions,
+        status: user.status,
+        session: user.session,
+        initials: user.initials || user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+        badgeColor: user.badgeColor || 'bg-slate-900 text-white',
+        profileCompleted: user.profileCompleted || false,
+        verificationStatus: user.verificationStatus || 'Unsubmitted',
+        phone: user.phone || '',
+        dob: user.dob || '',
+        address: user.address || '',
+        emergencyContactName: user.emergencyContactName || '',
+        emergencyContactPhone: user.emergencyContactPhone || '',
+        aadhaarNumber: user.aadhaarNumber || '',
+        userPhoto: user.userPhoto || '',
+        aadhaarPhoto: user.aadhaarPhoto || ''
+      };
+      return NextResponse.json(sanitized, { status: 200 });
+    }
+
+    const filter = {};
+    if (verificationStatus) {
+      filter.verificationStatus = verificationStatus;
+    }
+
+    const projection = includePhotos ? {} : { userPhoto: 0, aadhaarPhoto: 0 };
+    const users = await User.find(filter, projection).sort({ createdAt: -1 });
+
+    const sanitizedUsers = users.map(user => {
+      const u = {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+        permissions: user.permissions,
+        status: user.status,
+        session: user.session,
+        initials: user.initials || user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+        badgeColor: user.badgeColor || 'bg-slate-900 text-white',
+        profileCompleted: user.profileCompleted || false,
+        verificationStatus: user.verificationStatus || 'Unsubmitted',
+        phone: user.phone || '',
+        dob: user.dob || '',
+        address: user.address || '',
+        emergencyContactName: user.emergencyContactName || '',
+        emergencyContactPhone: user.emergencyContactPhone || '',
+        aadhaarNumber: user.aadhaarNumber || ''
+      };
+
+      if (includePhotos) {
+        u.userPhoto = user.userPhoto || '';
+        u.aadhaarPhoto = user.aadhaarPhoto || '';
+      }
+
+      return u;
+    });
 
     return NextResponse.json(sanitizedUsers, { status: 200 });
   } catch (error) {

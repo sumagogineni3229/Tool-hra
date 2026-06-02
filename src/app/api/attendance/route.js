@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Attendance from '@/lib/models/Attendance';
 import User from '@/lib/models/User';
+import { verifyToken } from '@/lib/auth';
 
 async function getAddressFromCoords(lat, lng) {
   if (!lat || !lng || (lat === 0 && lng === 0)) {
@@ -52,7 +53,10 @@ async function getAddressFromCoords(lat, lng) {
   return `Coordinates: ${lat}, ${lng}`;
 }
 
+let indexesCleaned = false;
+
 async function cleanLegacyIndexes() {
+  if (indexesCleaned) return;
   try {
     const indexes = await Attendance.collection.indexes();
     const obsolete = ['userEmail_1_date_1', 'userEmail_1'];
@@ -62,6 +66,7 @@ async function cleanLegacyIndexes() {
         await Attendance.collection.dropIndex(name);
       }
     }
+    indexesCleaned = true;
   } catch (e) {
     console.warn('Index sync warning:', e.message);
   }
@@ -76,6 +81,17 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get('email');
 
+    // Attempt to verify session from token cookie
+    const token = request.cookies.get('token')?.value;
+    let payload = null;
+    if (token) {
+      try {
+        payload = await verifyToken(token);
+      } catch (err) {
+        console.warn("Verification failed in Attendance GET:", err.message);
+      }
+    }
+
     let query = {};
     if (email) {
       const user = await User.findOne({ email: email.toLowerCase().trim() }).lean();
@@ -83,14 +99,21 @@ export async function GET(request) {
         return NextResponse.json({ attendance: [] }, { status: 200 });
       }
       query = { userId: user._id };
+    } else if (payload && payload.role === "Manager") {
+      // Filter by manager's team members
+      const Team = (await import('@/lib/models/Team')).default;
+      const managedTeams = await Team.find({ managerId: payload.id });
+      const memberIds = managedTeams.flatMap(t => t.members || []);
+      query = { userId: { $in: memberIds } };
     }
 
     const records = await Attendance.find(query)
       .sort({ date: -1 })
       .lean();
 
-    // Fetch all users to create a mapping from ID to user details
-    const users = await User.find({}).lean();
+    // Fetch only the users associated with the retrieved records
+    const uniqueUserIds = [...new Set(records.map(r => r.userId ? r.userId.toString() : null).filter(Boolean))];
+    const users = await User.find({ _id: { $in: uniqueUserIds } }).lean();
     const userMap = {};
     users.forEach(u => {
       userMap[u._id.toString()] = u;
@@ -131,15 +154,61 @@ export async function GET(request) {
   }
 }
 
-// POST /api/attendance — Clock-In
+// POST /api/attendance — Clock-In / Manual Addition
 export async function POST(request) {
   try {
     await dbConnect();
     await cleanLegacyIndexes();
 
     const body = await request.json();
+    const { action, userId, date, status, checkIn, checkOut, notes } = body;
     const { email, location, image } = body;
 
+    // Manager manual entry path
+    if (action === 'manual' || userId) {
+      if (!userId || !date || !status) {
+        return NextResponse.json({ message: 'Missing required manual entry fields' }, { status: 400 });
+      }
+
+      const targetDate = new Date(date);
+      const todayDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+
+      let record = await Attendance.findOne({ userId, date: todayDate });
+
+      const newSession = {
+        checkIn: checkIn ? new Date(checkIn) : new Date(todayDate.setHours(9, 0, 0, 0)),
+        checkOut: checkOut ? new Date(checkOut) : null,
+        checkInImage: "https://ui-avatars.com/api/?name=M&background=f1f5f9",
+        checkOutImage: "https://ui-avatars.com/api/?name=M&background=f1f5f9",
+        checkInLocation: { address: 'Manual Entry' },
+        checkOutLocation: { address: 'Manual Entry' }
+      };
+
+      if (!record) {
+        record = new Attendance({
+          userId,
+          date: todayDate,
+          status,
+          isLate: status === 'late',
+          sessions: [newSession],
+          totalDuration: checkIn && checkOut ? Math.max(new Date(checkOut).getTime() - new Date(checkIn).getTime(), 0) : 0,
+          notes: notes || 'Manually added by manager'
+        });
+      } else {
+        record.status = status;
+        record.isLate = status === 'late';
+        record.sessions.push(newSession);
+        if (checkIn && checkOut) {
+          record.totalDuration = (record.totalDuration || 0) + Math.max(new Date(checkOut).getTime() - new Date(checkIn).getTime(), 0);
+        }
+        if (notes) record.notes = notes;
+      }
+
+      await record.save();
+      return NextResponse.json({ attendance: record }, { status: 201 });
+    }
+
+    // Standard employee clock-in
     if (!email) {
       return NextResponse.json({ message: 'Email is required for Clock-In' }, { status: 400 });
     }
@@ -149,7 +218,7 @@ export async function POST(request) {
       return NextResponse.json({ message: 'User not found in context' }, { status: 404 });
     }
 
-    const userId = user._id;
+    const targetUserId = user._id;
     const now = new Date();
     const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -161,7 +230,7 @@ export async function POST(request) {
       isLate = true;
     }
 
-    let record = await Attendance.findOne({ userId, date: todayDate });
+    let record = await Attendance.findOne({ userId: targetUserId, date: todayDate });
 
     // Reverse geocode location
     const address = await getAddressFromCoords(location?.lat, location?.lng);
@@ -178,7 +247,7 @@ export async function POST(request) {
 
     if (!record) {
       record = new Attendance({
-        userId,
+        userId: targetUserId,
         date: todayDate,
         status: isLate ? 'late' : 'present',
         isLate,
@@ -202,15 +271,55 @@ export async function POST(request) {
   }
 }
 
-// PUT /api/attendance — Clock-Out
+// PUT /api/attendance — Clock-Out / Record Update
 export async function PUT(request) {
   try {
     await dbConnect();
     await cleanLegacyIndexes();
 
     const body = await request.json();
+    const { id, status, notes, sessions } = body;
     const { email, location, image } = body;
 
+    // Manager adjustment path
+    if (id) {
+      const record = await Attendance.findById(id);
+      if (!record) {
+        return NextResponse.json({ message: 'Attendance record not found' }, { status: 404 });
+      }
+
+      if (status) {
+        record.status = status;
+        record.isLate = status === 'late';
+      }
+      if (notes !== undefined) {
+        record.notes = notes;
+      }
+      if (sessions) {
+        record.sessions = sessions.map(s => ({
+          checkIn: s.checkIn ? new Date(s.checkIn) : undefined,
+          checkOut: s.checkOut ? new Date(s.checkOut) : null,
+          checkInImage: s.checkInImage || "https://ui-avatars.com/api/?name=M&background=f1f5f9",
+          checkOutImage: s.checkOutImage || "https://ui-avatars.com/api/?name=M&background=f1f5f9",
+          checkInLocation: s.checkInLocation || { address: 'Manual Edit' },
+          checkOutLocation: s.checkOutLocation || { address: 'Manual Edit' }
+        }));
+
+        // Recompute total duration
+        let duration = 0;
+        record.sessions.forEach(s => {
+          if (s.checkIn && s.checkOut) {
+            duration += Math.max(new Date(s.checkOut).getTime() - new Date(s.checkIn).getTime(), 0);
+          }
+        });
+        record.totalDuration = duration;
+      }
+
+      await record.save();
+      return NextResponse.json({ attendance: record }, { status: 200 });
+    }
+
+    // Standard employee clock-out
     if (!email) {
       return NextResponse.json({ message: 'Email is required for Clock-Out' }, { status: 400 });
     }

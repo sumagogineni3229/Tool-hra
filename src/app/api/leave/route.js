@@ -20,25 +20,56 @@ export async function GET(request) {
 
     // Resolve user context
     let leaves = [];
-    if (payload) {
-      // Token-based personal view
+    const isPrivileged = payload && (payload.role === "HR" || payload.role === "Admin" || payload.role === "Manager");
+
+    if (isPrivileged && !emailParam) {
+      if (payload.role === "Manager") {
+        // Dynamic import to prevent circularity if any
+        const Team = (await import('@/lib/models/Team')).default;
+        const managedTeams = await Team.find({ managerId: payload.id });
+        const memberIds = managedTeams.flatMap(t => t.members || []);
+        
+        const teamUsers = await User.find({ _id: { $in: memberIds } }).lean();
+        const teamEmails = teamUsers.map(u => u.email.toLowerCase().trim());
+        
+        leaves = await Leave.find({
+          $or: [
+            { userId: { $in: memberIds } },
+            { userEmail: { $in: teamEmails } }
+          ]
+        }).sort({ createdAt: -1 });
+      } else {
+        // HR / Admin with no specific email filter → fetch ALL leaves
+        leaves = await Leave.find({}).sort({ createdAt: -1 });
+      }
+    } else if (payload && !emailParam) {
+      // Authenticated employee → fetch only their own leaves
       leaves = await Leave.find({ userId: payload.id }).sort({ createdAt: -1 });
     } else if (emailParam) {
-      // Fallback query parameter-based personal view
+      // Fallback query parameter-based personal view (offline / no cookie)
       const email = emailParam.toLowerCase().trim();
       const user = await User.findOne({ email });
       if (user) {
+        // If the requester is privileged and passes an email, respect it as a filter
         leaves = await Leave.find({
           $or: [{ userId: user._id }, { userEmail: email }]
         }).sort({ createdAt: -1 });
       }
     } else {
-      // HR/Admin view: Fetch all leaves
+      // No token, no email param → also return all (HR dashboard offline fallback)
       leaves = await Leave.find({}).sort({ createdAt: -1 });
     }
 
-    // Fetch all users to construct an email-to-user details mapping for display purposes
-    const users = await User.find({}).lean();
+    // Fetch only the users associated with the retrieved leave records
+    const uniqueUserIds = [...new Set(leaves.map(l => l.userId ? l.userId.toString() : null).filter(Boolean))];
+    const uniqueUserEmails = [...new Set(leaves.map(l => l.userEmail ? l.userEmail.toLowerCase().trim() : null).filter(Boolean))];
+    const users = await User.find({
+      $or: [
+        { _id: { $in: uniqueUserIds } },
+        { email: { $in: uniqueUserEmails } }
+      ]
+    }).lean();
+
     const userMap = {};
     users.forEach(u => {
       userMap[u._id.toString()] = {

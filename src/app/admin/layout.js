@@ -50,7 +50,7 @@ function AdminLayoutContent({ children }) {
       if (session.role === "HR") redirectPath = "/hr/dashboard";
       else if (session.role === "Manager") redirectPath = "/manager/dashboard";
       else if (session.role === "Intern") redirectPath = "/intern/dashboard";
-      
+
       router.push(redirectPath);
       return;
     }
@@ -102,9 +102,8 @@ function AdminLayoutContent({ children }) {
     <div className="min-h-screen bg-slate-50 flex font-sans antialiased text-slate-800">
 
       {/* Sidebar Navigation */}
-      <aside className={`bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 ${
-        sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
-      }`}>
+      <aside className={`bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 ${sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
+        }`}>
         <div className="w-64 flex flex-col justify-between h-full">
           <div className="flex flex-col gap-8 py-6">
 
@@ -159,11 +158,10 @@ function AdminLayoutContent({ children }) {
                           setUserMenuOpen(!userMenuOpen);
                           router.push("/admin/users");
                         }}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all duration-100 cursor-pointer ${
-                          isUserManagementActive
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all duration-100 cursor-pointer ${isUserManagementActive
                             ? "bg-slate-100 text-slate-955 border border-slate-200/50 shadow-sm"
                             : "text-slate-500 hover:text-slate-905 hover:bg-slate-100/75"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <Icon className="w-4 h-4 shrink-0" />
@@ -176,41 +174,37 @@ function AdminLayoutContent({ children }) {
                       <div className={`overflow-hidden transition-all duration-150 flex flex-col gap-1 pl-6 border-l border-slate-100 ml-6 mt-1 text-left ${userMenuOpen ? "max-h-60 opacity-100 py-1" : "max-h-0 opacity-0 py-0"}`}>
                         <Link
                           href="/admin/users?filter=all"
-                          className={`px-4 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-100 flex items-center gap-2 ${
-                            isAllUsersActive
+                          className={`px-4 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-100 flex items-center gap-2 ${isAllUsersActive
                               ? "bg-slate-100 text-slate-950 border border-slate-200/30 shadow-sm"
                               : "text-slate-500 hover:text-slate-950 hover:bg-slate-100/50"
-                          }`}
+                            }`}
                         >
                           <span className={`font-normal ${isAllUsersActive ? "text-slate-600" : "text-slate-300"}`}>├─</span> All Users
                         </Link>
                         <Link
                           href="/admin/users?action=create"
-                          className={`px-4 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-100 flex items-center gap-2 ${
-                            isCreateUserActive
+                          className={`px-4 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-100 flex items-center gap-2 ${isCreateUserActive
                               ? "bg-slate-100 text-slate-950 border border-slate-200/30 shadow-sm"
                               : "text-slate-500 hover:text-slate-955 hover:bg-slate-100/50"
-                          }`}
+                            }`}
                         >
                           <span className={`font-normal ${isCreateUserActive ? "text-slate-600" : "text-slate-300"}`}>├─</span> Create User
                         </Link>
                         <Link
                           href="/admin/users?filter=hr"
-                          className={`px-4 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-100 flex items-center gap-2 ${
-                            isHrActive
+                          className={`px-4 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-100 flex items-center gap-2 ${isHrActive
                               ? "bg-slate-100 text-slate-955 border border-slate-200/30 shadow-sm"
                               : "text-slate-500 hover:text-slate-955 hover:bg-slate-100/50"
-                          }`}
+                            }`}
                         >
                           <span className={`font-normal ${isHrActive ? "text-slate-600" : "text-slate-300"}`}>├─</span> HR Accounts
                         </Link>
                         <Link
                           href="/admin/users?filter=manager"
-                          className={`px-4 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-100 flex items-center gap-2 ${
-                            isManagerActive
+                          className={`px-4 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-100 flex items-center gap-2 ${isManagerActive
                               ? "bg-slate-100 text-slate-955 border border-slate-200/30 shadow-sm"
                               : "text-slate-500 hover:text-slate-955 hover:bg-slate-100/50"
-                          }`}
+                            }`}
                         >
                           <span className={`font-normal ${isManagerActive ? "text-slate-600" : "text-slate-300"}`}>└─</span> Manager Accounts
                         </Link>
@@ -224,11 +218,10 @@ function AdminLayoutContent({ children }) {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-100 ${
-                      isActive
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-100 ${isActive
                         ? "bg-slate-100 text-slate-955 border border-slate-200/50 shadow-sm"
                         : "text-slate-500 hover:text-slate-905 hover:bg-slate-100/75"
-                    }`}
+                      }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
                     <span>{item.name}</span>
@@ -236,7 +229,7 @@ function AdminLayoutContent({ children }) {
                 );
               })}
             </nav>
-            
+
           </div>
 
           {/* Footer Logout Button */}

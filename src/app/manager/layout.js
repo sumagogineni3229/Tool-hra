@@ -14,7 +14,11 @@ import {
   Search,
   Calendar,
   X,
-  ChevronRight
+  ChevronRight,
+  Users,
+  CheckSquare,
+  Briefcase,
+  TrendingUp
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -53,11 +57,13 @@ function ManagerLayoutContent({ children }) {
   };
 
   const navItems = [
-    { name: "Manager Overview", href: "/manager/dashboard", icon: LayoutDashboard },
-    { name: "Calendar", href: "/manager/calendar", icon: Calendar },
-    { name: "Team Timesheets", href: "/manager/timesheets", icon: ClipboardList },
-    { name: "Live Attendance", href: "/manager/attendance", icon: Clock },
-    { name: "Leave approvals", href: "/manager/leaves", icon: CalendarDays }
+    { name: "Dashboard", href: "/manager/dashboard", icon: LayoutDashboard },
+    { name: "Team Management", href: "/manager/team-management", icon: Users },
+    { name: "Attendance management", href: "/manager/attendance", icon: Clock },
+    { name: "Leave Management", href: "/manager/leaves", icon: CalendarDays },
+    { name: "Task Management", href: "/manager/task-management", icon: CheckSquare },
+    { name: "Projects", href: "/manager/projects", icon: Briefcase },
+    { name: "Reports", href: "/manager/reports", icon: TrendingUp }
   ];
 
   if (!isAuthorized) {

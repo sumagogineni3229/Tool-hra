@@ -16,7 +16,9 @@ import {
   CreditCard,
   MessageSquare,
   X,
-  ChevronRight
+  ChevronRight,
+  CheckSquare,
+  Briefcase
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -97,6 +99,8 @@ function EmployeeLayoutContent({ children }) {
     { name: "Leave Request", href: "/employee/leaves", icon: CalendarDays },
     { name: "Log Timesheet", href: "/employee/timesheet", icon: ClipboardList },
     { name: "Calender", href: "/employee/calendar", icon: Calendar },
+    { name: "My Tasks", href: "/employee/tasks", icon: CheckSquare },
+    { name: "My Projects", href: "/employee/projects", icon: Briefcase },
     { name: "Payroll", href: "/employee/payroll", icon: CreditCard },
     { name: "Feedback", href: "/employee/feedback", icon: MessageSquare }
   ];

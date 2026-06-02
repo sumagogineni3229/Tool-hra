@@ -14,7 +14,12 @@ import {
   Search,
   Calendar,
   X,
-  ChevronRight
+  ChevronRight,
+  Clock,
+  CheckSquare,
+  Briefcase,
+  TrendingUp,
+  MessageSquare
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -89,11 +94,14 @@ function InternLayoutContent({ children }) {
   };
 
   const navItems = [
-    { name: "My Dashboard", href: "/intern/dashboard", icon: LayoutDashboard },
-    { name: "Calendar", href: "/intern/calendar", icon: Calendar },
-    { name: "Submit Timesheet", href: "/intern/timesheet", icon: ClipboardList },
-    { name: "Training Console", href: "/intern/training", icon: GraduationCap },
-    { name: "Leave approvals", href: "/intern/leaves", icon: CalendarDays }
+    { name: "Dashboard", href: "/intern/dashboard", icon: LayoutDashboard },
+    { name: "Attendance", href: "/intern/attendance", icon: Clock },
+    { name: "Leave Request", href: "/intern/leaves", icon: CalendarDays },
+    { name: "My Tasks", href: "/intern/tasks", icon: CheckSquare },
+    { name: "My Projects", href: "/intern/projects", icon: Briefcase },
+    { name: "Reports", href: "/intern/reports", icon: TrendingUp },
+    { name: "Training and Learning", href: "/intern/training", icon: GraduationCap },
+    { name: "Feedback", href: "/intern/feedback", icon: MessageSquare }
   ];
 
   if (!isAuthorized) {

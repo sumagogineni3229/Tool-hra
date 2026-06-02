@@ -2,6 +2,6 @@
 
 import EmployeeFeedbackTab from "@/components/EmployeeFeedbackTab";
 
-export default function EmployeeFeedbackPage() {
+export default function InternFeedbackPage() {
   return <EmployeeFeedbackTab />;
 }

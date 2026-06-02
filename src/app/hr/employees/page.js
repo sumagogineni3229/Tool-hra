@@ -39,6 +39,28 @@ export default function HREmployeesDirectory() {
     loadData();
   }, []);
 
+  const handleExpandClick = async (userId) => {
+    if (expandedUserId === userId) {
+      setExpandedUserId(null);
+      return;
+    }
+    setExpandedUserId(userId);
+
+    // Fetch full user details dynamically if photos aren't loaded yet
+    const userObj = users.find(u => u.id === userId);
+    if (userObj && !userObj.aadhaarPhoto && !userObj.userPhoto) {
+      try {
+        const res = await fetch(`/api/users?id=${userId}`);
+        if (res.ok) {
+          const fullData = await res.json();
+          setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...fullData } : u));
+        }
+      } catch (e) {
+        console.warn("Failed to fetch full user profile:", e);
+      }
+    }
+  };
+
   const filtered = users.filter(u => {
     const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === "all" || u.role.toLowerCase() === filterRole.toLowerCase();
@@ -228,7 +250,7 @@ export default function HREmployeesDirectory() {
                         <td className="px-6 py-4 text-right">
                           <button
                             type="button"
-                            onClick={() => setExpandedUserId(expandedUserId === user.id ? null : user.id)}
+                            onClick={() => handleExpandClick(user.id)}
                             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-extrabold tracking-wide uppercase transition-all bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:bg-slate-100 hover:border-slate-350 shadow-sm cursor-pointer"
                           >
                             <span>{expandedUserId === user.id ? "Hide" : "Details"}</span>
@@ -255,35 +277,45 @@ export default function HREmployeesDirectory() {
                               <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-inner flex flex-col md:flex-row gap-6 items-start text-left max-w-4xl">
                                 
                                 {/* Photo Attachments Column */}
-                                <div className="flex flex-row md:flex-col gap-4 shrink-0 mx-auto md:mx-0">
-                                  {user.userPhoto && (
-                                    <div className="flex flex-col items-center gap-1.5">
-                                      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 hover:shadow-md hover:scale-102 transition-all cursor-zoom-in">
-                                        <img 
-                                          src={user.userPhoto} 
-                                          alt="Headshot" 
-                                          className="w-full h-full object-cover"
-                                          onClick={() => setSelectedPhoto(user.userPhoto)}
-                                        />
+                                {user.verificationStatus !== "Unsubmitted" && (
+                                  <div className="flex flex-row md:flex-col gap-4 shrink-0 mx-auto md:mx-0">
+                                    {(!user.userPhoto && !user.aadhaarPhoto) ? (
+                                      <div className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-slate-200/80 bg-slate-50 animate-pulse min-h-[96px] min-w-[96px]">
+                                        <div className="w-5 h-5 rounded-full border-2 border-slate-300 border-t-slate-800 animate-spin" />
                                       </div>
-                                      <span className="text-[8px] uppercase tracking-wider text-slate-400 font-extrabold">Profile Photo</span>
-                                    </div>
-                                  )}
+                                    ) : (
+                                      <>
+                                        {user.userPhoto && (
+                                          <div className="flex flex-col items-center gap-1.5">
+                                            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 hover:shadow-md hover:scale-102 transition-all cursor-zoom-in">
+                                              <img 
+                                                src={user.userPhoto} 
+                                                alt="Headshot" 
+                                                className="w-full h-full object-cover"
+                                                onClick={() => setSelectedPhoto(user.userPhoto)}
+                                              />
+                                            </div>
+                                            <span className="text-[8px] uppercase tracking-wider text-slate-400 font-extrabold">Profile Photo</span>
+                                          </div>
+                                        )}
 
-                                  {user.aadhaarPhoto && (
-                                    <div className="flex flex-col items-center gap-1.5">
-                                      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 hover:shadow-md hover:scale-102 transition-all cursor-zoom-in">
-                                        <img 
-                                          src={user.aadhaarPhoto} 
-                                          alt="Aadhaar" 
-                                          className="w-full h-full object-cover"
-                                          onClick={() => setSelectedPhoto(user.aadhaarPhoto)}
-                                        />
-                                      </div>
-                                      <span className="text-[8px] uppercase tracking-wider text-slate-400 font-extrabold">Aadhaar Doc</span>
-                                    </div>
-                                  )}
-                                </div>
+                                        {user.aadhaarPhoto && (
+                                          <div className="flex flex-col items-center gap-1.5">
+                                            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 hover:shadow-md hover:scale-102 transition-all cursor-zoom-in">
+                                              <img 
+                                                src={user.aadhaarPhoto} 
+                                                alt="Aadhaar" 
+                                                className="w-full h-full object-cover"
+                                                onClick={() => setSelectedPhoto(user.aadhaarPhoto)}
+                                              />
+                                            </div>
+                                            <span className="text-[8px] uppercase tracking-wider text-slate-400 font-extrabold">Aadhaar Doc</span>
+                                          </div>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
+                                )}
 
                                 {/* Information Details Grid */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold text-slate-700 flex-1 w-full">

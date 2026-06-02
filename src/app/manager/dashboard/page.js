@@ -15,36 +15,114 @@ import { apiClient } from "@/lib/apiClient";
 
 export default function ManagerDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
-  
+  const [squadMembers, setSquadMembers] = useState([]);
+  const [loadingSquad, setLoadingSquad] = useState(true);
+
   const [pendingTimesheets, setPendingTimesheets] = useState([
     { id: 1, name: "Marcus Aurelius", role: "Employee", project: "Leave Tracker UI", hours: "40 hrs", week: "Week 4 (May 24 - May 28)" },
     { id: 2, name: "Jane Smith", role: "Intern", project: "Cybersecurity Course", hours: "38 hrs", week: "Week 4 (May 24 - May 28)" }
   ]);
 
-  const [teamStatus, setTeamStatus] = useState([
-    { id: 1, name: "Marcus Aurelius", status: "Active Working", details: "Logged 6.5 hours today", badge: "bg-emerald-50 text-emerald-800 border-emerald-100" },
-    { id: 2, name: "Jane Smith", status: "On Break", details: "15 min tea break (Out since 04:15 PM)", badge: "bg-amber-50 text-amber-800 border-amber-100" },
-    { id: 3, name: "Sarah Jenkins", status: "Checked Out", details: "Logged 8.5 hours total (05:30 PM)", badge: "bg-slate-100 text-slate-600 border-slate-200" }
-  ]);
+  const loadSquadData = async (managerSession) => {
+    setLoadingSquad(true);
+    try {
+      const [teamsData, usersData] = await Promise.all([
+        apiClient.getTeams(),
+        apiClient.getUsers()
+      ]);
+
+      const managerId = managerSession.id || managerSession._id;
+      const managerEmail = managerSession.email;
+
+      // Find teams managed by this manager
+      const managedTeams = teamsData.filter(team => {
+        const tMgrId = team.managerId?.id || team.managerId?._id || team.managerId;
+        const tMgrEmail = team.managerId?.email;
+        return (tMgrId === managerId || tMgrEmail === managerEmail);
+      });
+
+      if (managedTeams.length > 0) {
+        // Collect all member IDs/objects across their managed teams
+        const memberRefs = [];
+        managedTeams.forEach(team => {
+          if (Array.isArray(team.members)) {
+            memberRefs.push(...team.members);
+          }
+        });
+
+        // Resolve unique members details from user directory
+        const resolvedMembersMap = new Map();
+        memberRefs.forEach(m => {
+          const mId = m.id || m._id || m;
+          if (!mId) return;
+
+          let details = null;
+          if (typeof m === "object" && m !== null) {
+            details = m;
+          } else {
+            details = usersData.find(u => u.id === mId || u._id === mId);
+          }
+
+          if (details) {
+            resolvedMembersMap.set(details.email || mId, details);
+          }
+        });
+
+        const resolvedMembers = Array.from(resolvedMembersMap.values());
+        
+        // Map resolved members to squad tracker feed list structure
+        const mappedMembers = resolvedMembers.map(m => {
+          const isOnline = m.session === "Online";
+          return {
+            id: m.id || m._id || Math.random().toString(),
+            name: m.name,
+            status: isOnline ? "Active Working" : "Offline",
+            details: `Role: ${m.role} | Department: ${m.department || 'Engineering'}`,
+            badge: isOnline ? "bg-emerald-50 text-emerald-800 border-emerald-100" : "bg-slate-100 text-slate-600 border-slate-200",
+            initials: m.initials || m.name.split(" ").map(n => n[0]).join("")
+          };
+        });
+
+        setSquadMembers(mappedMembers);
+      } else {
+        setSquadMembers([]);
+      }
+    } catch (err) {
+      console.error("Failed to load manager's squad data:", err);
+    } finally {
+      setLoadingSquad(false);
+    }
+  };
 
   useEffect(() => {
-    setCurrentUser(apiClient.getCurrentSession());
+    const session = apiClient.getCurrentSession();
+    setCurrentUser(session);
+    if (session) {
+      loadSquadData(session);
+    }
   }, []);
 
   const handleApproveTimesheet = (id) => {
     setPendingTimesheets(prev => prev.filter(t => t.id !== id));
   };
 
+  // Dynamically count Direct reports and set stats array
   const stats = [
-    { name: "Team Active Staff", value: "3 Members", icon: Users, change: "Direct reports", color: "emerald" },
+    { 
+      name: "Team Active Staff", 
+      value: squadMembers.length > 0 ? `${squadMembers.length} ${squadMembers.length === 1 ? 'Member' : 'Members'}` : "0 Members", 
+      icon: Users, 
+      change: "Direct reports", 
+      color: "emerald" 
+    },
     { name: "Team Logged Hours", value: "118 Hrs", icon: ClipboardList, change: "This week logs", color: "indigo" },
-    { name: "Live Attendance Rate", value: "98.2%", icon: Clock, change: "Highly active", color: "emerald" },
+    { name: "Live Attendance Rate", value: squadMembers.length > 0 ? `${(squadMembers.filter(m => m.status === "Active Working").length / squadMembers.length * 100).toFixed(0)}%` : "0%", icon: Clock, change: "Highly active", color: "emerald" },
     { name: "Pending Approvals", value: `${pendingTimesheets.length} Items`, icon: CalendarDays, change: "Timesheets requires review", color: "amber" }
   ];
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      
+
       {/* Header */}
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Operations Control Room</h1>
@@ -56,8 +134,8 @@ export default function ManagerDashboard() {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-4 hover:shadow-md transition-all duration-300"
             >
               <div className="flex items-center justify-between">
@@ -78,7 +156,7 @@ export default function ManagerDashboard() {
 
       {/* Split grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        
+
         {/* Left Side: Pending Timesheet approvals (7 Columns) */}
         <div className="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden flex flex-col">
           <div className="border-b border-slate-150/75 px-6 py-4.5 flex justify-between items-center bg-slate-50/40">
@@ -96,7 +174,7 @@ export default function ManagerDashboard() {
                     <span className="font-bold text-slate-950 text-xs">{t.name}</span>
                     <span className="text-[10px] text-slate-500 font-semibold">{t.week}</span>
                     <div className="text-xs font-semibold text-slate-700 mt-0.5">
-                      Task hours: <span className="text-indigo-650 font-bold">{t.hours}</span> logged in <span className="italic font-bold">({t.project})</span>
+                      Task hours: <span className="text-indigo-655 font-bold">{t.hours}</span> logged in <span className="italic font-bold">({t.project})</span>
                     </div>
                   </div>
 
@@ -124,24 +202,38 @@ export default function ManagerDashboard() {
             <h3 className="font-bold text-slate-900 text-sm">Squad Tracker Feed</h3>
           </div>
 
-          <div className="flex-1 p-6 flex flex-col gap-6">
-            {teamStatus.map(member => (
-              <div key={member.id} className="flex items-start justify-between gap-3 text-left">
-                <div className="flex gap-2">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-800">
-                    {member.name.split(" ").map(n => n[0]).join("")}
+          <div className="flex-1 p-6 flex flex-col gap-6 max-h-[400px] overflow-y-auto">
+            {squadMembers.length > 0 ? (
+              squadMembers.map(member => (
+                <div key={member.id} className="flex items-start justify-between gap-3 text-left">
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-800 shrink-0">
+                      {member.initials}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-xs text-slate-900 leading-none">{member.name}</span>
+                      <span className="text-[10px] text-slate-400 mt-1.5 font-semibold">{member.details}</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-xs text-slate-900 leading-none">{member.name}</span>
-                    <span className="text-[10px] text-slate-400 mt-1 font-semibold">{member.details}</span>
-                  </div>
-                </div>
 
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${member.badge}`}>
-                  {member.status}
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${member.badge}`}>
+                    {member.status}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="py-16 text-center text-slate-400 text-xs font-semibold flex flex-col items-center justify-center">
+                <Users className="w-8 h-8 text-slate-300 mb-2 animate-pulse" />
+                <span>
+                  {loadingSquad ? "Retrieving squad information..." : "No direct reports assigned to your squad."}
                 </span>
+                {!loadingSquad && (
+                  <span className="block text-[10px] text-slate-400/80 mt-1 max-w-[200px]">
+                    Ask an Admin or HR specialist to register your squad assignments in the Org Console.
+                  </span>
+                )}
               </div>
-            ))}
+            )}
           </div>
         </div>
 

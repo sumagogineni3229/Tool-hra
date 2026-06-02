@@ -24,7 +24,8 @@ import {
   Briefcase,
   X,
   ChevronRight,
-  Award
+  Award,
+  Network
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -48,7 +49,7 @@ function HRLayoutContent({ children }) {
       let redirectPath = "/employee/dashboard";
       if (session.role === "Manager") redirectPath = "/manager/dashboard";
       else if (session.role === "Intern") redirectPath = "/intern/dashboard";
-      
+
       router.push(redirectPath);
       return;
     }
@@ -64,6 +65,7 @@ function HRLayoutContent({ children }) {
 
   const navItems = [
     { name: "HR Dashboard", href: "/hr/dashboard", icon: LayoutDashboard },
+    { name: "Org Management", href: "/hr/org-management", icon: Network },
     { name: "Create User", href: "/hr/create-user", icon: UserPlus },
     { name: "Employees Directory", href: "/hr/employees", icon: Users },
     { name: "Profile Verifications", href: "/hr/verifications", icon: ShieldCheck },
@@ -90,9 +92,8 @@ function HRLayoutContent({ children }) {
     <div className="min-h-screen bg-slate-50 flex font-sans antialiased text-slate-800">
 
       {/* Sidebar Navigation */}
-      <aside className={`bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 ${
-        sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
-      }`}>
+      <aside className={`bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 ${sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
+        }`}>
         <div className="w-64 flex flex-col justify-between h-full">
           <div className="flex flex-col gap-8 py-6">
 
@@ -132,11 +133,10 @@ function HRLayoutContent({ children }) {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-100 ${
-                      isActive
-                        ? "bg-indigo-50 text-indigo-900 border border-indigo-100/50 shadow-sm"
-                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/75"
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-100 ${isActive
+                      ? "bg-indigo-50 text-indigo-900 border border-indigo-100/50 shadow-sm"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/75"
+                      }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
                     <span>{item.name}</span>
@@ -144,7 +144,7 @@ function HRLayoutContent({ children }) {
                 );
               })}
             </nav>
-            
+
           </div>
 
           {/* Footer Logout Button */}

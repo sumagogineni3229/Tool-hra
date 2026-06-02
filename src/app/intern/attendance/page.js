@@ -2,6 +2,6 @@
 
 import EmployeeAttendanceTab from "@/components/EmployeeAttendanceTab";
 
-export default function EmployeeAttendancePage() {
+export default function InternAttendancePage() {
   return <EmployeeAttendanceTab />;
 }
