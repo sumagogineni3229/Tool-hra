@@ -33,6 +33,7 @@ export default function EmployeeDashboard() {
   const [dbLeaves, setDbLeaves] = useState([]);
   const [dbHolidays, setDbHolidays] = useState([]);
   const [dbAnnouncements, setDbAnnouncements] = useState([]);
+  const [activeInsurance, setActiveInsurance] = useState(null);
 
   // Today's attendance from database
   const [todayAttendance, setTodayAttendance] = useState(null);
@@ -312,6 +313,25 @@ export default function EmployeeDashboard() {
       const poll = setInterval(() => {
         fetchTodayAttendance(currentUser.email);
       }, 10000);
+
+      // 6. Fetch Insurance Policy
+      const emailToQuery = currentUser.role === "Admin" ? "employee@hraconnect.com" : currentUser.email;
+      fetch(`/api/insurance?email=${encodeURIComponent(emailToQuery)}`)
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error("Failed to fetch insurance");
+        })
+        .then(data => {
+          if (data.success && data.insurance && data.insurance.length > 0) {
+            const list = data.insurance;
+            const active = list.find(p => p.status === "Active" || p.status === "Expiring Soon") || list[0];
+            setActiveInsurance(active);
+          }
+        })
+        .catch(err => {
+          console.warn("Could not fetch insurance policy on dashboard mount:", err);
+        });
+
       return () => clearInterval(poll);
     }
   }, [currentUser?.email]);
@@ -720,64 +740,113 @@ export default function EmployeeDashboard() {
           </div>
         </div>
 
-        {/* 3. Tasks Checklist Card (5 columns) */}
-        <div className="lg:col-span-5 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-5 text-left">
-          <div className="flex justify-between items-start gap-4">
-            <div className="flex flex-col gap-1 text-left">
-              <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 border border-amber-100/50 px-2 py-0.5 rounded w-fit uppercase tracking-wider">Task Objectives</span>
-              <h3 className="font-bold text-slate-950 text-sm mt-1.5 font-sans">Syllabus & Daily Checklist</h3>
-              <p className="text-[11px] text-slate-400 font-medium">Clear milestones to sync operational criteria.</p>
-            </div>
-            <button
-              onClick={handleAddTask}
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center justify-center cursor-pointer shrink-0"
-              title="Add task objective"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-bold text-slate-800">{taskProgressPercent}% Completed</span>
-              <span className="text-[10px] font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-100/30 px-2 py-0.5 rounded tracking-wide font-mono">
-                {completedTasks} / {tasks.length} Checkpoints
-              </span>
-            </div>
-            {/* Progress bar container */}
-            <div className="w-full h-2 rounded-full bg-slate-150 relative overflow-hidden">
-              <div
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500"
-                style={{ width: `${taskProgressPercent}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[175px] pr-1">
-            {tasks.map(task => (
-              <label
-                key={task.id}
-                className="flex items-start gap-3 p-3 rounded-xl border border-slate-100/80 bg-white hover:bg-slate-50/50 hover:border-slate-200 transition-all duration-150 cursor-pointer select-none"
-              >
-                <input
-                  type="checkbox"
-                  checked={task.checked}
-                  onChange={() => handleToggleTask(task.id)}
-                  className="w-4.5 h-4.5 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500/25 cursor-pointer mt-0.5"
-                />
-                <span className={`text-[11px] font-bold text-slate-700 leading-normal ${
-                  task.checked ? "line-through text-slate-400" : ""
-                }`}>
-                  {task.text}
-                </span>
-              </label>
-            ))}
-            {tasks.length === 0 && (
-              <div className="text-center py-6 text-slate-400 text-xs font-semibold">
-                No checkpoints logged today.
+        {/* Right side: Tasks Tracker & Insurance Widget (5 columns) */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Tasks Checklist Card */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-5 text-left flex-1">
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex flex-col gap-1 text-left">
+                <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 border border-amber-100/50 px-2 py-0.5 rounded w-fit uppercase tracking-wider">Task Objectives</span>
+                <h3 className="font-bold text-slate-950 text-sm mt-1.5 font-sans">Syllabus & Daily Checklist</h3>
+                <p className="text-[11px] text-slate-400 font-medium">Clear milestones to sync operational criteria.</p>
               </div>
-            )}
+              <button
+                onClick={handleAddTask}
+                className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center justify-center cursor-pointer shrink-0"
+                title="Add task objective"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-bold text-slate-800">{taskProgressPercent}% Completed</span>
+                <span className="text-[10px] font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-100/30 px-2 py-0.5 rounded tracking-wide font-mono">
+                  {completedTasks} / {tasks.length} Checkpoints
+                </span>
+              </div>
+              {/* Progress bar container */}
+              <div className="w-full h-2 rounded-full bg-slate-150 relative overflow-hidden">
+                <div
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500"
+                  style={{ width: `${taskProgressPercent}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[175px] pr-1">
+              {tasks.map(task => (
+                <label
+                  key={task.id}
+                  className="flex items-start gap-3 p-3 rounded-xl border border-slate-100/80 bg-white hover:bg-slate-50/50 hover:border-slate-200 transition-all duration-150 cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    checked={task.checked}
+                    onChange={() => handleToggleTask(task.id)}
+                    className="w-4.5 h-4.5 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500/25 cursor-pointer mt-0.5"
+                  />
+                  <span className={`text-[11px] font-bold text-slate-700 leading-normal ${
+                    task.checked ? "line-through text-slate-400" : ""
+                  }`}>
+                    {task.text}
+                  </span>
+                </label>
+              ))}
+              {tasks.length === 0 && (
+                <div className="text-center py-6 text-slate-400 text-xs font-semibold">
+                  No checkpoints logged today.
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Insurance Widget Card */}
+          {activeInsurance && (
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col gap-4 text-left animate-fade-in">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-extrabold text-rose-600 bg-rose-50 border border-rose-100/50 px-2 py-0.5 rounded w-fit uppercase tracking-wider">
+                    My Insurance
+                  </span>
+                  <h3 className="font-bold text-slate-950 text-xs mt-1.5 font-sans truncate max-w-[150px]">
+                    {activeInsurance.providerName}
+                  </h3>
+                </div>
+                <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                  activeInsurance.status === "Active"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                    : activeInsurance.status === "Expiring Soon"
+                    ? "bg-amber-50 text-amber-700 border-amber-100"
+                    : "bg-rose-50 text-rose-700 border-rose-100"
+                }`}>
+                  {activeInsurance.status}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Policy No</span>
+                  <span className="text-[10px] font-mono font-bold text-slate-700 truncate">{activeInsurance.policyNumber}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Coverage</span>
+                  <span className="text-[10px] font-bold text-slate-900">₹{Number(activeInsurance.coverageAmount).toLocaleString("en-IN")}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 border-t border-slate-100 pt-3">
+                <span>Valid Till: {new Date(activeInsurance.expiryDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</span>
+                <a
+                  href="/employee/insurance"
+                  className="flex items-center gap-0.5 text-rose-600 hover:text-rose-700 font-bold transition-all"
+                >
+                  View Details <ChevronRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

@@ -137,6 +137,11 @@ export const apiClient = {
     initializeLocalStorage();
     const normalizedEmail = email.toLowerCase().trim();
 
+    // Clear any existing session cookie to avoid session drift
+    if (typeof window !== "undefined") {
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+    }
+
     try {
       // Try to communicate with MongoDB backend Route Handler
       const response = await fetch("/api/auth/login", {
@@ -525,6 +530,7 @@ export const apiClient = {
         }
       }
       localStorage.removeItem("currentUser");
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
     }
   },
 

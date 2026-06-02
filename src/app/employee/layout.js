@@ -18,7 +18,8 @@ import {
   ChevronRight,
   CheckSquare,
   Briefcase,
-  TrendingUp
+  TrendingUp,
+  ShieldCheck
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -101,6 +102,7 @@ function EmployeeLayoutContent({ children }) {
     { name: "My Tasks", href: "/employee/tasks", icon: CheckSquare },
     { name: "My Projects", href: "/employee/projects", icon: Briefcase },
     { name: "Reports", href: "/employee/reports", icon: TrendingUp },
+    { name: "My Insurance", href: "/employee/insurance", icon: ShieldCheck },
     { name: "Payroll", href: "/employee/payroll", icon: CreditCard },
     { name: "Feedback", href: "/employee/feedback", icon: MessageSquare }
   ];
@@ -225,7 +227,7 @@ function EmployeeLayoutContent({ children }) {
             <NotificationBell currentUser={currentUser} />
 
             {/* Profile badge */}
-            <ProfileDropdown currentUser={currentUser} badgeColorClass="bg-rose-650" />
+            <ProfileDropdown currentUser={currentUser} badgeColorClass="bg-rose-600" />
 
           </div>
 
