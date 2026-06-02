@@ -74,10 +74,15 @@ export async function GET(request) {
 
       if (managerUser) {
         // Step 2: find all teams where this manager is assigned
-        const teams = await Team.find({ managerId: managerUser._id });
+        const teams = await Team.find({
+          $or: [
+            { managerId: managerUser._id },
+            { managerId: managerUser._id.toString() }
+          ]
+        });
 
         // Step 3: collect all member ObjectIds
-        const memberIds = teams.flatMap(t => t.members || []);
+        const memberIds = teams.flatMap(t => t.members || []).map(m => m.toString());
 
         // Step 4: resolve member emails
         if (memberIds.length > 0) {

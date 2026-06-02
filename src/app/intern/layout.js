@@ -47,22 +47,22 @@ function InternLayoutContent({ children }) {
           const sessionPayload = { ...latest };
           delete sessionPayload.password;
           localStorage.setItem("currentUser", JSON.stringify(sessionPayload));
-          
+
           if (sessionPayload.verificationStatus !== "Approved") {
             router.push("/profile-completion");
             return;
           }
-          
+
           // Role authorization checks
           if (sessionPayload.role !== "Intern" && sessionPayload.role !== "Admin") {
             let redirectPath = "/employee/dashboard";
             if (sessionPayload.role === "HR") redirectPath = "/hr/dashboard";
             else if (sessionPayload.role === "Manager") redirectPath = "/manager/dashboard";
-            
+
             router.push(redirectPath);
             return;
           }
-          
+
           setCurrentUser(sessionPayload);
           setIsAuthorized(true);
         } else {
@@ -97,6 +97,7 @@ function InternLayoutContent({ children }) {
     { name: "Dashboard", href: "/intern/dashboard", icon: LayoutDashboard },
     { name: "Attendance", href: "/intern/attendance", icon: Clock },
     { name: "Leave Request", href: "/intern/leaves", icon: CalendarDays },
+    { name: "Calendar", href: "/intern/calendar", icon: Calendar },
     { name: "My Tasks", href: "/intern/tasks", icon: CheckSquare },
     { name: "My Projects", href: "/intern/projects", icon: Briefcase },
     { name: "Reports", href: "/intern/reports", icon: TrendingUp },
@@ -116,9 +117,8 @@ function InternLayoutContent({ children }) {
     <div className="min-h-screen bg-slate-50 flex font-sans antialiased text-slate-800">
 
       {/* Sidebar Navigation */}
-      <aside className={`bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 ${
-        sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
-      }`}>
+      <aside className={`bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 ${sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
+        }`}>
         <div className="w-64 flex flex-col justify-between h-full">
           <div className="flex flex-col gap-8 py-6">
 
@@ -158,11 +158,10 @@ function InternLayoutContent({ children }) {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-100 ${
-                      isActive
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-100 ${isActive
                         ? "bg-amber-50 text-amber-900 border border-amber-100/50 shadow-sm"
                         : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/75"
-                    }`}
+                      }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
                     <span>{item.name}</span>
@@ -170,7 +169,7 @@ function InternLayoutContent({ children }) {
                 );
               })}
             </nav>
-            
+
           </div>
 
           {/* Footer Logout Button */}

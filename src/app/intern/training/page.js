@@ -355,7 +355,7 @@ export default function DynamicInternTrainingConsole() {
               </button>
               <button 
                 onClick={() => completeModule(activeModuleDetails.id || activeModuleDetails._id)}
-                className="px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer"
               >
                 Mark Module Completed
               </button>
@@ -420,7 +420,7 @@ export default function DynamicInternTrainingConsole() {
                 onClick={() => {
                   window.print();
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer transition-all shadow-sm"
               >
                 <Download className="w-3.5 h-3.5" />
                 Print / Save Certificate

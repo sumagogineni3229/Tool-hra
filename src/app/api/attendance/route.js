@@ -4,6 +4,8 @@ import Attendance from '@/lib/models/Attendance';
 import User from '@/lib/models/User';
 import { verifyToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 async function getAddressFromCoords(lat, lng) {
   if (!lat || !lng || (lat === 0 && lng === 0)) {
     return 'Virtual Check-In / Remote';
@@ -80,6 +82,7 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const email = searchParams.get('email');
+    const managerEmail = searchParams.get('managerEmail');
 
     // Attempt to verify session from token cookie
     const token = request.cookies.get('token')?.value;
@@ -99,11 +102,29 @@ export async function GET(request) {
         return NextResponse.json({ attendance: [] }, { status: 200 });
       }
       query = { userId: user._id };
+    } else if (managerEmail) {
+      const manager = await User.findOne({ email: managerEmail.toLowerCase().trim() }).lean();
+      if (manager) {
+        const Team = (await import('@/lib/models/Team')).default;
+        const managedTeams = await Team.find({
+          $or: [
+            { managerId: manager._id },
+            { managerId: manager._id.toString() }
+          ]
+        });
+        const memberIds = managedTeams.flatMap(t => t.members || []).map(m => m.toString());
+        query = { userId: { $in: memberIds } };
+      }
     } else if (payload && payload.role === "Manager") {
       // Filter by manager's team members
       const Team = (await import('@/lib/models/Team')).default;
-      const managedTeams = await Team.find({ managerId: payload.id });
-      const memberIds = managedTeams.flatMap(t => t.members || []);
+      const managedTeams = await Team.find({
+        $or: [
+          { managerId: payload.id },
+          { managerId: payload.id.toString() }
+        ]
+      });
+      const memberIds = managedTeams.flatMap(t => t.members || []).map(m => m.toString());
       query = { userId: { $in: memberIds } };
     }
 

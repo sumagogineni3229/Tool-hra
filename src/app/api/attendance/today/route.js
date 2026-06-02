@@ -3,6 +3,8 @@ import dbConnect from '@/lib/db';
 import Attendance from '@/lib/models/Attendance';
 import User from '@/lib/models/User';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/attendance/today — Fetch today's attendance record for an employee
 export async function GET(request) {
   try {

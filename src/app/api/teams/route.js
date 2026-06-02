@@ -6,6 +6,8 @@ import User from "@/lib/models/User";
 import { verifyToken } from "@/lib/auth";
 import mongoose from "mongoose";
 
+export const dynamic = "force-dynamic";
+
 // GET all teams populated with department, manager, and members
 export async function GET() {
   try {

@@ -249,11 +249,11 @@ export default function ManagerTaskManagementPage() {
       
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
-        <div className="absolute right-0 top-0 h-full w-1/3 opacity-[0.03] bg-gradient-to-l from-emerald-650 to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 h-full w-1/3 opacity-[0.03] bg-gradient-to-l from-emerald-600 to-transparent pointer-events-none" />
         
         <div className="space-y-2 text-left">
           <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-100">
-            <CheckSquare className="w-3 h-3 text-emerald-650" />
+            <CheckSquare className="w-3 h-3 text-emerald-600" />
             Task Console Live
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Task Management Hub</h1>
@@ -275,7 +275,7 @@ export default function ManagerTaskManagementPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleOpenModal}
-            className="flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-650 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer border border-emerald-500/10 self-stretch sm:self-auto"
+            className="flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer border border-emerald-500/10 self-stretch sm:self-auto"
           >
             <Plus className="w-4 h-4" />
             Assign New Task
@@ -290,25 +290,25 @@ export default function ManagerTaskManagementPage() {
             label: "Total Allocated Tasks",
             count: stats.total,
             icon: ListTodo,
-            bg: "from-blue-50/50 to-indigo-50/10 border-blue-100/50 text-blue-655"
+            bg: "from-blue-50/50 to-indigo-50/10 border-blue-100/50 text-blue-600"
           },
           {
             label: "Active Workloads",
             count: stats.inProgress,
             icon: Clock,
-            bg: "from-indigo-50/50 to-purple-50/10 border-indigo-100/50 text-indigo-655"
+            bg: "from-indigo-50/50 to-purple-50/10 border-indigo-100/50 text-indigo-600"
           },
           {
             label: "Avg Squad Completion",
             count: `${stats.avgProgress}%`,
             icon: TrendingUp,
-            bg: "from-emerald-50/50 to-teal-50/10 border-emerald-100/50 text-emerald-655"
+            bg: "from-emerald-50/50 to-teal-50/10 border-emerald-100/50 text-emerald-600"
           },
           {
             label: "Pending Assignment",
             count: stats.pending,
             icon: UserCheck,
-            bg: "from-amber-50/50 to-orange-50/10 border-amber-100/50 text-amber-655"
+            bg: "from-amber-50/50 to-orange-50/10 border-amber-100/50 text-amber-600"
           }
         ].map((item, idx) => (
           <motion.div
@@ -691,7 +691,7 @@ export default function ManagerTaskManagementPage() {
 
                 <div className="bg-slate-50 rounded-2xl border border-slate-200/80 p-5 space-y-2 text-left">
                   <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Assignee Notes</span>
-                  <div className="bg-white border border-slate-200 rounded-xl p-3.5 min-h-[70px] text-xs text-slate-650 leading-relaxed">
+                  <div className="bg-white border border-slate-200 rounded-xl p-3.5 min-h-[70px] text-xs text-slate-600 leading-relaxed">
                     {selectedTask.completionNotes || (
                       <span className="italic text-slate-350 font-semibold">No notes have been added by the assignee yet.</span>
                     )}

@@ -52,7 +52,7 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
     const fetchAttendance = useCallback(async () => {
         if (!user?.email) return;
         try {
-            const res = await fetch(`/api/attendance?email=${encodeURIComponent(user.email)}`);
+            const res = await fetch(`/api/attendance?email=${encodeURIComponent(user.email)}&t=${Date.now()}`, { cache: 'no-store' });
             const data = await res.json();
             if (res.ok) setAttendance(data.attendance || []);
         } catch (err) { console.error(err); }
@@ -61,7 +61,7 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
     const fetchTodayAttendance = useCallback(async () => {
         if (!user?.email) return;
         try {
-            const res = await fetch(`/api/attendance/today?email=${encodeURIComponent(user.email)}`);
+            const res = await fetch(`/api/attendance/today?email=${encodeURIComponent(user.email)}&t=${Date.now()}`, { cache: 'no-store' });
             const data = await res.json();
             if (res.ok) setTodayAttendance(data.attendance);
         } catch (err) { console.error(err); }

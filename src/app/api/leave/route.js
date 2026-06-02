@@ -26,8 +26,13 @@ export async function GET(request) {
       if (payload.role === "Manager") {
         // Dynamic import to prevent circularity if any
         const Team = (await import('@/lib/models/Team')).default;
-        const managedTeams = await Team.find({ managerId: payload.id });
-        const memberIds = managedTeams.flatMap(t => t.members || []);
+        const managedTeams = await Team.find({
+          $or: [
+            { managerId: payload.id },
+            { managerId: payload.id.toString() }
+          ]
+        });
+        const memberIds = managedTeams.flatMap(t => t.members || []).map(m => m.toString());
         
         const teamUsers = await User.find({ _id: { $in: memberIds } }).lean();
         const teamEmails = teamUsers.map(u => u.email.toLowerCase().trim());

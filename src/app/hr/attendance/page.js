@@ -77,8 +77,8 @@ export default function HRAttendance() {
     const fetchRecords = async () => {
         try {
             const [attRes, userRes] = await Promise.all([
-                fetch("/api/attendance"),
-                fetch("/api/users")
+                fetch(`/api/attendance?t=${Date.now()}`, { cache: 'no-store' }),
+                fetch(`/api/users?t=${Date.now()}`, { cache: 'no-store' })
             ]);
 
             const attData = await attRes.json();

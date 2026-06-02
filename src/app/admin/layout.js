@@ -86,7 +86,7 @@ function AdminLayoutContent({ children }) {
     { name: "Payroll", href: "/admin/payroll", icon: CreditCard },
     { name: "Reports", href: "/admin/reports", icon: FileBarChart2 },
     { name: "Support Hub", href: "/admin/support", icon: HelpCircle },
-    { name: "Announcements", href: "/hr/announcements", icon: Megaphone },
+    { name: "Announcements", href: "/admin/announcements", icon: Megaphone },
     { name: "Settings", href: "/admin/settings", icon: SettingsIcon },
   ];
 

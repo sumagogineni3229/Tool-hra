@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Fragment, useMemo } from "react";
 import { 
-  Users, 
   Search, 
   GraduationCap, 
   Award, 
@@ -13,25 +12,18 @@ import {
   ChevronDown, 
   ChevronUp, 
   XCircle, 
-  Plus, 
   Edit, 
   BookOpen, 
   FileText, 
-  CheckCircle, 
   Download, 
   Trash2, 
   Clock, 
   PlusCircle, 
-  User, 
-  Send,
-  Building,
-  UserCheck,
-  TrendingUp,
-  FileSpreadsheet
+  Send
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
-export default function HRInternsDashboard() {
+export default function AdminInternsDashboard() {
   // Data states
   const [interns, setInterns] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -377,7 +369,7 @@ export default function HRInternsDashboard() {
   };
 
   return (
-    <div className="flex flex-col gap-8 text-left max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+    <div className="flex flex-col gap-8 text-left max-w-[1600px] mx-auto font-sans antialiased text-slate-800 animate-fade-in">
       
       {/* Title Header Section */}
       <div className="flex flex-col gap-1">
@@ -388,16 +380,14 @@ export default function HRInternsDashboard() {
       {/* Main Core Columns Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
-        {/* ========================================================================= */}
-        {/* LEFT COLUMN: TRAINING & LEARNING SECTION (4 Columns)                     */}
-        {/* ========================================================================= */}
+        {/* LEFT COLUMN: TRAINING & LEARNING SECTION */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           
           {/* Quick Action Buttons */}
           <div className="flex gap-3">
             <button 
               onClick={() => setIsCreateTrainingOpen(true)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-105 cursor-pointer transition-all shadow-sm"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-all shadow-sm"
             >
               <PlusCircle className="w-4 h-4" />
               Create Module
@@ -428,7 +418,7 @@ export default function HRInternsDashboard() {
                 <span className="block text-xl font-black text-emerald-800 mt-1">{statsRight.completed}</span>
               </div>
               <div className="bg-indigo-50/40 border border-indigo-100/60 rounded-xl p-3.5 text-center">
-                <span className="text-[9px] uppercase tracking-wider font-extrabold text-indigo-650">Pending</span>
+                <span className="text-[9px] uppercase tracking-wider font-extrabold text-indigo-655">Pending</span>
                 <span className="block text-xl font-black text-indigo-800 mt-1">{statsRight.pending}</span>
               </div>
             </div>
@@ -442,7 +432,7 @@ export default function HRInternsDashboard() {
             </div>
             <div className="divide-y divide-slate-100 max-h-[300px] overflow-y-auto">
               {trainings.map(t => (
-                <div key={t.id || t._id} className="p-4 hover:bg-slate-50/30 transition-all text-xs flex flex-col gap-1">
+                <div key={t.id || t._id} className="p-4 hover:bg-slate-55/10 transition-all text-xs flex flex-col gap-1">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-900 truncate max-w-[200px]">{t.name}</span>
                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">{t.category}</span>
@@ -467,10 +457,10 @@ export default function HRInternsDashboard() {
                 <div className="p-8 text-center text-slate-400 text-xs font-semibold">No active training logs assigned yet.</div>
               ) : (
                 assignments.map(a => (
-                  <div key={a.id || a._id} className="p-4 hover:bg-slate-50/30 transition-all text-xs flex flex-col gap-2">
+                  <div key={a.id || a._id} className="p-4 hover:bg-slate-55/10 transition-all text-xs flex flex-col gap-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col">
-                        <span className="font-bold text-slate-805 leading-tight">{a.internName}</span>
+                        <span className="font-bold text-slate-800 leading-tight">{a.internName}</span>
                         <span className="text-[10px] text-slate-400 mt-0.5">{a.trainingName}</span>
                       </div>
                       <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold border ${
@@ -494,7 +484,7 @@ export default function HRInternsDashboard() {
                     {a.status === "Completed" && (
                       <button 
                         onClick={() => setSelectedCertificate(a)}
-                        className="mt-1.5 inline-flex items-center gap-1 text-[9px] font-extrabold text-emerald-755 hover:underline text-left cursor-pointer"
+                        className="mt-1.5 inline-flex items-center gap-1 text-[9px] font-extrabold text-emerald-700 hover:underline text-left cursor-pointer"
                       >
                         <Award className="w-3.5 h-3.5" />
                         View/Download Syllabus Certificate
@@ -508,9 +498,7 @@ export default function HRInternsDashboard() {
 
         </div>
 
-        {/* ========================================================================= */}
-        {/* RIGHT COLUMN: INTERN DETAILS SECTION (8 Columns)                          */}
-        {/* ========================================================================= */}
+        {/* RIGHT COLUMN: INTERN DETAILS SECTION */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           
           {/* Intern List Table Card */}
@@ -589,7 +577,7 @@ export default function HRInternsDashboard() {
                     filteredInterns.map(intern => {
                       const rel = resolveInternTeamAndManager(intern.id || intern._id, intern.email);
                       return (
-                        <tr key={intern.id || intern._id} className="hover:bg-slate-50/40 transition-colors">
+                        <tr key={intern.id || intern._id} className="hover:bg-slate-55/10 transition-colors">
                           
                           {/* Intern Photo & Name */}
                           <td className="px-5 py-4">
@@ -639,7 +627,7 @@ export default function HRInternsDashboard() {
                                 ? "bg-emerald-50 text-emerald-800 border-emerald-100"
                                 : intern.status === "Completed"
                                 ? "bg-amber-50 text-amber-800 border-amber-100"
-                                : "bg-rose-50 text-rose-800 border-rose-100"
+                                : "bg-rose-50 text-rose-805 border-rose-100"
                             }`}>
                               {intern.status || "Active"}
                             </span>
@@ -654,7 +642,7 @@ export default function HRInternsDashboard() {
                                   setIsProfileModalOpen(true);
                                   setActiveTab("personal");
                                 }}
-                                className="px-2 py-1 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-slate-100 transition-colors"
+                                className="px-2 py-1 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-slate-100 transition-colors cursor-pointer"
                               >
                                 Profile
                               </button>
@@ -663,14 +651,14 @@ export default function HRInternsDashboard() {
                                   setEditingIntern(intern);
                                   setIsEditModalOpen(true);
                                 }}
-                                className="p-1 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                                className="p-1 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                                 title="Edit Details"
                               >
                                 <Edit className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={() => openAssignForIndividual(intern)}
-                                className="p-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
+                                className="p-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer"
                                 title="Assign Training"
                               >
                                 <GraduationCap className="w-3.5 h-3.5" />
@@ -692,9 +680,7 @@ export default function HRInternsDashboard() {
 
       </div>
 
-      {/* ========================================================================= */}
-      {/* MODAL: INTERN PROFILE VIEWER                                              */}
-      {/* ========================================================================= */}
+      {/* MODAL: INTERN PROFILE VIEWER */}
       {isProfileModalOpen && selectedIntern && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 text-left">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
@@ -704,7 +690,7 @@ export default function HRInternsDashboard() {
                 <GraduationCap className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-bold text-slate-900 text-sm">Intern Profile Dossier</h3>
               </div>
-              <button onClick={() => setIsProfileModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsProfileModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
@@ -712,19 +698,19 @@ export default function HRInternsDashboard() {
             <div className="flex border-b border-slate-100 text-xs font-bold text-slate-500 px-6 bg-slate-50/20">
               <button 
                 onClick={() => setActiveTab("personal")}
-                className={`py-3 px-4 border-b-2 transition-all ${activeTab === "personal" ? "border-emerald-600 text-emerald-700" : "border-transparent hover:text-slate-800"}`}
+                className={`py-3 px-4 border-b-2 transition-all cursor-pointer ${activeTab === "personal" ? "border-emerald-600 text-emerald-700" : "border-transparent hover:text-slate-800"}`}
               >
                 Personal Details
               </button>
               <button 
                 onClick={() => setActiveTab("internship")}
-                className={`py-3 px-4 border-b-2 transition-all ${activeTab === "internship" ? "border-emerald-600 text-emerald-700" : "border-transparent hover:text-slate-800"}`}
+                className={`py-3 px-4 border-b-2 transition-all cursor-pointer ${activeTab === "internship" ? "border-emerald-600 text-emerald-700" : "border-transparent hover:text-slate-800"}`}
               >
                 Internship Details
               </button>
               <button 
                 onClick={() => setActiveTab("performance")}
-                className={`py-3 px-4 border-b-2 transition-all ${activeTab === "performance" ? "border-emerald-600 text-emerald-700" : "border-transparent hover:text-slate-800"}`}
+                className={`py-3 px-4 border-b-2 transition-all cursor-pointer ${activeTab === "performance" ? "border-emerald-600 text-emerald-700" : "border-transparent hover:text-slate-800"}`}
               >
                 Performance Metrics
               </button>
@@ -786,8 +772,7 @@ export default function HRInternsDashboard() {
               )}
 
               {activeTab === "performance" && (
-                <div className="flex flex-col gap-6">
-                  {/* Grid values */}
+                <div className="flex flex-col gap-6 text-left">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-center">
                       <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Attendance</span>
@@ -810,21 +795,21 @@ export default function HRInternsDashboard() {
                   <div className="border-t border-slate-100 pt-5 flex flex-wrap gap-3">
                     <button 
                       onClick={() => triggerViewAttendance(selectedIntern)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-150/70 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-150 transition-colors cursor-pointer"
                     >
                       <Clock className="w-3.5 h-3.5 text-slate-500" />
                       View Attendance Records
                     </button>
                     <button 
                       onClick={() => setViewingProjects(selectedIntern)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-150/70 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-150 transition-colors cursor-pointer"
                     >
                       <BookOpen className="w-3.5 h-3.5 text-slate-500" />
                       View Assigned Projects
                     </button>
                     <button 
                       onClick={() => setViewingReports(selectedIntern)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-150/70 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-150 transition-colors cursor-pointer"
                     >
                       <FileText className="w-3.5 h-3.5 text-slate-500" />
                       View Submitted Reports
@@ -837,7 +822,7 @@ export default function HRInternsDashboard() {
             <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end">
               <button 
                 onClick={() => setIsProfileModalOpen(false)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer text-xs"
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl cursor-pointer text-xs"
               >
                 Close Profile
               </button>
@@ -846,9 +831,7 @@ export default function HRInternsDashboard() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL: EDIT INTERN DETAILS                                                */}
-      {/* ========================================================================= */}
+      {/* MODAL: EDIT INTERN DETAILS */}
       {isEditModalOpen && editingIntern && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 text-left">
           <form onSubmit={handleEditSubmit} className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
@@ -857,14 +840,14 @@ export default function HRInternsDashboard() {
                 <Edit className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-bold text-slate-900 text-sm">Edit Intern Details</h3>
               </div>
-              <button type="button" onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button type="button" onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 flex flex-col gap-4 text-xs overflow-y-auto max-h-[60vh]">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 text-left">
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-slate-700">Full Name</label>
+                  <label className="font-bold text-slate-705">Full Name</label>
                   <input 
                     type="text" 
                     value={editingIntern.name || ""} 
@@ -960,15 +943,13 @@ export default function HRInternsDashboard() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL: ASSIGN TRAINING (QUICK FORM FOR INDIVIDUAL INTERN)                */}
-      {/* ========================================================================= */}
+      {/* MODAL: ASSIGN TRAINING (INDIVIDUAL INTERN) */}
       {isAssignModalOpen && assignTargetIntern && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 text-left">
           <form onSubmit={handleAssignTraining} className="bg-white border border-slate-200 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
-            <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
+            <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between text-left">
               <h3 className="font-bold text-slate-900 text-sm">Assign Training to {assignTargetIntern.name}</h3>
-              <button type="button" onClick={() => setIsAssignModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button type="button" onClick={() => setIsAssignModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
@@ -998,18 +979,18 @@ export default function HRInternsDashboard() {
                 />
               </div>
             </div>
-            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3">
+            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 text-xs">
               <button 
                 type="button" 
                 onClick={() => setIsAssignModalOpen(false)}
-                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer text-xs"
+                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
               <button 
                 type="submit"
                 disabled={isAssigning}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer text-xs disabled:opacity-50"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer disabled:opacity-50"
               >
                 {isAssigning ? "Assigning..." : "Assign Module"}
               </button>
@@ -1018,9 +999,7 @@ export default function HRInternsDashboard() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL: CREATE TRAINING MODULE                                             */}
-      {/* ========================================================================= */}
+      {/* MODAL: CREATE TRAINING MODULE */}
       {isCreateTrainingOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 text-left">
           <form onSubmit={handleCreateTraining} className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
@@ -1029,12 +1008,12 @@ export default function HRInternsDashboard() {
                 <BookOpen className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-bold text-slate-900 text-sm">Create Syllabus Training Module</h3>
               </div>
-              <button type="button" onClick={() => setIsCreateTrainingOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button type="button" onClick={() => setIsCreateTrainingOpen(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 flex flex-col gap-4 text-xs overflow-y-auto max-h-[60vh]">
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 text-left">
                 <label className="font-bold text-slate-700">Module Name</label>
                 <input 
                   type="text" 
@@ -1045,7 +1024,7 @@ export default function HRInternsDashboard() {
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 text-left">
                 <div className="flex flex-col gap-1.5">
                   <label className="font-bold text-slate-700">Category</label>
                   <select
@@ -1072,7 +1051,7 @@ export default function HRInternsDashboard() {
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 text-left">
                 <label className="font-bold text-slate-700">Module Description</label>
                 <textarea 
                   placeholder="Provide module overview..."
@@ -1084,10 +1063,9 @@ export default function HRInternsDashboard() {
               </div>
               
               {/* Learning materials builder */}
-              <div className="border-t border-slate-100 pt-4 flex flex-col gap-3">
+              <div className="border-t border-slate-100 pt-4 flex flex-col gap-3 text-left">
                 <h4 className="font-bold text-slate-800 text-xs">Add Learning Materials / Attachments</h4>
                 
-                {/* Temp materials list */}
                 {learningMaterials.length > 0 && (
                   <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col gap-2">
                     {learningMaterials.map((lm, idx) => (
@@ -1124,7 +1102,7 @@ export default function HRInternsDashboard() {
                     <select
                       value={materialType}
                       onChange={e => setMaterialType(e.target.value)}
-                      className="p-1.5 border border-slate-250 rounded-lg text-xs"
+                      className="p-1.5 border border-slate-250 rounded-lg text-xs font-bold text-slate-600 bg-white"
                     >
                       <option value="PDF">PDF File</option>
                       <option value="PPT">PPT Presentation</option>
@@ -1154,18 +1132,18 @@ export default function HRInternsDashboard() {
               </div>
 
             </div>
-            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3">
+            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 text-xs">
               <button 
                 type="button" 
                 onClick={() => setIsCreateTrainingOpen(false)}
-                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer text-xs"
+                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
                 disabled={isCreatingTraining}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer text-xs disabled:opacity-50"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer disabled:opacity-50"
               >
                 {isCreatingTraining ? "Saving..." : "Create Module"}
               </button>
@@ -1174,9 +1152,7 @@ export default function HRInternsDashboard() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL: ASSIGN TRAINING (PORTAL BROADCAST TO GROUPS)                       */}
-      {/* ========================================================================= */}
+      {/* MODAL: ASSIGN TRAINING (BROADCAST SYSTEM) */}
       {isAssignTrainingOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 text-left">
           <form onSubmit={handleAssignTraining} className="bg-white border border-slate-200 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
@@ -1185,11 +1161,11 @@ export default function HRInternsDashboard() {
                 <Send className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-bold text-slate-900 text-sm">Delegate Syllabus Module</h3>
               </div>
-              <button type="button" onClick={() => setIsAssignTrainingOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button type="button" onClick={() => setIsAssignTrainingOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 flex flex-col gap-4 text-xs">
+            <div className="p-6 flex flex-col gap-4 text-xs text-left">
               
               <div className="flex flex-col gap-1.5">
                 <label className="font-bold text-slate-700">Select Training Module</label>
@@ -1277,18 +1253,18 @@ export default function HRInternsDashboard() {
               )}
 
             </div>
-            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3">
+            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 text-xs">
               <button 
                 type="button" 
                 onClick={() => setIsAssignTrainingOpen(false)}
-                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer text-xs"
+                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
               <button 
                 type="submit"
                 disabled={isAssigning}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer text-xs disabled:opacity-50"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer disabled:opacity-50"
               >
                 {isAssigning ? "Assigning..." : "Assign training"}
               </button>
@@ -1297,15 +1273,13 @@ export default function HRInternsDashboard() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* SUB-MODAL: INTERN ATTENDANCE LOGS                                         */}
-      {/* ========================================================================= */}
+      {/* SUB-MODAL: ATTENDANCE RECORDS */}
       {viewingAttendance && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 text-left">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
-            <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 text-left text-xs">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in animate-modal">
+            <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between text-left">
               <h3 className="font-bold text-slate-900 text-sm">Attendance logs: {viewingAttendance.name}</h3>
-              <button onClick={() => setViewingAttendance(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setViewingAttendance(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
@@ -1315,7 +1289,7 @@ export default function HRInternsDashboard() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {internAttendanceRecords.map(r => (
-                    <div key={r._id} className="bg-slate-50 border border-slate-150 rounded-xl p-3 flex justify-between items-center">
+                    <div key={r._id} className="bg-slate-50 border border-slate-150 rounded-xl p-3 flex justify-between items-center text-left">
                       <div className="flex flex-col">
                         <span className="font-bold text-slate-800">{new Date(r.date).toLocaleDateString()}</span>
                         <span className="text-[10px] text-slate-400 mt-0.5">Sessions: {r.sessions?.length || 0} checks</span>
@@ -1332,8 +1306,8 @@ export default function HRInternsDashboard() {
                 </div>
               )}
             </div>
-            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end">
-              <button onClick={() => setViewingAttendance(null)} className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer text-xs">
+            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end text-xs">
+              <button onClick={() => setViewingAttendance(null)} className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer">
                 Back to Profile
               </button>
             </div>
@@ -1341,23 +1315,21 @@ export default function HRInternsDashboard() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* SUB-MODAL: INTERN PROJECTS LOGS                                           */}
-      {/* ========================================================================= */}
+      {/* SUB-MODAL: ASSIGNED PROJECTS */}
       {viewingProjects && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 text-left">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in text-xs">
             <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-sm">Assigned Projects: {viewingProjects.name}</h3>
-              <button onClick={() => setViewingProjects(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setViewingProjects(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-5 overflow-y-auto max-h-[50vh] text-xs">
+            <div className="p-5 overflow-y-auto max-h-[50vh]">
               {projects.filter(p => p.assignedMembers?.some(m => m.email === viewingProjects.email)).length === 0 ? (
                 <div className="py-12 text-center text-slate-400 font-semibold">No active projects assigned to this intern.</div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 text-left">
                   {projects.filter(p => p.assignedMembers?.some(m => m.email === viewingProjects.email)).map(p => (
                     <div key={p.id || p._id} className="bg-slate-50 border border-slate-150 rounded-xl p-4 flex flex-col gap-2">
                       <div className="flex items-start justify-between">
@@ -1382,8 +1354,8 @@ export default function HRInternsDashboard() {
                 </div>
               )}
             </div>
-            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end">
-              <button onClick={() => setViewingProjects(null)} className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer text-xs">
+            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end text-xs">
+              <button onClick={() => setViewingProjects(null)} className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer">
                 Back to Profile
               </button>
             </div>
@@ -1391,33 +1363,31 @@ export default function HRInternsDashboard() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* SUB-MODAL: INTERN REPORTS LOGS                                            */}
-      {/* ========================================================================= */}
+      {/* SUB-MODAL: SUBMITTED REPORTS */}
       {viewingReports && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 text-left">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in text-xs">
             <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-sm">Syllabus Reports: {viewingReports.name}</h3>
-              <button onClick={() => setViewingReports(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setViewingReports(null)} className="text-slate-400 hover:text-slate-650 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-5 overflow-y-auto max-h-[50vh] text-xs">
+            <div className="p-5 overflow-y-auto max-h-[50vh]">
               {reports.filter(r => r.employeeEmail === viewingReports.email).length === 0 ? (
                 <div className="py-12 text-center text-slate-400 font-semibold">No daily status reports submitted.</div>
               ) : (
                 <div className="flex flex-col gap-3">
                   {reports.filter(r => r.employeeEmail === viewingReports.email).map(r => (
-                    <div key={r.id || r._id} className="bg-slate-50 border border-slate-150 rounded-xl p-4 flex flex-col gap-2">
+                    <div key={r.id || r._id} className="bg-slate-50 border border-slate-150 rounded-xl p-4 flex flex-col gap-2 text-left">
                       <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold">
                         <span>Report Date: {new Date(r.reportDate).toLocaleDateString()}</span>
                         <span className={`px-1.5 py-0.5 rounded border ${
                           r.status === "Approved" ? "bg-emerald-50 text-emerald-800 border-emerald-100" : "bg-amber-50 text-amber-800 border-amber-100"
                         }`}>{r.status}</span>
                       </div>
-                      <div className="flex flex-col gap-1 mt-1 text-slate-650">
-                        <span className="font-bold text-slate-700">Work Completed:</span>
+                      <div className="flex flex-col gap-1 mt-1 text-slate-600">
+                        <span className="font-bold text-slate-700 text-xs">Work Completed:</span>
                         <p className="text-[11px] leading-relaxed">{r.workCompleted}</p>
                       </div>
                     </div>
@@ -1425,8 +1395,8 @@ export default function HRInternsDashboard() {
                 </div>
               )}
             </div>
-            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end">
-              <button onClick={() => setViewingReports(null)} className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer text-xs">
+            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end text-xs">
+              <button onClick={() => setViewingReports(null)} className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer">
                 Back to Profile
               </button>
             </div>
@@ -1434,40 +1404,35 @@ export default function HRInternsDashboard() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL: SYLLABUS CERTIFICATE VIEWER & DOWNLOAD                              */}
-      {/* ========================================================================= */}
+      {/* CERTIFICATE VIEWER */}
       {selectedCertificate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 text-center">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in">
-            {/* Header */}
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col animate-fade-in text-xs">
             <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
               <span className="font-bold text-slate-900 text-sm">Syllabus Achievement Certificate</span>
-              <button onClick={() => setSelectedCertificate(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setSelectedCertificate(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
-            {/* Body (styled like a real certificate) */}
             <div className="p-8 bg-slate-50">
               <div className="bg-white border-8 border-double border-emerald-800 p-8 flex flex-col items-center justify-center text-center shadow-inner relative overflow-hidden">
-                {/* Watermark badge icon */}
                 <div className="absolute opacity-[0.03] pointer-events-none transform scale-[5] text-emerald-950">
                   <GraduationCap className="w-12 h-12" />
                 </div>
                 
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-850">Certificate of Completion</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800">Certificate of Completion</span>
                 
-                <h2 className="text-xl font-bold tracking-tight text-slate-800 mt-5">This is proudly presented to</h2>
+                <h2 className="text-xl font-bold tracking-tight text-slate-800 mt-5 font-serif">This is proudly presented to</h2>
                 <h1 className="text-2xl font-black text-emerald-950 underline decoration-double decoration-slate-400 mt-2 font-serif">{selectedCertificate.internName}</h1>
                 
                 <p className="text-xs text-slate-500 font-semibold max-w-md leading-relaxed mt-5">
-                  for successfully clearing all modules, milestones, and syllabus syllabus tasks under the training:
+                  for successfully clearing all modules, milestones, and syllabus tasks under the training:
                 </p>
-                <h3 className="text-base font-bold text-slate-850 tracking-wide uppercase mt-3">"{selectedCertificate.trainingName}"</h3>
+                <h3 className="text-base font-bold text-slate-800 tracking-wide uppercase mt-3 font-serif">"{selectedCertificate.trainingName}"</h3>
                 
                 <div className="flex justify-between w-full border-t border-slate-100 pt-6 mt-8 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                   <div className="flex flex-col items-center">
-                    <span className="text-slate-650 font-bold">{new Date(selectedCertificate.completedAt || Date.now()).toLocaleDateString()}</span>
+                    <span className="text-slate-600 font-bold">{new Date(selectedCertificate.completedAt || Date.now()).toLocaleDateString()}</span>
                     <span className="border-t border-slate-200 mt-1 pt-1 w-20">Date Awarded</span>
                   </div>
                   <div className="flex flex-col items-center">
@@ -1479,7 +1444,6 @@ export default function HRInternsDashboard() {
                 </div>
               </div>
             </div>
-            {/* Footer */}
             <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 text-xs">
               <button 
                 onClick={() => setSelectedCertificate(null)}

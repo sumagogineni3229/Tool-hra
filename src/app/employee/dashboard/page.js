@@ -158,7 +158,7 @@ export default function EmployeeDashboard() {
   // Fetch today's attendance details and sync stopwatch seconds
   const fetchTodayAttendance = async (email) => {
     try {
-      const res = await fetch(`/api/attendance/today?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`/api/attendance/today?email=${encodeURIComponent(email)}&t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       if (res.ok && data.attendance) {
         const record = data.attendance;

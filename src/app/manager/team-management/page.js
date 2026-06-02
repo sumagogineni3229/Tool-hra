@@ -21,6 +21,16 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
+const getLocalDateString = (dateObj) => {
+  if (!dateObj) return "";
+  const d = new Date(dateObj);
+  if (isNaN(d.getTime())) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function TeamManagementPage() {
   // Global Data states
   const [departments, setDepartments] = useState([]);
@@ -56,8 +66,8 @@ export default function TeamManagementPage() {
         apiClient.getUsers(),
         apiClient.getDepartments(),
         apiClient.getTeams(),
-        fetch("/api/attendance").catch(e => { console.warn("Muted attendance fetch error:", e); return null; }),
-        fetch("/api/leave").catch(e => { console.warn("Muted leave fetch error:", e); return null; }),
+        fetch(`/api/attendance?t=${Date.now()}`, { cache: 'no-store' }).catch(e => { console.warn("Muted attendance fetch error:", e); return null; }),
+        fetch(`/api/leave?t=${Date.now()}`, { cache: 'no-store' }).catch(e => { console.warn("Muted leave fetch error:", e); return null; }),
       ]);
 
       setUsers(fetchedUsers || []);
@@ -153,13 +163,13 @@ export default function TeamManagementPage() {
       if (id) userMap.set(id.toString(), u);
     });
 
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getLocalDateString(new Date());
 
     // Create map for today's attendance lookup
     const todayAttendanceMap = new Map();
     attendance.forEach((a) => {
       const attUserId = a.userId?._id || a.userId?.id || a.userId;
-      const checkDate = a.date ? new Date(a.date).toISOString().split("T")[0] : "";
+      const checkDate = a.date ? getLocalDateString(a.date) : "";
       if (attUserId && checkDate === todayStr) {
         todayAttendanceMap.set(attUserId.toString(), a);
       }
@@ -170,8 +180,8 @@ export default function TeamManagementPage() {
     leaves.forEach((l) => {
       const leaveUserId = l.userId?._id || l.userId?.id || l.userId;
       if (leaveUserId && l.status === "approved") {
-        const start = l.startDate ? new Date(l.startDate).toISOString().split("T")[0] : "";
-        const end = l.endDate ? new Date(l.endDate).toISOString().split("T")[0] : "";
+        const start = l.startDate ? getLocalDateString(l.startDate) : "";
+        const end = l.endDate ? getLocalDateString(l.endDate) : "";
         if (todayStr >= start && todayStr <= end) {
           todayLeaveMap.set(leaveUserId.toString(), l);
         }
