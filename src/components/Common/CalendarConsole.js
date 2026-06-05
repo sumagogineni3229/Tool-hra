@@ -149,7 +149,7 @@ export default function CalendarConsole() {
   }, [events]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-stretch h-full bg-slate-50 p-4 lg:p-8 rounded-[3rem] overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/50 text-left">
+    <div className="flex flex-col lg:flex-row gap-8 items-stretch h-auto lg:h-full bg-slate-50 p-4 lg:p-8 rounded-[2rem] lg:rounded-[3rem] overflow-y-auto lg:overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/50 text-left">
       
       {/* SIDEBAR - LEFT PANEL */}
       <aside className="w-full lg:w-80 flex flex-col gap-10 shrink-0">
@@ -243,30 +243,30 @@ export default function CalendarConsole() {
       <main className="flex-1 flex flex-col gap-8 min-w-0">
         
         {/* Toolbar & View Toggles */}
-        <header className="bg-white rounded-[2.5rem] p-6 lg:px-10 shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-6">
-           <div className="flex items-center gap-8">
-              <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase leading-none">
+        <header className="bg-white rounded-[1.8rem] sm:rounded-[2.5rem] p-4 sm:p-6 lg:px-10 shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+           <div className="flex flex-row items-center justify-between w-full md:w-auto gap-4 sm:gap-8">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase leading-none">
                 {monthNames[currentDate.getMonth()]} <span className="text-slate-300">{currentDate.getFullYear()}</span>
               </h2>
-              <div className="flex items-center bg-slate-50 rounded-2xl p-1.5 border border-slate-100">
-                <button onClick={prevMonth} className="p-3 text-slate-400 hover:text-slate-900 transition-all hover:bg-white rounded-xl active:scale-95 cursor-pointer"><ChevronLeft className="w-5 h-5" /></button>
-                <button onClick={nextMonth} className="p-3 text-slate-400 hover:text-slate-900 transition-all hover:bg-white rounded-xl active:scale-95 cursor-pointer"><ChevronRight className="w-5 h-5" /></button>
+              <div className="flex items-center bg-slate-50 rounded-2xl p-1 border border-slate-100">
+                <button onClick={prevMonth} className="p-2 sm:p-3 text-slate-400 hover:text-slate-900 transition-all hover:bg-white rounded-xl active:scale-95 cursor-pointer"><ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" /></button>
+                <button onClick={nextMonth} className="p-2 sm:p-3 text-slate-400 hover:text-slate-900 transition-all hover:bg-white rounded-xl active:scale-95 cursor-pointer"><ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" /></button>
               </div>
            </div>
 
-           <div className="flex items-center gap-4">
-              <div className="flex items-center bg-slate-50 rounded-2xl p-1.5 border border-slate-100">
-                <button onClick={() => setView("month")} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${view === 'month' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600' }`}>Month</button>
-                <button onClick={() => setView("week")} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${view === 'week' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600' }`}>Week</button>
+           <div className="flex flex-row items-center justify-between w-full md:w-auto gap-4">
+              <div className="flex items-center bg-slate-50 rounded-2xl p-1 border border-slate-100">
+                <button onClick={() => setView("month")} className={`px-4 py-2 sm:px-6 sm:py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${view === 'month' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600' }`}>Month</button>
+                <button onClick={() => setView("week")} className={`px-4 py-2 sm:px-6 sm:py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${view === 'week' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600' }`}>Week</button>
               </div>
               
               {isAdmin && (
                 <button 
                   onClick={() => { setEditingEvent(null); setFormData({ title: "", date: "", type: "event", description: "", startTime: "", endTime: "" }); setIsModalOpen(true); }}
-                  className="px-8 py-4 bg-blue-600 text-white rounded-[1.8rem] text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-3 cursor-pointer"
+                  className="px-4 py-2.5 sm:px-8 sm:py-4 bg-blue-600 text-white rounded-xl sm:rounded-[1.8rem] text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2 sm:gap-3 cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" />
-                  Request Sync
+                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Request Sync</span>
                 </button>
               )}
            </div>
@@ -296,27 +296,28 @@ export default function CalendarConsole() {
                     const isSelected = day === currentDate.getDate() && currentDate.getMonth() === currentDate.getMonth() && currentDate.getFullYear() === currentDate.getFullYear() && !isToday;
 
                     return (
-                      <div key={day} className={`bg-white p-4 transition-all group relative hover:bg-blue-50/10 min-h-[90px] flex flex-col gap-2 ${isToday ? 'z-10 bg-blue-50/20' : ''}`}>
+                      <div key={day} className={`bg-white p-1.5 sm:p-4 transition-all group relative hover:bg-blue-50/10 min-h-[65px] sm:min-h-[90px] flex flex-col gap-1 sm:gap-2 ${isToday ? 'z-10 bg-blue-50/20' : ''}`}>
                         <div className="flex justify-between items-center">
-                           <span className={`text-xl font-black tracking-tight leading-none ${isToday ? 'text-blue-600' : isSelected ? 'text-slate-900' : 'text-slate-300 group-hover:text-slate-600 transition-colors'}`}>
+                           <span className={`text-sm sm:text-xl font-black tracking-tight leading-none ${isToday ? 'text-blue-600' : isSelected ? 'text-slate-900' : 'text-slate-300 group-hover:text-slate-600 transition-colors'}`}>
                              {day < 10 ? `0${day}` : day}
                            </span>
                            {isToday && (
-                             <div className="w-2 h-2 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)] animate-pulse" />
+                             <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)] animate-pulse" />
                            )}
                         </div>
 
-                        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1.5 pb-2">
+                        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1 sm:gap-1.5 pb-1 sm:pb-2">
                            {dayEvents.map(event => (
                              <motion.div 
                                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                                key={event._id}
                                onClick={() => { if (isAdmin) { setEditingEvent(event); setFormData({...event, date: new Date(event.date).toISOString().split('T')[0]}); setIsModalOpen(true); } }}
-                               className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider text-white ${typeColorClasses[event.type]} shadow-sm cursor-pointer hover:brightness-110 active:scale-95 transition-all truncate flex items-center gap-2 group/item`}
+                               className={`px-1 py-1 sm:px-3 sm:py-2 rounded-md sm:rounded-xl text-[9px] font-black uppercase tracking-wider text-white ${typeColorClasses[event.type]} shadow-sm cursor-pointer hover:brightness-110 active:scale-95 transition-all truncate flex items-center justify-center sm:justify-start gap-1 sm:gap-2 group/item`}
                              >
-                               <div className="w-1 h-1 rounded-full bg-white opacity-40 shrink-0" />
-                               {event.title}
-                               {isAdmin && <MoreVertical className="w-3 h-3 ml-auto opacity-0 group-hover/item:opacity-100 transition-opacity" />}
+                               <div className="w-1 h-1 rounded-full bg-white opacity-40 shrink-0 hidden sm:block" />
+                               <span className="hidden sm:inline">{event.title}</span>
+                               <span className="inline sm:hidden w-1.5 h-1.5 rounded-full bg-white opacity-90 mx-auto" />
+                               {isAdmin && <MoreVertical className="w-3 h-3 ml-auto hidden sm:block opacity-0 group-hover/item:opacity-100 transition-opacity" />}
                              </motion.div>
                            ))}
                         </div>
@@ -346,19 +347,19 @@ export default function CalendarConsole() {
       {/* MODAL - ADD/EDIT ENTRY */}
       <AnimatePresence>
         {isModalOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl flex items-center justify-center p-6 z-[200]">
-            <motion.div initial={{ scale: 0.9, y: 40, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.9, y: 40, opacity: 0 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="bg-white rounded-[3.5rem] p-12 max-w-2xl w-full shadow-2xl relative overflow-hidden border border-white text-left">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6 z-[200]">
+            <motion.div initial={{ scale: 0.9, y: 40, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.9, y: 40, opacity: 0 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="bg-white rounded-[2rem] sm:rounded-[3.5rem] p-6 sm:p-12 max-w-2xl w-full shadow-2xl relative overflow-hidden border border-white text-left max-h-[90vh] overflow-y-auto">
               {/* Modal Background Decor */}
               <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-50 rounded-full blur-[80px] opacity-60" />
               <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-rose-50 rounded-full blur-[80px] opacity-60" />
 
-              <button onClick={() => setIsModalOpen(false)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900 transition-all p-3 bg-slate-50/50 rounded-full active:scale-90 hover:shadow-sm cursor-pointer"><X className="w-6 h-6" /></button>
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 sm:top-10 sm:right-10 text-slate-300 hover:text-slate-900 transition-all p-2 sm:p-3 bg-slate-50/50 rounded-full active:scale-90 hover:shadow-sm cursor-pointer"><X className="w-5 h-5 sm:w-6 sm:h-6" /></button>
               
-              <div className="flex items-center gap-8 mb-12 relative">
-                <div className="w-20 h-20 bg-blue-600 text-white rounded-[2rem] flex items-center justify-center shadow-2xl shadow-blue-200"><CalendarIcon className="w-10 h-10" /></div>
+              <div className="flex items-center gap-4 sm:gap-8 mb-6 sm:mb-12 relative">
+                <div className="w-12 h-12 sm:w-20 sm:h-20 bg-blue-600 text-white rounded-xl sm:rounded-[2rem] flex items-center justify-center shadow-2xl shadow-blue-200 shrink-0"><CalendarIcon className="w-6 h-6 sm:w-10 sm:h-10" /></div>
                 <div className="flex-1">
-                  <h3 className="text-4xl font-black text-slate-900 leading-none mb-3 tracking-tight">{editingEvent ? "Calibrate Entry" : "Initiate Directives"}</h3>
-                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] leading-none opacity-60 px-0.5">Global Synchronization Framework</p>
+                  <h3 className="text-2xl sm:text-4xl font-black text-slate-900 leading-none mb-2 sm:mb-3 tracking-tight">{editingEvent ? "Calibrate Entry" : "Initiate Directives"}</h3>
+                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] leading-none opacity-60 px-0.5">Global Synchronization Framework</p>
                 </div>
               </div>
 
@@ -400,17 +401,15 @@ export default function CalendarConsole() {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Mission Parameters (Log)</label>
                   <textarea rows="3" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-100 rounded-[2rem] px-8 py-6 outline-none font-medium text-slate-900 focus:bg-white transition-all leading-relaxed shadow-inner" placeholder="Detailed objectives..." />
-                </div>
-
-                <div className="flex gap-4 pt-6">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-6 bg-slate-100 text-slate-400 rounded-3xl font-black uppercase tracking-widest hover:bg-slate-200 hover:text-slate-900 transition-all active:scale-95 leading-none cursor-pointer">Scrub</button>
+                </div>                 <div className="flex gap-4 pt-6">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 sm:py-6 bg-slate-100 text-slate-400 rounded-3xl font-black uppercase tracking-widest hover:bg-slate-200 hover:text-slate-900 transition-all active:scale-95 leading-none cursor-pointer">Scrub</button>
                   {editingEvent && (
-                    <button type="button" onClick={() => handleDelete(editingEvent._id)} className="px-8 py-6 bg-rose-50 text-rose-500 rounded-3xl hover:bg-rose-500 hover:text-white transition-all active:scale-95 shadow-lg shadow-rose-100 cursor-pointer">
-                      <Trash2 className="w-6 h-6" />
+                    <button type="button" onClick={() => handleDelete(editingEvent._id)} className="px-6 py-4 sm:px-8 sm:py-6 bg-rose-50 text-rose-500 rounded-3xl hover:bg-rose-500 hover:text-white transition-all active:scale-95 shadow-lg shadow-rose-100 cursor-pointer">
+                      <Trash2 className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                   )}
-                  <button type="submit" disabled={formLoading} className="flex-[2] py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-[0.3em] hover:bg-blue-600 shadow-2xl shadow-slate-300 transition-all active:scale-[0.98] leading-none flex items-center justify-center gap-4 cursor-pointer">
-                    {formLoading ? "Synchronizing..." : <><CheckCircle2 className="w-6 h-6" /> Authorize</>}
+                  <button type="submit" disabled={formLoading} className="flex-[2] py-4 sm:py-6 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-[0.3em] hover:bg-blue-600 shadow-2xl shadow-slate-300 transition-all active:scale-[0.98] leading-none flex items-center justify-center gap-4 cursor-pointer text-xs sm:text-sm">
+                    {formLoading ? "Synchronizing..." : <><CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" /> Authorize</>}
                   </button>
                 </div>
               </form>

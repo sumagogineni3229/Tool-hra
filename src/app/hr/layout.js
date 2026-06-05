@@ -27,7 +27,8 @@ import {
   ChevronRight,
   Award,
   Network,
-  GraduationCap
+  GraduationCap,
+  Menu
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -39,7 +40,26 @@ function HRLayoutContent({ children }) {
   const pathname = usePathname();
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const session = apiClient.getCurrentSession();
@@ -97,7 +117,7 @@ function HRLayoutContent({ children }) {
     <div className="min-h-screen bg-slate-50 flex font-sans antialiased text-slate-800">
 
       {/* Sidebar Navigation */}
-      <aside className={`bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 ${sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"
+      <aside className={`bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 transition-all duration-300 fixed inset-y-0 left-0 z-50 lg:static lg:translate-x-0 ${sidebarOpen ? "w-64 translate-x-0 shadow-2xl lg:shadow-none" : "w-64 -translate-x-full lg:w-0 lg:overflow-hidden lg:border-r-0"
         }`}>
         <div className="w-64 flex flex-col justify-between h-full">
           <div className="flex flex-col gap-8 py-6">
@@ -166,11 +186,18 @@ function HRLayoutContent({ children }) {
         </div>
       </aside>
 
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-slate-955/40 backdrop-blur-xs z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Content Pane */}
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* Top Header Bar */}
-        <header className="bg-white border-b border-slate-200/80 h-16 px-8 flex items-center justify-between shrink-0">
+        <header className="bg-white border-b border-slate-200/80 h-16 px-4 sm:px-8 flex items-center justify-between shrink-0">
 
           {/* Left search tool / sidebar trigger */}
           <div className="flex items-center gap-4">
@@ -178,13 +205,23 @@ function HRLayoutContent({ children }) {
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all cursor-pointer flex items-center justify-center animate-pulse"
+                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all cursor-pointer flex items-center justify-center lg:hidden"
+                title="Open Menu"
+              >
+                <Menu className="w-4.5 h-4.5" />
+              </button>
+            )}
+            {!sidebarOpen && (
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all cursor-pointer hidden lg:flex items-center justify-center animate-pulse"
                 title="Open Sidebar"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}
-            <div className="relative w-64">
+            <div className="relative w-40 sm:w-64">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
                 <Search className="w-4 h-4" />
               </span>
@@ -211,9 +248,8 @@ function HRLayoutContent({ children }) {
           </div>
 
         </header>
-
         {/* Content Viewport */}
-        <main className="flex-1 overflow-y-auto p-8 w-full mx-auto max-w-none">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 w-full mx-auto max-w-none">
           {children}
         </main>
 

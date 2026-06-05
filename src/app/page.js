@@ -11,7 +11,9 @@ import {
   Layers,
   FileText,
   FileSpreadsheet,
-  ClipboardList
+  ClipboardList,
+  Menu,
+  X
 } from "lucide-react";
 import LoadingSplash from "@/components/Common/LoadingSplash";
 import ThemeToggle from "@/components/Common/ThemeToggle";
@@ -19,6 +21,7 @@ import ThemeToggle from "@/components/Common/ThemeToggle";
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [fadeExit, setFadeExit] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Highly responsive timing for the portal loading transition
@@ -84,10 +87,45 @@ export default function Home() {
               >
                 Portal Login
               </Link>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                title="Toggle Navigation Menu"
+              >
+                {mobileMenuOpen ? <X className="w-4.5 h-4.5" /> : <Menu className="w-4.5 h-4.5" />}
+              </button>
             </div>
 
           </div>
         </header>
+
+        {/* Mobile Navigation Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white/95 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex flex-col gap-3 z-45 sticky top-18 shadow-lg animate-backdrop">
+            <a
+              href="#features"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors py-2.5 border-b border-slate-100/50"
+            >
+              System Modules
+            </a>
+            <a
+              href="#workflow"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors py-2.5 border-b border-slate-100/50"
+            >
+              Workflow
+            </a>
+            <a
+              href="#support"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors py-2.5"
+            >
+              Support
+            </a>
+          </div>
+        )}
 
         {/* Main Container */}
         <main className="flex-1 max-w-7xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-24">

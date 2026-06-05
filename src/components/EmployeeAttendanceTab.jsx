@@ -244,25 +244,25 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
 
     return (
         <div className="space-y-12">
-            <header className="flex justify-between items-center">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2 uppercase">Operational Command</h2>
-                    <p className="text-slate-500 font-light text-lg italic tracking-wide">Protocol tracking for personnel <span className="text-slate-900 font-bold">{user?.name}</span>.</p>
+                    <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2 uppercase">Operational Command</h2>
+                    <p className="text-slate-500 font-light text-sm sm:text-lg italic tracking-wide">Protocol tracking for personnel <span className="text-slate-900 font-bold">{user?.name}</span>.</p>
                 </div>
-                <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
                     <button
                         type="button"
                         onClick={() => setActiveSubTab("overview")}
-                        className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${activeSubTab === "overview" ? "bg-white text-slate-900 shadow-xl" : "text-slate-400 hover:text-slate-650"}`}
+                        className={`px-4 sm:px-8 py-2.5 sm:py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${activeSubTab === "overview" ? "bg-white text-slate-900 shadow-xl" : "text-slate-400 hover:text-slate-650"}`}
                     >
-                        Registry Console
+                        Registry
                     </button>
                     <button
                         type="button"
                         onClick={() => setActiveSubTab("detailed")}
-                        className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${activeSubTab === "detailed" ? "bg-white text-slate-900 shadow-xl" : "text-slate-400 hover:text-slate-650"}`}
+                        className={`px-4 sm:px-8 py-2.5 sm:py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${activeSubTab === "detailed" ? "bg-white text-slate-900 shadow-xl" : "text-slate-400 hover:text-slate-650"}`}
                     >
-                        Historical Log
+                        History
                     </button>
                 </div>
             </header>
@@ -368,9 +368,9 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
                         </div>
 
                         {/* MONTHLY REGISTRY */}
-                        <div className="lg:col-span-7 bg-white/80 backdrop-blur-2xl p-10 rounded-[4rem] border border-white shadow-xl shadow-slate-200/30 h-fit">
-                            <div className="flex justify-between items-center mb-10">
-                                <div className="flex items-center gap-6">
+                        <div className="lg:col-span-7 bg-white/80 backdrop-blur-2xl p-5 sm:p-10 rounded-[4rem] border border-white shadow-xl shadow-slate-200/30 h-fit">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-10">
+                                <div className="flex items-center gap-4 flex-wrap">
                                     <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none uppercase">Personnel Registry</h3>
                                     <div className="flex bg-slate-100 p-1 rounded-xl">
                                         <button type="button" onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))} className="p-2 hover:bg-white rounded-lg transition-all cursor-pointer"><ChevronLeft className="w-4 h-4 text-slate-500" /></button>

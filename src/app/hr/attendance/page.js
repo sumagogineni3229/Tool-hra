@@ -217,24 +217,25 @@ export default function HRAttendance() {
     return (
         <div className="space-y-10 pb-20">
             {/* --- PREMIUM HEADER --- */}
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
                 <div>
                     <div className="flex items-center gap-2 text-indigo-600 font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
                         <Activity className="w-3 h-3" />
                         Live Operations
                     </div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Attendance Analytics</h1>
+                    <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">Attendance Analytics</h1>
                     <p className="text-slate-500 text-sm mt-1">Monitor organizational presence and session integrity in real-time.</p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                     <button
                         type="button"
                         onClick={exportToCSV}
                         className="h-11 px-5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm active:scale-95 cursor-pointer"
                     >
                         <Download className="w-4 h-4" />
-                        Download Report
+                        <span className="hidden sm:inline">Download Report</span>
+                        <span className="sm:hidden">Export</span>
                     </button>
                 </div>
             </header>
@@ -286,7 +287,7 @@ export default function HRAttendance() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left">
                 {/* --- MAIN LOGS TABLE --- */}
                 <div className="lg:col-span-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/40 overflow-hidden flex flex-col">
-                    <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 bg-slate-50/20">
+                    <div className="p-5 sm:p-8 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/20">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-lg"><Briefcase className="w-5 h-5" /></div>
                             <div>
@@ -296,7 +297,7 @@ export default function HRAttendance() {
                         </div>
 
                         {/* Roster search input */}
-                        <div className="relative w-56 sm:w-64">
+                        <div className="relative w-full sm:w-64">
                             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
                                 <Search className="w-3.5 h-3.5" />
                             </span>
@@ -310,124 +311,194 @@ export default function HRAttendance() {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto min-h-[500px]">
-                        {filteredRecords.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-96 text-center px-10">
-                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mb-4">
-                                    <Info className="w-8 h-8" />
-                                </div>
-                                <h4 className="text-lg font-bold text-slate-400">Zero matches found</h4>
-                                <p className="text-sm text-slate-400 mt-1 italic">No telemetry data matches your current filter parameters.</p>
-                                <button
-                                    type="button"
-                                    onClick={() => { setSelectedDate(""); setSelectedStatus("all"); setSearchQuery(""); }}
-                                    className="mt-6 text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
-                                >
-                                    Reset all selection parameters
-                                </button>
+                    {filteredRecords.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-96 text-center px-10">
+                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mb-4">
+                                <Info className="w-8 h-8" />
                             </div>
-                        ) : (
-                            <table className="w-full border-separate border-spacing-0">
-                                <thead>
-                                    <tr className="bg-slate-50/30 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-left">
-                                        <th className="px-8 py-5 border-b border-slate-50">Personnel Information</th>
-                                        <th className="px-8 py-5 border-b border-slate-50">Entry Vector</th>
-                                        <th className="px-8 py-5 border-b border-slate-50">Exit Vector</th>
-                                        <th className="px-8 py-5 border-b border-slate-50">Classification</th>
-                                        <th className="px-8 py-5 border-b border-slate-50 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredRecords.map((r) => (
-                                        <tr key={r._id} className="group hover:bg-slate-50/50 transition-all">
-                                            <td className="px-8 py-6 border-b border-slate-50">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-[0.8rem] bg-white border border-slate-100 shadow-sm flex items-center justify-center text-sm font-black text-indigo-600 group-hover:scale-110 transition-transform">
+                            <h4 className="text-lg font-bold text-slate-400">Zero matches found</h4>
+                            <p className="text-sm text-slate-400 mt-1 italic">No telemetry data matches your current filter parameters.</p>
+                            <button
+                                type="button"
+                                onClick={() => { setSelectedDate(""); setSelectedStatus("all"); setSearchQuery(""); }}
+                                className="mt-6 text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
+                            >
+                                Reset all selection parameters
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            {/* MOBILE CARD LIST (visible on small screens) */}
+                            <div className="flex flex-col divide-y divide-slate-50 md:hidden">
+                                {filteredRecords.map((r) => {
+                                    const theme = STATUS_THEMES[r.status?.toLowerCase() || "present"] || STATUS_THEMES.present;
+                                    const checkIn = r.sessions?.[0];
+                                    const checkOut = r.sessions?.[r.sessions.length - 1]?.checkOut ? r.sessions[r.sessions.length - 1] : null;
+                                    return (
+                                        <div key={r._id} className="p-4 space-y-3">
+                                            {/* Name + Status */}
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-sm font-black text-indigo-600 shrink-0">
                                                         {r.userId?.name?.charAt(0) || "U"}
                                                     </div>
                                                     <div>
                                                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{r.userId?.employeeId || "AGENT-ID"}</p>
-                                                        <p className="text-sm font-black text-slate-900 leading-none">{r.userId?.name || "Unknown Identity"}</p>
+                                                        <p className="text-sm font-black text-slate-900 leading-none">{r.userId?.name || "Unknown"}</p>
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td className="px-8 py-6 border-b border-slate-50">
-                                                {r.sessions?.[0] ? (
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="relative flex-shrink-0">
-                                                            <img
-                                                                src={r.sessions[0].checkInImage || "https://ui-avatars.com/api/?name=V&background=f1f5f9"}
-                                                                className="w-10 h-10 rounded-lg object-cover border-2 border-white shadow-md cursor-pointer hover:scale-110 transition-transform"
-                                                                alt="Entry"
-                                                                onClick={() => setSelectedRecord(r)}
-                                                            />
+                                                <div className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${theme.bg} ${theme.border} ${theme.text}`}>
+                                                    <div className={`w-1 h-1 rounded-full ${theme.dot}`} />
+                                                    {r.status || "present"}
+                                                </div>
+                                            </div>
+                                            {/* Check-in / Check-out times */}
+                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                <div className="bg-slate-50 rounded-xl p-2.5">
+                                                    <p className="text-[9px] font-black text-indigo-500 uppercase tracking-wide mb-0.5">Check-in</p>
+                                                    {checkIn ? (
+                                                        <p className="font-bold text-slate-900">{new Date(checkIn.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                    ) : <p className="text-slate-300 italic text-[10px]">—</p>}
+                                                </div>
+                                                <div className="bg-slate-50 rounded-xl p-2.5">
+                                                    <p className="text-[9px] font-black text-rose-500 uppercase tracking-wide mb-0.5">Check-out</p>
+                                                    {checkOut?.checkOut ? (
+                                                        <p className="font-bold text-slate-900">{new Date(checkOut.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                    ) : (
+                                                        <div className="flex items-center gap-1">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                            <span className="text-[9px] font-black text-emerald-600 uppercase italic">Live</span>
                                                         </div>
-                                                         <div className="leading-tight">
-                                                             <p className="text-xs font-bold text-slate-900">{new Date(r.sessions[0].checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                                             <span className="block text-[8px] text-indigo-500 font-extrabold truncate max-w-[150px] mt-0.5" title={r.sessions[0].checkInLocation?.address || "Live location"}>
-                                                                 📍 {r.sessions[0].checkInLocation?.address || "Live Location"}
-                                                             </span>
-                                                         </div>
-                                                    </div>
-                                                ) : <span className="text-[10px] font-medium text-slate-300 italic">No entry vector</span>}
-                                            </td>
-                                            <td className="px-8 py-6 border-b border-slate-50">
-                                                {r.sessions?.[r.sessions.length - 1]?.checkOut ? (
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="relative flex-shrink-0">
-                                                            <img
-                                                                src={r.sessions[r.sessions.length - 1].checkOutImage || "https://ui-avatars.com/api/?name=E&background=f1f5f9"}
-                                                                className="w-10 h-10 rounded-lg object-cover border-2 border-white shadow-md cursor-pointer hover:scale-110 transition-transform"
-                                                                alt="Exit"
-                                                                onClick={() => setSelectedRecord(r)}
-                                                            />
-                                                        </div>
-                                                         <div className="leading-tight">
-                                                             <p className="text-xs font-bold text-slate-900">{new Date(r.sessions[r.sessions.length - 1].checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                                             <span className="block text-[8px] text-rose-500 font-extrabold truncate max-w-[150px] mt-0.5" title={r.sessions[r.sessions.length - 1].checkOutLocation?.address || "Live location"}>
-                                                                 📍 {r.sessions[r.sessions.length - 1].checkOutLocation?.address || "Live Location"}
-                                                             </span>
-                                                         </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-glow shadow-emerald-200" />
-                                                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic">Live Session</span>
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="px-8 py-6 border-b border-slate-50">
-                                                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${STATUS_THEMES[r.status?.toLowerCase() || "present"]?.bg || STATUS_THEMES.present.bg} ${STATUS_THEMES[r.status?.toLowerCase() || "present"]?.border || STATUS_THEMES.present.border}`}>
-                                                    <div className={`w-1 h-1 rounded-full ${STATUS_THEMES[r.status?.toLowerCase() || "present"]?.dot || STATUS_THEMES.present.dot}`} />
-                                                    <span className={`text-[9px] font-black uppercase tracking-widest ${STATUS_THEMES[r.status?.toLowerCase() || "present"]?.text || STATUS_THEMES.present.text}`}>
-                                                        {r.status || "present"}
-                                                    </span>
+                                                    )}
                                                 </div>
-                                            </td>
-                                            <td className="px-8 py-6 border-b border-slate-50 text-right">
-                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => deleteAttendance(r._id)}
-                                                        className="w-9 h-9 border border-slate-100 bg-white text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-50 hover:border-rose-100 transition-all active:scale-90 cursor-pointer"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSelectedRecord(r)}
-                                                        className="h-9 px-4 bg-slate-900 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
-                                                    >
-                                                        Review Session
-                                                    </button>
-                                                </div>
-                                            </td>
+                                            </div>
+                                            {/* Actions — always visible on mobile */}
+                                            <div className="flex items-center gap-2 pt-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedRecord(r)}
+                                                    className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                                                >
+                                                    <Eye className="w-3.5 h-3.5" /> Review Session
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => deleteAttendance(r._id)}
+                                                    className="w-10 h-10 border border-rose-100 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-100 transition-all active:scale-90 cursor-pointer"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* DESKTOP TABLE (hidden on small screens) */}
+                            <div className="hidden md:block overflow-x-auto min-h-[500px]">
+                                <table className="w-full border-separate border-spacing-0">
+                                    <thead>
+                                        <tr className="bg-slate-50/30 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-left">
+                                            <th className="px-8 py-5 border-b border-slate-50">Personnel Information</th>
+                                            <th className="px-8 py-5 border-b border-slate-50">Entry Vector</th>
+                                            <th className="px-8 py-5 border-b border-slate-50">Exit Vector</th>
+                                            <th className="px-8 py-5 border-b border-slate-50">Classification</th>
+                                            <th className="px-8 py-5 border-b border-slate-50 text-right">Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
+                                    </thead>
+                                    <tbody>
+                                        {filteredRecords.map((r) => (
+                                            <tr key={r._id} className="group hover:bg-slate-50/50 transition-all">
+                                                <td className="px-8 py-6 border-b border-slate-50">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-[0.8rem] bg-white border border-slate-100 shadow-sm flex items-center justify-center text-sm font-black text-indigo-600 group-hover:scale-110 transition-transform">
+                                                            {r.userId?.name?.charAt(0) || "U"}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{r.userId?.employeeId || "AGENT-ID"}</p>
+                                                            <p className="text-sm font-black text-slate-900 leading-none">{r.userId?.name || "Unknown Identity"}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6 border-b border-slate-50">
+                                                    {r.sessions?.[0] ? (
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="relative flex-shrink-0">
+                                                                <img
+                                                                    src={r.sessions[0].checkInImage || "https://ui-avatars.com/api/?name=V&background=f1f5f9"}
+                                                                    className="w-10 h-10 rounded-lg object-cover border-2 border-white shadow-md cursor-pointer hover:scale-110 transition-transform"
+                                                                    alt="Entry"
+                                                                    onClick={() => setSelectedRecord(r)}
+                                                                />
+                                                            </div>
+                                                             <div className="leading-tight">
+                                                                 <p className="text-xs font-bold text-slate-900">{new Date(r.sessions[0].checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                                 <span className="block text-[8px] text-indigo-500 font-extrabold truncate max-w-[150px] mt-0.5" title={r.sessions[0].checkInLocation?.address || "Live location"}>
+                                                                     📍 {r.sessions[0].checkInLocation?.address || "Live Location"}
+                                                                 </span>
+                                                             </div>
+                                                        </div>
+                                                    ) : <span className="text-[10px] font-medium text-slate-300 italic">No entry vector</span>}
+                                                </td>
+                                                <td className="px-8 py-6 border-b border-slate-50">
+                                                    {r.sessions?.[r.sessions.length - 1]?.checkOut ? (
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="relative flex-shrink-0">
+                                                                <img
+                                                                    src={r.sessions[r.sessions.length - 1].checkOutImage || "https://ui-avatars.com/api/?name=E&background=f1f5f9"}
+                                                                    className="w-10 h-10 rounded-lg object-cover border-2 border-white shadow-md cursor-pointer hover:scale-110 transition-transform"
+                                                                    alt="Exit"
+                                                                    onClick={() => setSelectedRecord(r)}
+                                                                />
+                                                            </div>
+                                                             <div className="leading-tight">
+                                                                 <p className="text-xs font-bold text-slate-900">{new Date(r.sessions[r.sessions.length - 1].checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                                 <span className="block text-[8px] text-rose-500 font-extrabold truncate max-w-[150px] mt-0.5" title={r.sessions[r.sessions.length - 1].checkOutLocation?.address || "Live location"}>
+                                                                     📍 {r.sessions[r.sessions.length - 1].checkOutLocation?.address || "Live Location"}
+                                                                 </span>
+                                                             </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-glow shadow-emerald-200" />
+                                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic">Live Session</span>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-8 py-6 border-b border-slate-50">
+                                                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${STATUS_THEMES[r.status?.toLowerCase() || "present"]?.bg || STATUS_THEMES.present.bg} ${STATUS_THEMES[r.status?.toLowerCase() || "present"]?.border || STATUS_THEMES.present.border}`}>
+                                                        <div className={`w-1 h-1 rounded-full ${STATUS_THEMES[r.status?.toLowerCase() || "present"]?.dot || STATUS_THEMES.present.dot}`} />
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest ${STATUS_THEMES[r.status?.toLowerCase() || "present"]?.text || STATUS_THEMES.present.text}`}>
+                                                            {r.status || "present"}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6 border-b border-slate-50 text-right">
+                                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deleteAttendance(r._id)}
+                                                            className="w-9 h-9 border border-slate-100 bg-white text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-50 hover:border-rose-100 transition-all active:scale-90 cursor-pointer"
+                                                            title="Delete Record"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedRecord(r)}
+                                                            className="h-9 px-4 bg-slate-900 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
+                                                        >
+                                                            Review Session
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* --- RIGHT COLUMN: CONTROLS & INSIGHTS --- */}
