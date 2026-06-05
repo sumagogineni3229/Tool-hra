@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
+import Team from '@/lib/models/Team';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 
@@ -43,7 +44,11 @@ export async function GET(request) {
         college: user.college || '',
         course: user.course || '',
         startDate: user.startDate || '',
-        endDate: user.endDate || ''
+        endDate: user.endDate || '',
+        bankName: user.bankName || '',
+        bankAccountNumber: user.bankAccountNumber || '',
+        bankIfscCode: user.bankIfscCode || '',
+        bankBranch: user.bankBranch || ''
       };
       return NextResponse.json(sanitized, { status: 200 });
     }
@@ -79,7 +84,11 @@ export async function GET(request) {
         college: user.college || '',
         course: user.course || '',
         startDate: user.startDate || '',
-        endDate: user.endDate || ''
+        endDate: user.endDate || '',
+        bankName: user.bankName || '',
+        bankAccountNumber: user.bankAccountNumber || '',
+        bankIfscCode: user.bankIfscCode || '',
+        bankBranch: user.bankBranch || ''
       };
 
       if (includePhotos) {
@@ -145,7 +154,7 @@ export async function POST(req) {
       email: normalizedEmail,
       password: hashedPassword, // Store securely
       role,
-      department: department || 'Operations',
+      department: department || 'Operation',
       permissions: permissions || 'Read/Write',
       status: status || 'Active',
       session: 'Offline',
@@ -195,6 +204,32 @@ export async function DELETE(req) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
+    // Clean up references in teams
+    const userObjectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+    
+    // 1. Remove this user from the members list of any team
+    if (userObjectId) {
+      await Team.updateMany(
+        { $or: [{ members: id }, { members: userObjectId }, { members: id.toString() }] },
+        { $pull: { members: { $in: [id, userObjectId, id.toString()] } } }
+      );
+    } else {
+      await Team.updateMany(
+        { $or: [{ members: id }, { members: id.toString() }] },
+        { $pull: { members: { $in: [id, id.toString()] } } }
+      );
+    }
+
+    // 2. Set managerId to null in any Team they managed
+    const managerConditions = [{ managerId: id }, { managerId: id.toString() }];
+    if (userObjectId) {
+      managerConditions.push({ managerId: userObjectId });
+    }
+    await Team.updateMany(
+      { $or: managerConditions },
+      { $set: { managerId: null } }
+    );
+
     return NextResponse.json({ message: 'User deleted successfully', id }, { status: 200 });
   } catch (error) {
     console.error('API DELETE User Error:', error);
@@ -206,7 +241,7 @@ export async function PUT(req) {
   try {
     await dbConnect();
     const body = await req.json();
-    const { id, email, action, phone, dob, address, emergencyContactName, emergencyContactPhone, aadhaarNumber, userPhoto, aadhaarPhoto, status } = body;
+    const { id, email, action, phone, dob, address, emergencyContactName, emergencyContactPhone, aadhaarNumber, userPhoto, aadhaarPhoto, status, bankName, bankAccountNumber, bankIfscCode, bankBranch } = body;
 
     if (!id) {
       return NextResponse.json({ message: 'User ID is required' }, { status: 400 });
@@ -284,6 +319,10 @@ export async function PUT(req) {
     if (body.course !== undefined) user.course = body.course;
     if (body.startDate !== undefined) user.startDate = body.startDate;
     if (body.endDate !== undefined) user.endDate = body.endDate;
+    if (bankName !== undefined) user.bankName = bankName;
+    if (bankAccountNumber !== undefined) user.bankAccountNumber = bankAccountNumber;
+    if (bankIfscCode !== undefined) user.bankIfscCode = bankIfscCode;
+    if (bankBranch !== undefined) user.bankBranch = bankBranch;
 
     await user.save();
     return NextResponse.json({ message: 'User updated successfully', user }, { status: 200 });

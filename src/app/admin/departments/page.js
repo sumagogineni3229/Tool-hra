@@ -277,7 +277,7 @@ export default function AdminDepartmentsPage() {
     <div className="flex flex-col gap-8 text-left max-w-7xl mx-auto animate-fade-in">
       
       {/* Top Banner Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden border border-white/10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#0a0f1d] via-[#070b15] to-[#0a0f1d] p-8 rounded-3xl shadow-xl text-[#ffffff] relative overflow-hidden border border-[#ffffff]/10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,102,241,0.15),transparent_60%)] pointer-events-none" />
         <div className="flex flex-col gap-1.5 z-10">
           <div className="flex items-center gap-2">
@@ -293,15 +293,15 @@ export default function AdminDepartmentsPage() {
             Configure enterprise departments, customize teams, assign certified managers, and delegate workspace directories for employee and intern cohorts.
           </p>
         </div>
-        <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 px-6 py-4.5 z-10">
+        <div className="flex items-center gap-4 bg-[#ffffff]/5 backdrop-blur-md rounded-2xl border border-[#ffffff]/10 px-6 py-4.5 z-10">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">Total Departments</span>
-            <span className="text-2xl font-black text-white">{departments.length}</span>
+            <span className="text-2xl font-black text-[#ffffff]">{departments.length}</span>
           </div>
-          <div className="h-8 border-l border-white/10" />
+          <div className="h-8 border-l border-[#ffffff]/10" />
           <div className="flex flex-col">
             <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">Active Teams</span>
-            <span className="text-2xl font-black text-white">{teams.length}</span>
+            <span className="text-2xl font-black text-[#ffffff]">{teams.length}</span>
           </div>
         </div>
       </div>
@@ -371,14 +371,23 @@ export default function AdminDepartmentsPage() {
                         <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-650">
                           <Layers className="w-5 h-5" />
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col text-left">
                           <h3 className="font-extrabold text-slate-900 text-base">{dept.name}</h3>
                           <span className="text-[10px] text-slate-400 font-semibold">{dept.description || "No description set"}</span>
                         </div>
                       </div>
-                      <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-bold px-3 py-1 rounded-full uppercase">
-                        {getDepartmentMemberCount(dept.id || dept._id, dept.name)} Members
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+                          {getDepartmentMemberCount(dept.id || dept._id, dept.name)} Members
+                        </span>
+                        <button
+                          onClick={() => handleDeptDelete(dept.id || dept._id)}
+                          className="p-2 rounded-xl text-rose-600 hover:bg-rose-55/10 hover:text-rose-700 transition-colors cursor-pointer"
+                          title="Delete Department"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Department Teams Grid */}

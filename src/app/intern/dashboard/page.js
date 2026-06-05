@@ -421,10 +421,10 @@ export default function InternDashboard() {
           const sessionActive = data.attendance.sessions.find(s => !s.checkOut);
           if (sessionActive) {
             setStatus("ClockedIn");
-            setAttendanceStatus("Clocked-in successfully!");
+            setAttendanceStatus("Logged-in successfully!");
           } else {
             setStatus(prev => prev === "Break" ? "Break" : "ClockedOut");
-            setAttendanceStatus("Clocked-out successfully!");
+            setAttendanceStatus("Logged-out successfully!");
           }
           fetchDashboardStats(currentUser.email); // Recalculate stats like attendance percentage
         } else {
@@ -530,7 +530,7 @@ export default function InternDashboard() {
           <Clock className="w-4 h-4 text-indigo-655 shrink-0" />
           <div className="flex flex-col items-start min-w-[160px]">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">System Clock</span>
-            <span className="text-xs font-bold text-indigo-950 font-mono mt-1">
+            <span className="text-xs font-bold text-slate-900 font-mono mt-1">
               {currentDateTime || "Loading clock..."}
             </span>
           </div>
@@ -622,10 +622,10 @@ export default function InternDashboard() {
                 onClick={handleClockIn}
                 disabled={status === "ClockedIn" || isAttendanceLoading}
                 className="py-2.5 rounded-xl text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1 shadow-md cursor-pointer transition-all"
-                title="Start Shift"
+                title="Login to Shift"
               >
                 {isAttendanceLoading && status === "Offline" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
-                <span>Clock In</span>
+                <span>Login</span>
               </button>
 
               <button
@@ -644,10 +644,10 @@ export default function InternDashboard() {
                 onClick={handleClockOut}
                 disabled={status !== "ClockedIn" || isAttendanceLoading}
                 className="py-2.5 rounded-xl text-[10px] font-bold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 disabled:bg-slate-50 disabled:text-slate-400 disabled:border-transparent flex flex-col items-center justify-center gap-1 cursor-pointer transition-all"
-                title="End Shift"
+                title="Logout from Shift"
               >
                 {isAttendanceLoading && status === "ClockedIn" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Square className="w-3.5 h-3.5 text-rose-500" />}
-                <span>Clock Out</span>
+                <span>Logout</span>
               </button>
             </div>
 

@@ -32,6 +32,7 @@ import {
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
 import ProfileDropdown from "@/components/ProfileDropdown";
+import ThemeToggle from "@/components/Common/ThemeToggle";
 
 function HRLayoutContent({ children }) {
   const router = useRouter();
@@ -197,6 +198,9 @@ function HRLayoutContent({ children }) {
 
           {/* Right metadata tools */}
           <div className="flex items-center gap-6">
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Notification alert */}
             <NotificationBell currentUser={currentUser} />

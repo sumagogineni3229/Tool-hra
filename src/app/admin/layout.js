@@ -22,11 +22,16 @@ import {
   HelpCircle,
   Megaphone,
   X,
-  ChevronRight
+  ChevronRight,
+  ShieldPlus,
+  ShieldCheck,
+  Clock,
+  CalendarDays
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
 import ProfileDropdown from "@/components/ProfileDropdown";
+import ThemeToggle from "@/components/Common/ThemeToggle";
 
 function AdminLayoutContent({ children }) {
   const router = useRouter();
@@ -65,6 +70,10 @@ function AdminLayoutContent({ children }) {
     router.prefetch("/admin/users");
     router.prefetch("/admin/employees");
     router.prefetch("/admin/interns");
+    router.prefetch("/admin/insurance");
+    router.prefetch("/admin/verifications");
+    router.prefetch("/admin/attendance");
+    router.prefetch("/admin/leaves");
     router.prefetch("/admin/departments");
     router.prefetch("/admin/payroll");
     router.prefetch("/admin/reports");
@@ -82,6 +91,10 @@ function AdminLayoutContent({ children }) {
     { name: "User Management", href: "/admin/users", icon: User },
     { name: "Employees", href: "/admin/employees", icon: Users },
     { name: "Interns", href: "/admin/interns", icon: GraduationCap },
+    { name: "Insurance Management", href: "/admin/insurance", icon: ShieldPlus },
+    { name: "Profile Verifications", href: "/admin/verifications", icon: ShieldCheck },
+    { name: "Attendance Manage", href: "/admin/attendance", icon: Clock },
+    { name: "Leave Approvals", href: "/admin/leaves", icon: CalendarDays },
     { name: "Departments", href: "/admin/departments", icon: Building2 },
     { name: "Payroll", href: "/admin/payroll", icon: CreditCard },
     { name: "Reports", href: "/admin/reports", icon: FileBarChart2 },
@@ -278,6 +291,9 @@ function AdminLayoutContent({ children }) {
 
           {/* Right admin metadata tools */}
           <div className="flex items-center gap-6">
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Notification alert */}
             <NotificationBell currentUser={currentUser} />

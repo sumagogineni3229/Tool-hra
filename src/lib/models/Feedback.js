@@ -23,6 +23,23 @@ const ReplySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const AttachmentSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const FeedbackSchema = new mongoose.Schema(
   {
     userId: {
@@ -101,13 +118,7 @@ const FeedbackSchema = new mongoose.Schema(
       role: String,
       workLocation: String,
     },
-    attachments: [
-      {
-        name: String,
-        type: String,
-        url: String,
-      }
-    ],
+    attachments: [AttachmentSchema],
     replies: [ReplySchema],
   },
   { timestamps: true }

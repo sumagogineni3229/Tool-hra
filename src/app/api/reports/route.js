@@ -91,19 +91,11 @@ export async function GET(request) {
         }
       }
 
+      query.$or = [
+        { employeeEmail: email } // manager's own reports
+      ];
       if (memberEmails.length > 0) {
-        // Teams are configured — show reports from team members + any report that has this managerEmail
-        query.$or = [
-          { managerEmail: email },
-          { employeeEmail: { $in: memberEmails } }
-        ];
-      } else {
-        // No teams configured yet (or employee not in any team) —
-        // fall back: show ALL reports from Employee/Intern roles so manager can see everything
-        query.$or = [
-          { managerEmail: email },
-          { employeeRole: { $in: ["Employee", "Intern"] } }
-        ];
+        query.$or.push({ employeeEmail: { $in: memberEmails } });
       }
     } else if (role === "Admin" || role === "HR") {
       // Admin/HR see all reports

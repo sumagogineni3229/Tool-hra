@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, CheckCircle, XCircle, FileClock, ShieldAlert, Sparkles, Inbox, Search, Check, RefreshCw } from "lucide-react";
+import { CalendarDays, CheckCircle, XCircle, FileClock, ShieldAlert, Sparkles, Inbox, Search, Check, RefreshCw, AlertTriangle } from "lucide-react";
 import HRLeaveDeclineModal from "@/components/HRLeaveDeclineModal";
 
 export default function HRLeaveManagement() {

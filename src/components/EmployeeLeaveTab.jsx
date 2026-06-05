@@ -1,14 +1,57 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, CheckCircle2, AlertTriangle } from "lucide-react";
 import LeaveRequestModal from "@/components/LeaveRequestModal";
 
 export default function EmployeeLeaveTab() {
   const [leaves, setLeaves] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const playNotificationSound = () => {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      const audioCtx = new AudioContextClass();
+      
+      const playNote = (frequency, startTime, duration) => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.type = "sine";
+        oscillator.frequency.value = frequency;
+        
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.04);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+      };
+
+      // Play a beautiful, warm success chime (E5 followed by A5)
+      playNote(659.25, audioCtx.currentTime, 0.35);
+      playNote(880.00, audioCtx.currentTime + 0.12, 0.45);
+    } catch (error) {
+      console.warn("Failed to play notification sound:", error);
+    }
+  };
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    if (type === "success") {
+      playNotificationSound();
+    }
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
+  };
 
   const fetchLeaves = async () => {
     setIsLoading(true);
@@ -195,13 +238,23 @@ export default function EmployeeLeaveTab() {
                         {leave.status}
                       </span>
                     </td>
-                    <td className="px-6 py-6">
-                      <p className="text-sm font-light max-w-xs truncate">
-                        <span className="text-slate-400 italic">{leave.reason}</span>
+                    <td className="px-6 py-6 max-w-md">
+                      <div className="space-y-2">
+                        <p className="text-sm font-light text-slate-500 italic break-words">
+                          &ldquo;{leave.reason}&rdquo;
+                        </p>
                         {leave.status === 'rejected' && leave.adminComments && (
-                          <span className="block mt-1 text-[10px] uppercase font-black tracking-widest text-rose-500 truncate" title={leave.adminComments}>REASON: {leave.adminComments}</span>
+                          <div className="p-3 bg-rose-50/50 border border-rose-100/50 rounded-xl">
+                            <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              Rejection rationale:
+                            </p>
+                            <p className="text-xs font-medium text-rose-800 leading-relaxed italic break-words">
+                              {leave.adminComments}
+                            </p>
+                          </div>
                         )}
-                      </p>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -215,7 +268,27 @@ export default function EmployeeLeaveTab() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onRefresh={fetchLeaves}
+        onSuccess={() => showToast("success", "Leave Applied Successfully")}
       />
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="fixed top-6 right-6 z-[9999] flex items-center gap-4 px-6 py-5 rounded-[2rem] shadow-[0_20px_50px_rgba(16,185,129,0.35)] border border-emerald-500/30 bg-slate-900 text-white max-w-md"
+          >
+            <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-sm font-black tracking-tight leading-none">{toast.message}</span>
+              <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-widest mt-1.5">Absence Registry Updated</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

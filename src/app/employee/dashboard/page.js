@@ -407,11 +407,11 @@ export default function EmployeeDashboard() {
           const sessionActive = data.attendance.sessions.find(s => !s.checkOut);
           if (sessionActive) {
             setStatus("ClockedIn");
-            setAttendanceStatus("Clocked-in successfully!");
+            setAttendanceStatus("Logged-in successfully!");
           } else {
             // Check if break was triggered locally
             setStatus(prev => prev === "Break" ? "Break" : "ClockedOut");
-            setAttendanceStatus("Clocked-out successfully!");
+            setAttendanceStatus("Logged-out successfully!");
           }
         } else {
           alert(data.message || "Attendance submission failed");
@@ -568,7 +568,7 @@ export default function EmployeeDashboard() {
           <Clock className="w-4 h-4 text-indigo-655 shrink-0" />
           <div className="flex flex-col items-start min-w-[160px]">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Current System Clock</span>
-            <span className="text-xs font-bold text-indigo-950 font-mono mt-1">
+            <span className="text-xs font-bold text-slate-900 font-mono mt-1">
               {currentDateTime || "Loading time..."}
             </span>
           </div>
@@ -665,10 +665,10 @@ export default function EmployeeDashboard() {
                   onClick={handleClockIn}
                   disabled={status === "ClockedIn" || isAttendanceLoading}
                   className="py-2.5 rounded-xl text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1 shadow-md cursor-pointer transition-all"
-                  title="Start Shift"
+                  title="Login to Shift"
                 >
                   {isAttendanceLoading && status === "Offline" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
-                  <span>Clock In</span>
+                  <span>Login</span>
                 </button>
 
                 <button
@@ -685,10 +685,10 @@ export default function EmployeeDashboard() {
                   onClick={handleClockOut}
                   disabled={status !== "ClockedIn" || isAttendanceLoading}
                   className="py-2.5 rounded-xl text-[10px] font-bold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1 cursor-pointer transition-all"
-                  title="End Shift"
+                  title="Logout from Shift"
                 >
                   {isAttendanceLoading && status === "ClockedIn" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Square className="w-3.5 h-3.5 text-rose-500" />}
-                  <span>Clock Out</span>
+                  <span>Logout</span>
                 </button>
               </div>
 
@@ -738,9 +738,7 @@ export default function EmployeeDashboard() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Right side: Tasks Tracker & Insurance Widget (5 columns) */}
+        </div>        {/* Right side: Tasks Tracker (5 columns) */}
         <div className="lg:col-span-5 flex flex-col gap-6">
           {/* Tasks Checklist Card */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-5 text-left flex-1">
@@ -801,52 +799,6 @@ export default function EmployeeDashboard() {
               )}
             </div>
           </div>
-
-          {/* Insurance Widget Card */}
-          {activeInsurance && (
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col gap-4 text-left animate-fade-in">
-              <div className="flex justify-between items-start">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-extrabold text-rose-600 bg-rose-50 border border-rose-100/50 px-2 py-0.5 rounded w-fit uppercase tracking-wider">
-                    My Insurance
-                  </span>
-                  <h3 className="font-bold text-slate-950 text-xs mt-1.5 font-sans truncate max-w-[150px]">
-                    {activeInsurance.providerName}
-                  </h3>
-                </div>
-                <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
-                  activeInsurance.status === "Active"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                    : activeInsurance.status === "Expiring Soon"
-                    ? "bg-amber-50 text-amber-700 border-amber-100"
-                    : "bg-rose-50 text-rose-700 border-rose-100"
-                }`}>
-                  {activeInsurance.status}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Policy No</span>
-                  <span className="text-[10px] font-mono font-bold text-slate-700 truncate">{activeInsurance.policyNumber}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Coverage</span>
-                  <span className="text-[10px] font-bold text-slate-900">₹{Number(activeInsurance.coverageAmount).toLocaleString("en-IN")}</span>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 border-t border-slate-100 pt-3">
-                <span>Valid Till: {new Date(activeInsurance.expiryDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</span>
-                <a
-                  href="/employee/insurance"
-                  className="flex items-center gap-0.5 text-rose-600 hover:text-rose-700 font-bold transition-all"
-                >
-                  View Details <ChevronRight className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </div>
-          )}
         </div>
 
       </div>
@@ -1127,6 +1079,59 @@ export default function EmployeeDashboard() {
 
         </div>
       </div>
+
+      {/* 7. Insurance Coverage Details (Full Width Card at the very bottom) */}
+      {activeInsurance && (
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col gap-5 text-left animate-fade-in">
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-extrabold text-rose-600 bg-rose-50 border border-rose-100/50 px-2 py-0.5 rounded w-fit uppercase tracking-wider">
+                My Insurance
+              </span>
+              <h3 className="font-bold text-slate-950 text-sm mt-1.5 font-sans">
+                Active Policy & Coverage Details
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">
+                Review your health plan coverage, policy numbers, and validity periods.
+              </p>
+            </div>
+            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+              activeInsurance.status === "Active"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                : activeInsurance.status === "Expiring Soon"
+                ? "bg-amber-50 text-amber-700 border-amber-100"
+                : "bg-rose-50 text-rose-700 border-rose-100"
+            }`}>
+              {activeInsurance.status}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-5 rounded-2xl border border-slate-150/60 bg-slate-50/20 flex flex-col gap-2">
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Insurance Provider</span>
+              <span className="text-sm font-bold text-slate-900">{activeInsurance.providerName}</span>
+            </div>
+            <div className="p-5 rounded-2xl border border-slate-150/60 bg-slate-50/20 flex flex-col gap-2">
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Policy Number</span>
+              <span className="text-sm font-mono font-bold text-slate-900">{activeInsurance.policyNumber}</span>
+            </div>
+            <div className="p-5 rounded-2xl border border-slate-150/60 bg-slate-50/20 flex flex-col gap-2">
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Coverage Amount</span>
+              <span className="text-sm font-bold text-slate-900">₹{Number(activeInsurance.coverageAmount).toLocaleString("en-IN")}</span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center text-xs font-bold text-slate-450 border-t border-slate-100 pt-4">
+            <span>Valid Till: {new Date(activeInsurance.expiryDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
+            <a
+              href="/employee/insurance"
+              className="flex items-center gap-1 text-rose-600 hover:text-rose-750 font-bold transition-all"
+            >
+              View Detailed Policy Document <ChevronRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      )}
 
 
       {/* --- INTERACTIVE MODAL OVERLAYS --- */}

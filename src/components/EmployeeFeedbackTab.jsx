@@ -91,7 +91,7 @@ function FeedbackForm({ user, onSuccess }) {
     }));
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (formData.attachments.length + files.length > 3) {
       setError("Maximum 3 attachments allowed.");
@@ -108,16 +108,31 @@ function FeedbackForm({ user, onSuccess }) {
       setError("Some files were rejected. Only PDF, JPG, PNG under 5MB are allowed.");
     }
 
-    const newAttachments = validFiles.map(file => ({
-      name: file.name,
-      type: file.type,
-      url: URL.createObjectURL(file) // Mock URL
-    }));
+    try {
+      const readPromises = validFiles.map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve({
+              name: file.name,
+              type: file.type,
+              url: reader.result // Base64 data URL
+            });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      });
 
-    setFormData(prev => ({
-      ...prev,
-      attachments: [...prev.attachments, ...newAttachments]
-    }));
+      const newAttachments = await Promise.all(readPromises);
+
+      setFormData(prev => ({
+        ...prev,
+        attachments: [...prev.attachments, ...newAttachments]
+      }));
+    } catch (err) {
+      setError("Failed to read file contents.");
+    }
   };
 
   const removeAttachment = (index) => {
@@ -171,6 +186,8 @@ function FeedbackForm({ user, onSuccess }) {
         const localTicket = {
           _id: `local-${Date.now()}`,
           id: Date.now(),
+          userId: user?.id || user?._id || null,
+          userEmail: user?.email || email || null,
           ticketId: "#TKT-" + Math.floor(100000 + Math.random() * 900000),
           createdAt: new Date().toISOString(),
           date: new Date().toISOString().split("T")[0],
@@ -210,8 +227,8 @@ function FeedbackForm({ user, onSuccess }) {
         <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-100">
           <CheckCircle2 className="w-10 h-10" />
         </div>
-        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none">Ticket Initialized</h3>
-        <p className="text-slate-500 font-medium leading-relaxed italic">Your report has been encrypted and broadcasted to the Secure Review Hub. You can track its status in your historical logs.</p>
+        <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none">Ticket Submitted Successfully.</h3>
+        <p className="text-slate-500 font-medium leading-relaxed italic">Your support ticket has been submitted successfully. You can monitor its progress in the Ticket Tracking section.</p>
         <button 
           type="button"
           onClick={() => setSubmitted(false)}
@@ -230,7 +247,7 @@ function FeedbackForm({ user, onSuccess }) {
         <div className="flex justify-between items-center pb-4 border-b border-slate-100">
           <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
             <Ticket className="w-5 h-5 text-indigo-600" />
-            1. Support Registry
+            1. Ticket Submitter Details
           </h3>
           <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
             <Shield className="w-4 h-4 text-slate-400" />
@@ -295,7 +312,7 @@ function FeedbackForm({ user, onSuccess }) {
       <section className="bg-white/95 backdrop-blur-2xl rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-8 text-left">
         <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest flex items-center gap-3 pb-4 border-b border-slate-100">
            <Plus className="w-5 h-5 text-indigo-650" />
-           2. Routing Category
+           2. Ticket Category
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {CATEGORIES.map(cat => (
@@ -319,7 +336,7 @@ function FeedbackForm({ user, onSuccess }) {
       <section className="bg-white/95 backdrop-blur-2xl rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-8 text-left">
         <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest flex items-center gap-3 pb-4 border-b border-slate-100">
           <MessageSquare className="w-5 h-5 text-indigo-600" />
-          3. Report Parameters
+          3. Ticket Details
         </h3>
         <div className="space-y-6">
           <div className="space-y-2">
@@ -330,18 +347,18 @@ function FeedbackForm({ user, onSuccess }) {
               value={formData.subject}
               onChange={e => setFormData(p => ({ ...p, subject: e.target.value }))}
               className="w-full h-12 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all shadow-inner"
-              placeholder="Primary header for this transmission..."
+              placeholder="Enter the subject of your ticket..."
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Detailed Payload</label>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Detailed Description</label>
             <textarea 
               required
               rows={5}
               value={formData.content}
               onChange={e => setFormData(p => ({ ...p, content: e.target.value }))}
               className="w-full p-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all resize-none italic"
-              placeholder="Provide a comprehensive breakdown of the situation..."
+              placeholder="Provide a detailed explanation of the ticket issue..."
             />
           </div>
           <div className="space-y-2">
@@ -357,11 +374,10 @@ function FeedbackForm({ user, onSuccess }) {
         </div>
       </section>
 
-      {/* 4. Ratings */}
       <section className="bg-white/95 backdrop-blur-2xl rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-8 text-left">
         <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest flex items-center gap-3 pb-4 border-b border-slate-100">
           <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-          4. Sentiment Data (0-5 Calibration)
+          4. Sentiment & Ratings
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
@@ -415,38 +431,38 @@ function FeedbackForm({ user, onSuccess }) {
           </div>
         </section>
 
-        <section className="lg:col-span-8 bg-black rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:scale-110 transition-transform">
+        <section className="lg:col-span-8 bg-white/95 backdrop-blur-2xl rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-8 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:scale-110 transition-transform text-slate-900">
              <Paperclip className="w-40 h-40" />
           </div>
-          <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-3 pb-6 border-b border-white/10 mb-8 leading-none">
-            <Paperclip className="w-5 h-5 text-white/40" />
-            Evidence Hub
+          <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-3 pb-6 border-b border-slate-100 mb-8 leading-none text-slate-900">
+            <Paperclip className="w-5 h-5 text-slate-450" />
+            Attachments Hub
           </h3>
           <div className="space-y-6 relative z-10">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                {formData.attachments.map((file, idx) => (
-                  <div key={idx} className="bg-white/10 rounded-2xl p-4 flex flex-col justify-between h-32 border border-white/5 group/file">
+                  <div key={idx} className="bg-slate-50 rounded-2xl p-4 flex flex-col justify-between h-32 border border-slate-100 group/file">
                      <div className="flex justify-between items-start">
-                        <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-                           <Ticket className="w-4 h-4" />
+                        <div className="w-8 h-8 bg-white border border-slate-100 rounded-lg flex items-center justify-center">
+                           <Ticket className="w-4 h-4 text-slate-500" />
                         </div>
-                        <button type="button" onClick={() => removeAttachment(idx)} className="text-white/20 hover:text-white transition-colors cursor-pointer"><X className="w-4 h-4" /></button>
+                        <button type="button" onClick={() => removeAttachment(idx)} className="text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"><X className="w-4 h-4" /></button>
                      </div>
-                     <p className="text-[9px] font-bold text-white uppercase truncate tracking-widest">{file.name}</p>
+                     <p className="text-[9px] font-bold text-slate-700 uppercase truncate tracking-widest">{file.name}</p>
                   </div>
                ))}
                {formData.attachments.length < 3 && (
-                  <label className="bg-white/5 border-2 border-dashed border-white/10 rounded-2xl h-32 flex flex-col items-center justify-center hover:bg-white/10 hover:border-white/30 transition-all cursor-pointer group/add">
+                  <label className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl h-32 flex flex-col items-center justify-center hover:bg-slate-50 hover:border-slate-350 transition-all cursor-pointer group/add">
                      <input type="file" multiple onChange={handleFileChange} className="hidden" accept=".pdf,.jpg,.png" />
-                     <Plus className="w-8 h-8 text-white/20 group-hover/add:text-white mb-2" />
-                     <p className="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover/add:text-white text-center px-4">Append PDF, JPG, PNG (Max 5MB)</p>
+                     <Plus className="w-8 h-8 text-slate-400 group-hover/add:text-slate-600 mb-2" />
+                     <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover/add:text-slate-700 text-center px-4">Attach PDF, JPG, PNG (Max 5MB)</p>
                   </label>
                )}
             </div>
             
-            <div className="pt-6 flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-white/30 italic">
-               <p>Registry Max: 3 Files</p>
+            <div className="pt-6 flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 italic">
+               <p>Max: 3 Files</p>
                <p>{formData.attachments.length}/3 Utilized</p>
             </div>
           </div>
@@ -465,7 +481,7 @@ function FeedbackForm({ user, onSuccess }) {
         <div>
            <div className="flex items-center gap-3 px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100 text-slate-400">
               <Shield className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Post-Submission Decryption Protocols Active</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Secure Encrypted Ticket Submission Active</span>
            </div>
         </div>
         <button
@@ -477,7 +493,7 @@ function FeedbackForm({ user, onSuccess }) {
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
             <>
-              Initialize Broadcast
+              Submit Ticket
               <Send className="w-5 h-5 shadow-inner" />
             </>
           )}
@@ -491,11 +507,12 @@ function FeedbackForm({ user, onSuccess }) {
 // 2. MAIN FEEDBACK PORTAL WRAPPER
 // =====================================
 export default function EmployeeFeedbackTab() {
-  const [activeTab, setActiveTab] = useState("broadcast"); // broadcast or logs
+  const [activeTab, setActiveTab] = useState("logs"); // Default to logs (Ticket Tracking)
   const [tickets, setTickets] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [lightboxImage, setLightboxImage] = useState(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -533,8 +550,24 @@ export default function EmployeeFeedbackTab() {
 
     if (typeof window !== "undefined") {
       const localTickets = JSON.parse(localStorage.getItem("hra_feedback_tickets") || "[]");
+      const myLocalTickets = localTickets.filter(lt => {
+        if (lt.userEmail && currentUser?.email) {
+          return lt.userEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim();
+        }
+        if (lt.userId && (currentUser?.id || currentUser?._id)) {
+          const currentUserId = String(currentUser.id || currentUser._id);
+          return String(lt.userId) === currentUserId;
+        }
+        if (lt.employeeDetails?.employeeId && currentUser?.employeeId) {
+          return lt.employeeDetails.employeeId === currentUser.employeeId;
+        }
+        if (lt.employeeDetails?.name && currentUser?.name) {
+          return lt.employeeDetails.name.toLowerCase().trim() === currentUser.name.toLowerCase().trim();
+        }
+        return false;
+      });
       const merged = [...dbTickets];
-      localTickets.forEach(lt => {
+      myLocalTickets.forEach(lt => {
         if (!merged.some(mt => mt._id === lt._id || mt.id === lt.id)) {
           merged.push(lt);
         }
@@ -589,9 +622,19 @@ export default function EmployeeFeedbackTab() {
       {/* Title Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Secure Support Broadcaster</h2>
-          <p className="text-slate-500 font-light text-lg italic tracking-wide">Provide encrypted feedback, suggest workspace optimizations, or track response signals.</p>
+          <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Secure Support Ticket Hub</h2>
+          <p className="text-slate-500 font-light text-lg italic tracking-wide">Raise support tickets, suggest workspace optimizations, or track ticket resolutions.</p>
         </div>
+        {activeTab === "logs" && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("broadcast")}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 text-white text-xs font-black uppercase tracking-widest hover:bg-indigo-750 shadow-lg shadow-indigo-100 transition-all active:scale-95 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Raise Ticket
+          </button>
+        )}
       </header>
 
       {/* Tabs Selector */}
@@ -605,7 +648,7 @@ export default function EmployeeFeedbackTab() {
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
-          Initialize Broadcast
+          Raise Ticket
         </button>
         <button
           type="button"
@@ -616,7 +659,7 @@ export default function EmployeeFeedbackTab() {
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
-          Signal Registry ({tickets.length})
+          Ticket Tracking ({tickets.length})
         </button>
       </div>
 
@@ -651,7 +694,7 @@ export default function EmployeeFeedbackTab() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Filter logs by subject, category, ticket ID or payload..."
+                  placeholder="Filter logs by subject, category, ticket ID or description..."
                   className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white outline-none font-semibold text-slate-800 placeholder-slate-400 text-xs transition-all shadow-inner"
                 />
               </div>
@@ -659,7 +702,7 @@ export default function EmployeeFeedbackTab() {
                 type="button"
                 onClick={fetchTickets}
                 className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-600 rounded-xl transition-all cursor-pointer active:scale-95"
-                title="Reload Transmission Logs"
+                title="Reload Tickets"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin text-indigo-600" /> : <Ticket className="w-4 h-4" />}
               </button>
@@ -670,12 +713,19 @@ export default function EmployeeFeedbackTab() {
               {loading ? (
                 <div className="py-24 text-center flex flex-col items-center justify-center gap-4 text-slate-400">
                   <Loader2 className="w-12 h-12 animate-spin text-slate-350" />
-                  <span className="text-xs font-black uppercase tracking-widest animate-pulse">Loading transmission logs...</span>
+                  <span className="text-xs font-black uppercase tracking-widest animate-pulse">Loading support tickets...</span>
                 </div>
               ) : filteredTickets.length === 0 ? (
                 <div className="bg-white border border-slate-100 py-24 rounded-[3.5rem] text-center flex flex-col items-center justify-center gap-4 text-slate-300 shadow-xl shadow-slate-200/20">
                   <Inbox className="w-12 h-12" />
-                  <span className="text-sm font-light italic">No signal transmission logs found.</span>
+                  <span className="text-sm font-light italic">No support tickets found.</span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("broadcast")}
+                    className="mt-2 px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-indigo-600 transition-all cursor-pointer animate-pulse"
+                  >
+                    Raise Your First Ticket
+                  </button>
                 </div>
               ) : (
                 filteredTickets.map((ticket) => {
@@ -705,7 +755,7 @@ export default function EmployeeFeedbackTab() {
                           </div>
 
                           <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">
-                            Broadcasted: {new Date(ticket.createdAt).toLocaleString()}
+                            Submitted: {new Date(ticket.createdAt).toLocaleString()}
                           </div>
 
                           {/* Message Body */}
@@ -715,6 +765,56 @@ export default function EmployeeFeedbackTab() {
                             </p>
                           </div>
 
+                          {/* Attachments Section */}
+                          {ticket.attachments && ticket.attachments.length > 0 && (
+                            <div className="space-y-2.5 mt-4">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Attachments</span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
+                                {ticket.attachments.map((file, idx) => {
+                                  const isImage = file.type?.startsWith("image/") || file.url?.startsWith("data:image/");
+                                  return (
+                                    <div 
+                                      key={idx} 
+                                      className="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex flex-col gap-2 shadow-sm hover:border-slate-350 transition-all"
+                                    >
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2 truncate">
+                                          <Paperclip className="w-3.5 h-3.5 text-indigo-650 shrink-0" />
+                                          <span className="text-[10px] font-bold text-slate-700 truncate" title={file.name}>{file.name}</span>
+                                        </div>
+                                        <a 
+                                          href={file.url} 
+                                          download={file.name} 
+                                          className="text-[9px] font-black uppercase text-indigo-650 hover:text-indigo-800"
+                                        >
+                                          Download
+                                        </a>
+                                      </div>
+                                      {isImage && (
+                                        <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-white group/img aspect-video flex justify-center items-center max-h-32">
+                                          <img 
+                                            src={file.url} 
+                                            alt={file.name} 
+                                            className="object-contain w-full h-full max-h-32 transition-transform duration-300 group-hover/img:scale-105"
+                                          />
+                                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button 
+                                              type="button"
+                                              onClick={() => setLightboxImage(file)}
+                                              className="px-3 py-1.5 bg-white text-slate-900 rounded-lg text-[8px] font-black uppercase tracking-wider hover:scale-105 transition-transform cursor-pointer"
+                                            >
+                                              View
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
                           {ticket.suggestions && (
                             <div className="p-4 bg-indigo-50/20 border border-indigo-100/30 rounded-2xl max-w-3xl">
                               <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1.5">Proposed Solution</p>
@@ -723,6 +823,52 @@ export default function EmployeeFeedbackTab() {
                               </p>
                             </div>
                           )}
+
+                          {/* Ticket Progress Tracker */}
+                          <div className="mt-6 pt-6 border-t border-slate-100/80">
+                            <p className="text-[9px] font-black text-slate-450 uppercase tracking-widest mb-4">Ticket Status Tracking</p>
+                            <div className="flex items-center justify-between max-w-xl relative py-2">
+                              {/* Background line */}
+                              <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-100 -translate-y-1/2 z-0" />
+                              {/* Active line */}
+                              <div 
+                                className="absolute top-1/2 left-0 h-1 bg-indigo-600 -translate-y-1/2 z-0 transition-all duration-500"
+                                style={{ 
+                                  width: ticket.status === "Pending" ? "0%" : ticket.status === "In Review" ? "50%" : "100%" 
+                                }}
+                              />
+                              
+                              {/* Steps */}
+                              {[
+                                { label: "Submitted", statusKey: "Pending", desc: "Ticket registered" },
+                                { label: "In Review", statusKey: "In Review", desc: "Under review" },
+                                { label: "Resolved", statusKey: "Resolved", desc: "Issue resolved" }
+                              ].map((step, idx) => {
+                                const isCompleted = 
+                                  (ticket.status === "Pending" && idx === 0) ||
+                                  (ticket.status === "In Review" && idx <= 1) ||
+                                  (ticket.status === "Resolved");
+                                  
+                                return (
+                                  <div key={step.label} className="flex flex-col items-center z-10 relative">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                                      isCompleted 
+                                        ? "bg-indigo-600 border-indigo-650 text-white shadow-md animate-pulse" 
+                                        : "bg-white border-slate-200 text-slate-400"
+                                    }`}>
+                                      {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                                    </div>
+                                    <span className={`text-[10px] font-black uppercase tracking-wider mt-2 ${
+                                      isCompleted ? "text-slate-900" : "text-slate-400"
+                                    }`}>
+                                      {step.label}
+                                    </span>
+                                    <span className="text-[8px] text-slate-400 font-medium italic mt-0.5">{step.desc}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
 
                         {/* Status / Urgency */}
@@ -772,6 +918,50 @@ export default function EmployeeFeedbackTab() {
               )}
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {lightboxImage && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setLightboxImage(null)}
+              className="absolute inset-0 bg-slate-950/85 backdrop-blur-md pointer-events-auto cursor-zoom-out"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative max-w-[90vw] max-h-[90vh] pointer-events-auto z-10 flex flex-col items-center gap-4"
+            >
+              <img 
+                src={lightboxImage.url} 
+                alt={lightboxImage.name} 
+                className="object-contain max-w-full max-h-[80vh] rounded-2xl border border-white/10 shadow-2xl"
+              />
+              <div className="flex gap-4">
+                <a 
+                  href={lightboxImage.url} 
+                  download={lightboxImage.name}
+                  className="px-6 py-3 bg-white text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-colors shadow-lg flex items-center gap-2"
+                >
+                  <Paperclip className="w-4 h-4" />
+                  Download File
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setLightboxImage(null)}
+                  className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg flex items-center gap-2 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                  Close Preview
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

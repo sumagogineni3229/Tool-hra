@@ -13,7 +13,8 @@ import {
   ChevronDown, 
   ChevronUp, 
   XCircle, 
-  Info 
+  Info,
+  Building
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
@@ -365,6 +366,20 @@ export default function AdminEmployeesDirectory() {
                                       <span className="text-[8px] uppercase tracking-wider text-slate-400 font-extrabold">Residential Address</span>
                                       <span className="text-slate-800 leading-normal font-bold">
                                         {user.address || "Address details missing."}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-start gap-2.5 min-w-0 sm:col-span-2 border-t border-slate-100 pt-3">
+                                    <Building className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                                    <div className="flex flex-col gap-0.5 min-w-0">
+                                      <span className="text-[8px] uppercase tracking-wider text-slate-400 font-extrabold">Disbursement Bank details</span>
+                                      <span className="text-slate-800 leading-normal font-bold">
+                                        {user.bankName ? (
+                                          `${user.bankName} | A/C: ${user.bankAccountNumber || "N/A"} | IFSC: ${user.bankIfscCode || "N/A"} | Branch: ${user.bankBranch || "N/A"}`
+                                        ) : (
+                                          "None registered / default"
+                                        )}
                                       </span>
                                     </div>
                                   </div>

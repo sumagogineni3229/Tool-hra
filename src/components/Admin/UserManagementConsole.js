@@ -29,6 +29,7 @@ export default function UserManagementConsole() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [usersList, setUsersList] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalNotification, setModalNotification] = useState(null);
 
@@ -41,17 +42,21 @@ export default function UserManagementConsole() {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newRole, setNewRole] = useState("HR");
-  const [newDepartment, setNewDepartment] = useState("Human Resources");
+  const [newDepartment, setNewDepartment] = useState("Human Resource");
   const [newPermissions, setNewPermissions] = useState("Read/Write");
   const [newStatus, setNewStatus] = useState("Active");
 
-  // Load users and current session on mount and action completion
+  // Load users, departments, and current session on mount and action completion
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
       try {
-        const users = await apiClient.getUsers();
+        const [users, depts] = await Promise.all([
+          apiClient.getUsers(),
+          apiClient.getDepartments()
+        ]);
         setUsersList(users);
+        setDepartments(depts || []);
         const session = apiClient.getCurrentSession();
         setCurrentUser(session);
       } catch (err) {
@@ -104,7 +109,7 @@ export default function UserManagementConsole() {
         setNewEmail("");
         setNewPassword("");
         setNewRole("HR");
-        setNewDepartment("Human Resources");
+        setNewDepartment("Human Resource");
         setNewPermissions("Read/Write");
         setNewStatus("Active");
 
@@ -523,19 +528,19 @@ export default function UserManagementConsole() {
                       </select>
                     </div>
 
-                    {/* Department Selection */}
+                    {/* Role Selection (maps to department field) */}
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Department</label>
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Role</label>
                       <select
                         value={newDepartment}
                         onChange={(e) => setNewDepartment(e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 focus:ring-2 focus:ring-slate-950/5 focus:border-slate-950 focus:outline-none transition-all cursor-pointer font-semibold"
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 focus:ring-2 focus:ring-slate-950/5 focus:border-slate-950 focus:outline-none transition-all cursor-pointer font-semibold text-slate-750"
                       >
-                        <option value="Operations">Operations</option>
-                        <option value="Human Resources">Human Resources</option>
-                        <option value="Engineering">Engineering</option>
+                        <option value="Human Resource">Human Resource</option>
+                        <option value="Team Manager">Team Manager</option>
+                        <option value="Engineer">Engineer</option>
                         <option value="Finance">Finance</option>
-                        <option value="Support">Support</option>
+                        <option value="Operation">Operation</option>
                       </select>
                     </div>
                   </div>

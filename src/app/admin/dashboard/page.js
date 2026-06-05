@@ -76,8 +76,8 @@ export default function AdminDashboardPage() {
     const secA = s * 6;
     return (
       <svg width="95" height="95" viewBox="0 0 200 200" className="drop-shadow-sm select-none shrink-0">
-        <circle cx="100" cy="100" r="95" className="fill-slate-950 stroke-slate-800" strokeWidth="6" />
-        <circle cx="100" cy="100" r="88" className="fill-slate-900/50 stroke-slate-800/40" strokeWidth="1" />
+        <circle cx="100" cy="100" r="95" className="fill-[#020617] stroke-slate-800" strokeWidth="6" />
+        <circle cx="100" cy="100" r="88" className="fill-[#090d16]/50 stroke-slate-800/40" strokeWidth="1" />
         {[...Array(12)].map((_, i) => {
           const num = i === 0 ? 12 : i;
           const a = (i * 30 * Math.PI) / 180;
@@ -90,7 +90,7 @@ export default function AdminDashboardPage() {
           const a = (i * 6 * Math.PI) / 180;
           return <line key={i} x1={100 + 82 * Math.sin(a)} y1={100 - 82 * Math.cos(a)} x2={100 + 85 * Math.sin(a)} y2={100 - 85 * Math.cos(a)} className="stroke-slate-700" strokeWidth="1.5" />;
         })}
-        <line x1="100" y1="100" x2="100" y2="55" className="stroke-slate-100" strokeWidth="6" strokeLinecap="round" transform={`rotate(${hrA} 100 100)`} />
+        <line x1="100" y1="100" x2="100" y2="55" className="stroke-[#f8fafc]" strokeWidth="6" strokeLinecap="round" transform={`rotate(${hrA} 100 100)`} />
         <line x1="100" y1="100" x2="100" y2="38" className="stroke-indigo-400" strokeWidth="4" strokeLinecap="round" transform={`rotate(${minA} 100 100)`} />
         <line x1="100" y1="120" x2="100" y2="25" className="stroke-rose-500" strokeWidth="2" strokeLinecap="round" transform={`rotate(${secA} 100 100)`} />
         <circle cx="100" cy="100" r="6" className="fill-rose-600 stroke-slate-900" strokeWidth="2" />
@@ -242,15 +242,15 @@ export default function AdminDashboardPage() {
 
   /* ─── Stat card definitions ─────────────────────────────── */
   const statCards = [
-    { name: "Total Employees", value: `${counts.employees} Accounts`, icon: Users, desc: "Registered Staff Directory", bar: "bg-indigo-500", iconCls: "bg-indigo-50 border-indigo-100 text-indigo-650" },
-    { name: "Total Interns", value: `${counts.interns} Interns`, icon: GraduationCap, desc: "Active Learning Syllabus", bar: "bg-violet-500", iconCls: "bg-violet-50 border-violet-100 text-violet-650" },
-    { name: "Total Managers", value: `${counts.managers} Managers`, icon: UserCog, desc: "Team Lead Accounts", bar: "bg-amber-500", iconCls: "bg-amber-50 border-amber-100 text-amber-650" },
-    { name: "Total HRs", value: `${counts.hrs} HR Staff`, icon: ShieldCheck, desc: "Human Resources Team", bar: "bg-emerald-500", iconCls: "bg-emerald-50 border-emerald-100 text-emerald-650" },
-    { name: "Total Teams", value: `${counts.teams} Teams`, icon: Building2, desc: "Departments & Squads", bar: "bg-rose-500", iconCls: "bg-rose-50 border-rose-100 text-rose-650" },
-    { name: "Active Users", value: `${counts.activeUsers} Active`, icon: UserCheck, desc: "Currently Enabled Accounts", bar: "bg-sky-500", iconCls: "bg-sky-50 border-sky-100 text-sky-650" },
-    { name: "New Hires This Month", value: `+${counts.newHires} Hires`, icon: UserPlus, desc: "Onboarded in Current Cycle", bar: "bg-orange-500", iconCls: "bg-orange-50 border-orange-100 text-orange-650" },
-    { name: "On Leave Today", value: `${counts.leavesToday} Approved`, icon: CalendarDays, desc: "Out of Office Today", bar: "bg-pink-500", iconCls: "bg-pink-50 border-pink-100 text-pink-650" },
-    { name: "Pending Leave Reqs", value: `${counts.pendingLeaveCount} Requests`, icon: Hourglass, desc: "Requires Leave Clearance", bar: "bg-teal-500", iconCls: "bg-teal-50 border-teal-100 text-teal-650" },
+    { name: "Total Employees", value: `${counts.employees} Accounts`, icon: Users, desc: "Registered Staff Directory", bar: "bg-indigo-500", iconCls: "bg-indigo-50 border-indigo-100 text-indigo-600" },
+    { name: "Total Interns", value: `${counts.interns} Interns`, icon: GraduationCap, desc: "Active Learning Syllabus", bar: "bg-violet-500", iconCls: "bg-violet-50 border-violet-100 text-violet-600" },
+    { name: "Total Managers", value: `${counts.managers} Managers`, icon: UserCog, desc: "Team Lead Accounts", bar: "bg-amber-500", iconCls: "bg-amber-50 border-amber-100 text-amber-600" },
+    { name: "Total HRs", value: `${counts.hrs} HR Staff`, icon: ShieldCheck, desc: "Human Resources Team", bar: "bg-emerald-500", iconCls: "bg-emerald-50 border-emerald-100 text-emerald-600" },
+    { name: "Total Teams", value: `${counts.teams} Teams`, icon: Building2, desc: "Departments & Squads", bar: "bg-rose-500", iconCls: "bg-rose-50 border-rose-100 text-rose-600" },
+    { name: "Active Users", value: `${counts.activeUsers} Active`, icon: UserCheck, desc: "Currently Enabled Accounts", bar: "bg-sky-500", iconCls: "bg-sky-50 border-sky-100 text-sky-600" },
+    { name: "New Hires This Month", value: `+${counts.newHires} Hires`, icon: UserPlus, desc: "Onboarded in Current Cycle", bar: "bg-orange-500", iconCls: "bg-orange-50 border-orange-100 text-orange-600" },
+    { name: "On Leave Today", value: `${counts.leavesToday} Approved`, icon: CalendarDays, desc: "Out of Office Today", bar: "bg-pink-500", iconCls: "bg-pink-50 border-pink-100 text-pink-600" },
+    { name: "Pending Leave Reqs", value: `${counts.pendingLeaveCount} Requests`, icon: Hourglass, desc: "Requires Leave Clearance", bar: "bg-teal-500", iconCls: "bg-teal-50 border-teal-100 text-teal-600" },
   ];
 
   /* ─── Render ─────────────────────────────────────────────── */
@@ -269,7 +269,7 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
 
         {/* Live Clock card */}
-        <div className="bg-gradient-to-br from-slate-950 to-slate-900 text-white rounded-[2rem] p-5 border border-slate-800/80 shadow-md flex flex-col justify-between min-h-[170px] text-left relative overflow-hidden group">
+        <div className="bg-gradient-to-br from-[#020617] to-[#0f172a] text-[#ffffff] rounded-[2rem] p-5 border border-[#1e293b]/80 shadow-md flex flex-col justify-between min-h-[170px] text-left relative overflow-hidden group">
           <div className="absolute -top-10 -right-10 w-28 h-28 bg-indigo-500/10 blur-2xl rounded-full" />
           <div className="flex items-center justify-between gap-4">
             <div className="shrink-0 transition-transform duration-500 group-hover:rotate-6">
@@ -280,10 +280,10 @@ export default function AdminDashboardPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Live Tracker
               </span>
-              <span className="text-[15px] font-black font-mono mt-2 tracking-tight text-white">{getFormattedTime()}</span>
+              <span className="text-[15px] font-black font-mono mt-2 tracking-tight text-[#ffffff]">{getFormattedTime()}</span>
             </div>
           </div>
-          <div className="border-t border-slate-800/40 pt-3 flex items-center justify-between text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+          <div className="border-t border-[#1e293b]/40 pt-3 flex items-center justify-between text-[9px] text-[#94a3b8] font-bold uppercase tracking-wider">
             <span>Operations Clock</span>
             <span className="font-mono text-[8px]">{getFormattedDate()}</span>
           </div>

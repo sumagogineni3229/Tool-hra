@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, FileText, Send, AlertCircle, Loader2 } from "lucide-react";
 
-export default function LeaveRequestModal({ isOpen, onClose, onRefresh }) {
+export default function LeaveRequestModal({ isOpen, onClose, onRefresh, onSuccess }) {
   const [formData, setFormData] = useState({
     leaveType: "Annual",
     startDate: "",
@@ -56,6 +56,7 @@ export default function LeaveRequestModal({ isOpen, onClose, onRefresh }) {
 
       if (res.ok) {
         onRefresh();
+        onSuccess?.();
         onClose();
         setFormData({ leaveType: "Annual", startDate: "", endDate: "", reason: "" });
       } else {
@@ -98,6 +99,7 @@ export default function LeaveRequestModal({ isOpen, onClose, onRefresh }) {
         localStorage.setItem("hra_all_leaves", JSON.stringify(localAllLeaves));
 
         onRefresh();
+        onSuccess?.();
         onClose();
         setFormData({ leaveType: "Annual", startDate: "", endDate: "", reason: "" });
       } else {

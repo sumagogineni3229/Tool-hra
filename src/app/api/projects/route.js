@@ -4,6 +4,7 @@ import Project from "@/lib/models/Project";
 import User from "@/lib/models/User";
 import Team from "@/lib/models/Team";
 import { verifyToken } from "@/lib/auth";
+import mongoose from "mongoose";
 
 // GET: Fetch projects for the logged-in user or based on role
 export async function GET(request) {
@@ -42,11 +43,13 @@ export async function GET(request) {
 
     if (role === "Manager") {
       // Managers see projects they assigned/created
+      const queries = [{ assignedBy: userId }];
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        queries.push({ assignedBy: new mongoose.Types.ObjectId(userId) });
+        queries.push({ assignedBy: userId.toString() });
+      }
       projects = await Project.find({
-        $or: [
-          { assignedBy: userId },
-          { assignedByEmail: email }
-        ]
+        $or: queries
       }).sort({ createdAt: -1 });
     } else if (role === "Employee" || role === "Intern") {
       // Employees/Interns see projects they are assigned to

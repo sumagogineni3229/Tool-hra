@@ -11,7 +11,8 @@ import {
   MapPin,
   AlertCircle,
   CheckCircle2,
-  Users
+  Users,
+  Building
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
@@ -255,6 +256,20 @@ export default function HRVerificationsPage() {
                       <span className="text-[8px] uppercase tracking-wider text-slate-400 font-extrabold">Residential Address</span>
                       <span className="text-slate-800 leading-normal line-clamp-2">
                         {user.address || 'Address details missing.'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5 min-w-0 sm:col-span-2 border-t border-slate-100 pt-2">
+                    <Building className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="text-[8px] uppercase tracking-wider text-slate-400 font-extrabold">Submitted Bank details</span>
+                      <span className="text-slate-800 leading-normal font-bold">
+                        {user.bankName ? (
+                          `${user.bankName} | A/C: ${user.bankAccountNumber || "N/A"} | IFSC: ${user.bankIfscCode || "N/A"}`
+                        ) : (
+                          "None submitted"
+                        )}
                       </span>
                     </div>
                   </div>

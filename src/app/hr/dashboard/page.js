@@ -104,8 +104,8 @@ export default function HRDashboard() {
     return (
       <svg width="95" height="95" viewBox="0 0 200 200" className="drop-shadow-sm select-none shrink-0">
         {/* Outer clock ring */}
-        <circle cx="100" cy="100" r="95" className="fill-slate-950 stroke-slate-800" strokeWidth="6" />
-        <circle cx="100" cy="100" r="88" className="fill-slate-900/50 stroke-slate-800/40" strokeWidth="1" />
+        <circle cx="100" cy="100" r="95" className="fill-[#020617] stroke-slate-800" strokeWidth="6" />
+        <circle cx="100" cy="100" r="88" className="fill-[#090d16]/50 stroke-slate-800/40" strokeWidth="1" />
         
         {/* Hour numbers */}
         {[...Array(12)].map((_, i) => {
@@ -154,7 +154,7 @@ export default function HRDashboard() {
           y1="100"
           x2="100"
           y2="55"
-          className="stroke-slate-100"
+          className="stroke-[#f8fafc]"
           strokeWidth="6"
           strokeLinecap="round"
           transform={`rotate(${hrAngle} 100 100)`}
@@ -483,7 +483,7 @@ export default function HRDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
         {/* Card 1: Small Live Analog Clock & Digital Time (First Position, Small & Premium) */}
-        <div className="bg-gradient-to-br from-slate-950 to-slate-900 text-white rounded-[2rem] p-5 border border-slate-800/80 shadow-md flex flex-col justify-between min-h-[160px] text-left relative overflow-hidden group">
+        <div className="bg-gradient-to-br from-[#020617] to-[#0f172a] text-[#ffffff] rounded-[2rem] p-5 border border-[#1e293b]/80 shadow-md flex flex-col justify-between min-h-[160px] text-left relative overflow-hidden group">
           {/* Subtle background neon circle highlight */}
           <div className="absolute -top-10 -right-10 w-28 h-28 bg-indigo-500/10 blur-2xl rounded-full" />
           
@@ -499,13 +499,13 @@ export default function HRDashboard() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Live Tracker</span>
               </span>
-              <span className="text-[15px] font-black font-mono mt-2 tracking-tight text-white">{getFormattedTime()}</span>
+              <span className="text-[15px] font-black font-mono mt-2 tracking-tight text-[#ffffff]">{getFormattedTime()}</span>
             </div>
           </div>
 
-          <div className="border-t border-slate-800/40 pt-3 flex items-center justify-between text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+          <div className="border-t border-[#1e293b]/40 pt-3 flex items-center justify-between text-[9px] text-[#94a3b8] font-bold uppercase tracking-wider">
             <span>Operations Clock</span>
-            <span className="text-slate-350 font-mono text-[8px]">{getFormattedDate()}</span>
+            <span className="text-[#94a3b8] font-mono text-[8px]">{getFormattedDate()}</span>
           </div>
         </div>
 
@@ -530,12 +530,12 @@ export default function HRDashboard() {
               <div className="flex items-center justify-between pl-1">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{stat.name}</span>
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center border shrink-0 transition-transform duration-300 group-hover:scale-105 ${
-                  i === 0 ? "bg-indigo-50 border-indigo-100 text-indigo-650" :
-                  i === 1 ? "bg-emerald-50 border-emerald-100 text-emerald-650" :
-                  i === 2 ? "bg-amber-50 border-amber-100 text-amber-650" :
-                  i === 3 ? "bg-purple-50 border-purple-100 text-purple-650" :
-                  i === 4 ? "bg-sky-50 border-sky-100 text-sky-650" :
-                  i === 5 ? "bg-rose-50 border-rose-100 text-rose-650" : "bg-orange-50 border-orange-100 text-orange-650"
+                  i === 0 ? "bg-indigo-50 border-indigo-100 text-indigo-600" :
+                  i === 1 ? "bg-emerald-50 border-emerald-100 text-emerald-600" :
+                  i === 2 ? "bg-amber-50 border-amber-100 text-amber-600" :
+                  i === 3 ? "bg-purple-50 border-purple-100 text-purple-600" :
+                  i === 4 ? "bg-sky-50 border-sky-100 text-sky-600" :
+                  i === 5 ? "bg-rose-50 border-rose-100 text-rose-600" : "bg-orange-50 border-orange-100 text-orange-600"
                 }`}>
                   <Icon className="w-4 h-4" />
                 </div>

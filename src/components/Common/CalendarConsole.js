@@ -149,7 +149,7 @@ export default function CalendarConsole() {
   }, [events]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-stretch h-full bg-[#F8FAFC] p-4 lg:p-8 rounded-[3rem] overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/50 text-left">
+    <div className="flex flex-col lg:flex-row gap-8 items-stretch h-full bg-slate-50 p-4 lg:p-8 rounded-[3rem] overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200/50 text-left">
       
       {/* SIDEBAR - LEFT PANEL */}
       <aside className="w-full lg:w-80 flex flex-col gap-10 shrink-0">
@@ -215,7 +215,7 @@ export default function CalendarConsole() {
            
            <div className="space-y-4 overflow-y-auto no-scrollbar pb-10">
              {upcomingEvents.length === 0 ? (
-                <div className="py-10 text-center text-slate-355 italic text-xs">No pending directives</div>
+                <div className="py-10 text-center text-slate-400 italic text-xs">No pending directives</div>
              ) : upcomingEvents.map((event, i) => (
                 <motion.div 
                   initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
@@ -382,7 +382,7 @@ export default function CalendarConsole() {
                         <option value="holiday">Public Holiday</option>
                         <option value="deadline">Critical Deadline</option>
                       </select>
-                      <Layers className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-350 pointer-events-none" />
+                      <Layers className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
                   </div>
 

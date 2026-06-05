@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { apiClient } from "@/lib/apiClient";
 import {
   Briefcase,
   Users,
@@ -51,6 +52,7 @@ export default function RecruitmentManagement() {
   const [activeView, setActiveView] = useState("jobs"); // "jobs" or "applications"
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
@@ -73,7 +75,6 @@ export default function RecruitmentManagement() {
 
   const [toast, setToast] = useState(null);
 
-  // Fetch Data with robust offline fallback support
   const fetchData = async () => {
     try {
       const [jobsRes, appsRes] = await Promise.all([
@@ -105,9 +106,16 @@ export default function RecruitmentManagement() {
       
       setJobs(storedJobs);
       setApplications(storedApps);
-    } finally {
-      setLoading(false);
     }
+
+    try {
+      const fetchedDepts = await apiClient.getDepartments();
+      setDepartments(fetchedDepts || []);
+    } catch (e) {
+      console.error("Failed to load departments:", e);
+    }
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -743,15 +751,24 @@ export default function RecruitmentManagement() {
                       required 
                       value={newJob.department} 
                       onChange={e => setNewJob({...newJob, department: e.target.value})} 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-indigo-400 transition-all text-xs font-semibold text-slate-900 cursor-pointer"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-indigo-400 transition-all text-xs font-semibold text-slate-900 cursor-pointer text-slate-700"
                     >
                       <option value="">Select Department</option>
-                      <option value="Engineering">Engineering</option>
-                      <option value="Design">Design</option>
-                      <option value="Marketing">Marketing</option>
-                      <option value="Sales">Sales</option>
-                      <option value="Human Resources">Human Resources</option>
-                      <option value="Operations">Operations</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id || dept._id} value={dept.name}>
+                          {dept.name}
+                        </option>
+                      ))}
+                      {departments.length === 0 && (
+                        <>
+                          <option value="Engineering">Engineering</option>
+                          <option value="Design">Design</option>
+                          <option value="Marketing">Marketing</option>
+                          <option value="Sales">Sales</option>
+                          <option value="Human Resources">Human Resources</option>
+                          <option value="Operations">Operations</option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>

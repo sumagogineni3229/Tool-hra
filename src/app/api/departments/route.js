@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Department from "@/lib/models/Department";
 import User from "@/lib/models/User";
+import Team from "@/lib/models/Team";
 import { verifyToken } from "@/lib/auth";
 
 // GET all departments
@@ -131,11 +132,30 @@ export async function DELETE(request) {
       return NextResponse.json({ message: "ID query parameter is required." }, { status: 400 });
     }
 
-    const deleted = await Department.findByIdAndDelete(id);
-
-    if (!deleted) {
+    const deptToDelete = await Department.findById(id);
+    if (!deptToDelete) {
       return NextResponse.json({ message: "Department not found." }, { status: 404 });
     }
+
+    const deptName = deptToDelete.name;
+
+    await Department.findByIdAndDelete(id);
+
+    // Reassign teams and users to Operations
+    const operationsDept = await Department.findOne({ name: "Operations" });
+    const fallbackDeptId = operationsDept ? operationsDept._id : "Operations";
+
+    // Update teams referencing this departmentId to fallbackDeptId
+    await Team.updateMany(
+      { departmentId: id },
+      { $set: { departmentId: fallbackDeptId } }
+    );
+
+    // Update users referencing this department name to "Operations"
+    await User.updateMany(
+      { department: deptName },
+      { $set: { department: "Operations" } }
+    );
 
     return NextResponse.json({ success: true, message: "Department deleted successfully.", id }, { status: 200 });
   } catch (error) {

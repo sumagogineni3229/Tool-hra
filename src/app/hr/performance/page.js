@@ -23,7 +23,7 @@ export default function HRPerformanceManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [activeUser, setActiveUser] = useState(null);
-  
+
   // Form State
   const [formData, setFormData] = useState({
     productivity: 90,
@@ -196,11 +196,10 @@ export default function HRPerformanceManagement() {
 
       {/* Split grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        
+
         {/* Left Side: Employees list (7 columns) */}
-        <div className={`bg-white border border-slate-200/80 rounded-[3rem] p-8 shadow-sm flex flex-col gap-6 text-left transition-all ${
-          activeUser ? "lg:col-span-6" : "lg:col-span-12"
-        }`}>
+        <div className={`bg-white border border-slate-200/80 rounded-[3rem] p-8 shadow-sm flex flex-col gap-6 text-left transition-all ${activeUser ? "lg:col-span-6" : "lg:col-span-12"
+          }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex flex-col">
               <h3 className="font-bold text-slate-950 text-sm">Staff Directory</h3>
@@ -232,17 +231,15 @@ export default function HRPerformanceManagement() {
                 <div
                   key={user._id || user.id}
                   onClick={() => handleSelectUser(user)}
-                  className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer text-left flex flex-col justify-between gap-4 ${
-                    isSelected
+                  className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer text-left flex flex-col justify-between gap-4 ${isSelected
                       ? "bg-indigo-50/40 border-indigo-300 shadow-sm"
                       : "bg-slate-50/30 border-slate-100 hover:bg-slate-50 hover:border-slate-200 hover:shadow-inner"
-                  }`}
+                    }`}
                 >
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold ${
-                        user.badgeColor || (user.role === "Intern" ? "bg-amber-600" : "bg-indigo-600")
-                      }`}>
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold ${user.badgeColor || (user.role === "Intern" ? "bg-amber-600" : "bg-indigo-600")
+                        }`}>
                         {user.initials || user.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex flex-col text-left">
@@ -251,11 +248,10 @@ export default function HRPerformanceManagement() {
                       </div>
                     </div>
 
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-extrabold uppercase border ${
-                      user.role === "Intern"
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-extrabold uppercase border ${user.role === "Intern"
                         ? "bg-amber-50 text-amber-800 border-amber-100"
                         : "bg-indigo-50 text-indigo-800 border-indigo-100"
-                    }`}>
+                      }`}>
                       {user.department}
                     </span>
                   </div>
@@ -294,7 +290,7 @@ export default function HRPerformanceManagement() {
           <div className="lg:col-span-6 bg-white border border-slate-200/80 rounded-[3rem] p-8 shadow-sm flex flex-col justify-between gap-6 text-left relative overflow-hidden">
             {/* Background Glow */}
             <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 blur-[80px] -z-10 rounded-full translate-x-1/3 -translate-y-1/3" />
-            
+
             <div className="flex justify-between items-start gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
@@ -322,7 +318,7 @@ export default function HRPerformanceManagement() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5 flex-1 flex flex-col justify-between">
-              
+
               <div className="space-y-4">
                 {/* 1. Productivity */}
                 <div className="flex flex-col gap-2 text-left">
@@ -398,7 +394,7 @@ export default function HRPerformanceManagement() {
                       <span className="text-[10px] text-slate-400">/ 5.00</span>
                     </div>
                   </div>
-                  
+
                   <span className="text-[9px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded uppercase tracking-wider">
                     {Number(getOverallScore()) >= 4.5 ? "Exceeds Expectations" : Number(getOverallScore()) >= 3.5 ? "Good Standings" : "Under Review"}
                   </span>

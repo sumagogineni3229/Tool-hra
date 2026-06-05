@@ -446,15 +446,29 @@ export default function ManagerAttendance() {
 
   const exportToCSV = () => {
     const headers = ["Member Name", "ID", "Date", "Check-in", "Check-out", "Duration", "Status"];
-    const rows = displayedRecords.map(r => [
-      r.userId?.name,
-      r.userId?.employeeId,
-      r.date ? new Date(r.date).toLocaleDateString() : "-",
-      r.sessions?.[0]?.checkIn ? new Date(r.sessions[0].checkIn).toLocaleTimeString() : "-",
-      r.sessions?.[r.sessions.length - 1]?.checkOut ? new Date(r.sessions[r.sessions.length - 1].checkOut).toLocaleTimeString() : "-",
-      ((r.totalDuration || 0) / (1000 * 60 * 65)).toFixed(2) + "h",
-      r.status
-    ]);
+    const rows = (displayedRecords || []).map(r => {
+      const sessions = r.sessions || [];
+      const checkInTime = sessions.length > 0 && sessions[0]?.checkIn
+        ? new Date(sessions[0].checkIn).toLocaleTimeString()
+        : "-";
+      const checkOutTime = sessions.length > 0 && sessions[sessions.length - 1]?.checkOut
+        ? new Date(sessions[sessions.length - 1].checkOut).toLocaleTimeString()
+        : "-";
+      const duration = typeof r.totalDuration === 'number'
+        ? (r.totalDuration / (1000 * 60 * 60)).toFixed(2) + "h"
+        : "-";
+      const dateStr = r.date ? new Date(r.date).toLocaleDateString() : "-";
+      
+      return [
+        r.userId?.name || "-",
+        r.userId?.employeeId || "-",
+        dateStr,
+        checkInTime,
+        checkOutTime,
+        duration,
+        r.status || "-"
+      ];
+    });
 
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

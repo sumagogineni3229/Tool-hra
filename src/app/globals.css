@@ -1,38 +1,295 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1e293b;
+
+  /* Theme color mappings for Light Mode */
+  --theme-white: #ffffff;
+  --theme-slate-50: #f8fafc;
+  --theme-slate-100: #f1f5f9;
+  --theme-slate-200: #e2e8f0;
+  --theme-slate-300: #cbd5e1;
+  --theme-slate-400: #94a3b8;
+  --theme-slate-500: #64748b;
+  --theme-slate-600: #475569;
+  --theme-slate-700: #334155;
+  --theme-slate-800: #1e293b;
+  --theme-slate-900: #0f172a;
+  --theme-slate-955: #020617;
+  --theme-slate-950: #020617;
+
+  /* Light mode status colors */
+  --theme-amber-50: #fffbeb;
+  --theme-amber-100: #fef3c7;
+  --theme-amber-200: #fde68a;
+  --theme-amber-600: #d97706;
+  --theme-amber-700: #b45309;
+
+  --theme-emerald-50: #ecfdf5;
+  --theme-emerald-100: #d1fae5;
+  --theme-emerald-200: #a7f3d0;
+  --theme-emerald-600: #059669;
+  --theme-emerald-700: #047857;
+
+  --theme-rose-50: #fff1f2;
+  --theme-rose-100: #ffe4e6;
+  --theme-rose-200: #fecdd3;
+  --theme-rose-600: #e11d48;
+  --theme-rose-700: #be123c;
+
+  --theme-blue-50: #eff6ff;
+  --theme-blue-100: #dbeafe;
+  --theme-blue-200: #bfdbfe;
+  --theme-blue-600: #2563eb;
+  --theme-blue-700: #1d4ed8;
+
+  --theme-purple-50: #faf5ff;
+  --theme-purple-100: #f3e8ff;
+  --theme-purple-200: #e9d5ff;
+  --theme-purple-600: #9333ea;
+  --theme-purple-700: #7e22ce;
+
+  --theme-indigo-50: #e0e7ff;
+  --theme-indigo-100: #c7d2fe;
+  --theme-indigo-200: #a5b4fc;
+  --theme-indigo-600: #4f46e5;
+  --theme-indigo-700: #4338ca;
+
+  --theme-violet-50: #f5f3ff;
+  --theme-violet-100: #ede9fe;
+  --theme-violet-200: #ddd6fe;
+  --theme-violet-600: #7c3aed;
+  --theme-violet-700: #6d28d9;
+
+  --theme-sky-50: #f0f9ff;
+  --theme-sky-100: #e0f2fe;
+  --theme-sky-200: #bae6fd;
+  --theme-sky-600: #0284c7;
+  --theme-sky-700: #0369a1;
+
+  --theme-orange-50: #fff7ed;
+  --theme-orange-100: #ffedd5;
+  --theme-orange-200: #fed7aa;
+  --theme-orange-600: #ea580c;
+  --theme-orange-700: #c2410c;
+
+  --theme-pink-50: #fdf2f8;
+  --theme-pink-100: #fce7f3;
+  --theme-pink-200: #fbcfe8;
+  --theme-pink-600: #db2777;
+  --theme-pink-700: #be185d;
+
+  --theme-teal-50: #f0fdfa;
+  --theme-teal-100: #ccfbf1;
+  --theme-teal-200: #99f6e4;
+  --theme-teal-600: #0d9488;
+  --theme-teal-700: #0f766e;
 }
 
-@theme inline {
+.dark {
+  --background: #090d16;
+  --foreground: #f8fafc;
+
+  /* Theme color mappings for Dark Mode */
+  --theme-white: #0f172a;       /* bg-white maps to dark slate-900 */
+  --theme-slate-50: #090d16;    /* bg-slate-50 maps to deep dark slate */
+  --theme-slate-100: #1e293b;   /* slate-100 maps to slate-800 */
+  --theme-slate-200: #2d3748;   /* slate-200 maps to slate-700/800 border */
+  --theme-slate-300: #4a5568;   /* slate-300 maps to slate-600 */
+  --theme-slate-400: #718096;   /* slate-400 maps to slate-500 */
+  --theme-slate-500: #a0aec0;   /* slate-500 maps to slate-400 */
+  --theme-slate-600: #cbd5e1;   /* slate-600 maps to slate-300 */
+  --theme-slate-700: #e2e8f0;   /* slate-700 maps to slate-200 */
+  --theme-slate-800: #f7fafc;   /* slate-800 maps to slate-100 */
+  --theme-slate-900: #ffffff;   /* slate-900 maps to white */
+  --theme-slate-955: #ffffff;   /* slate-955 maps to white */
+  --theme-slate-950: #ffffff;   /* slate-950 maps to white */
+
+  /* Dark mode status colors (subtle dark backgrounds & bright texts) */
+  --theme-amber-50: rgba(180, 83, 9, 0.15);
+  --theme-amber-100: rgba(180, 83, 9, 0.3);
+  --theme-amber-200: rgba(180, 83, 9, 0.45);
+  --theme-amber-600: #fbbf24;
+  --theme-amber-700: #fbbf24;
+
+  --theme-emerald-50: rgba(4, 120, 87, 0.15);
+  --theme-emerald-100: rgba(4, 120, 87, 0.3);
+  --theme-emerald-200: rgba(4, 120, 87, 0.45);
+  --theme-emerald-600: #34d399;
+  --theme-emerald-700: #34d399;
+
+  --theme-rose-50: rgba(190, 18, 60, 0.15);
+  --theme-rose-100: rgba(190, 18, 60, 0.3);
+  --theme-rose-200: rgba(190, 18, 60, 0.45);
+  --theme-rose-600: #f87171;
+  --theme-rose-700: #f87171;
+
+  --theme-blue-50: rgba(29, 78, 216, 0.15);
+  --theme-blue-100: rgba(29, 78, 216, 0.3);
+  --theme-blue-200: rgba(29, 78, 216, 0.45);
+  --theme-blue-600: #60a5fa;
+  --theme-blue-700: #60a5fa;
+
+  --theme-purple-50: rgba(126, 34, 206, 0.15);
+  --theme-purple-100: rgba(126, 34, 206, 0.3);
+  --theme-purple-200: rgba(126, 34, 206, 0.45);
+  --theme-purple-600: #c084fc;
+  --theme-purple-700: #c084fc;
+
+  --theme-indigo-50: rgba(79, 70, 229, 0.15);
+  --theme-indigo-100: rgba(79, 70, 229, 0.3);
+  --theme-indigo-200: rgba(79, 70, 229, 0.45);
+  --theme-indigo-600: #818cf8;
+  --theme-indigo-700: #818cf8;
+
+  --theme-violet-50: rgba(124, 58, 237, 0.15);
+  --theme-violet-100: rgba(124, 58, 237, 0.3);
+  --theme-violet-200: rgba(124, 58, 237, 0.45);
+  --theme-violet-600: #a78bfa;
+  --theme-violet-700: #a78bfa;
+
+  --theme-sky-50: rgba(2, 132, 199, 0.15);
+  --theme-sky-100: rgba(2, 132, 199, 0.3);
+  --theme-sky-200: rgba(2, 132, 199, 0.45);
+  --theme-sky-600: #38bdf8;
+  --theme-sky-700: #38bdf8;
+
+  --theme-orange-50: rgba(234, 88, 12, 0.15);
+  --theme-orange-100: rgba(234, 88, 12, 0.3);
+  --theme-orange-200: rgba(234, 88, 12, 0.45);
+  --theme-orange-600: #fb923c;
+  --theme-orange-700: #fb923c;
+
+  --theme-pink-50: rgba(219, 39, 119, 0.15);
+  --theme-pink-100: rgba(219, 39, 119, 0.3);
+  --theme-pink-200: rgba(219, 39, 119, 0.45);
+  --theme-pink-600: #f472b6;
+  --theme-pink-700: #f472b6;
+
+  --theme-teal-50: rgba(13, 148, 136, 0.15);
+  --theme-teal-100: rgba(13, 148, 136, 0.3);
+  --theme-teal-200: rgba(13, 148, 136, 0.45);
+  --theme-teal-600: #2dd4bf;
+  --theme-teal-700: #2dd4bf;
+}
+
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Override Tailwind v4 slate palette dynamically */
+  --color-white: var(--theme-white);
+  --color-slate-50: var(--theme-slate-50);
+  --color-slate-100: var(--theme-slate-100);
+  --color-slate-200: var(--theme-slate-200);
+  --color-slate-300: var(--theme-slate-300);
+  --color-slate-400: var(--theme-slate-400);
+  --color-slate-500: var(--theme-slate-500);
+  --color-slate-600: var(--theme-slate-600);
+  --color-slate-700: var(--theme-slate-700);
+  --color-slate-800: var(--theme-slate-800);
+  --color-slate-900: var(--theme-slate-900);
+  --color-slate-950: var(--theme-slate-950);
+
+  /* Override Tailwind v4 status palettes dynamically */
+  --color-amber-50: var(--theme-amber-50);
+  --color-amber-100: var(--theme-amber-100);
+  --color-amber-200: var(--theme-amber-200);
+  --color-amber-600: var(--theme-amber-600);
+  --color-amber-700: var(--theme-amber-700);
+
+  --color-emerald-50: var(--theme-emerald-50);
+  --color-emerald-100: var(--theme-emerald-100);
+  --color-emerald-200: var(--theme-emerald-200);
+  --color-emerald-600: var(--theme-emerald-600);
+  --color-emerald-700: var(--theme-emerald-700);
+
+  --color-rose-50: var(--theme-rose-50);
+  --color-rose-100: var(--theme-rose-100);
+  --color-rose-200: var(--theme-rose-200);
+  --color-rose-600: var(--theme-rose-600);
+  --color-rose-700: var(--theme-rose-700);
+
+  --color-blue-50: var(--theme-blue-50);
+  --color-blue-100: var(--theme-blue-100);
+  --color-blue-200: var(--theme-blue-200);
+  --color-blue-600: var(--theme-blue-600);
+  --color-blue-700: var(--theme-blue-700);
+
+  --color-purple-50: var(--theme-purple-50);
+  --color-purple-100: var(--theme-purple-100);
+  --color-purple-200: var(--theme-purple-200);
+  --color-purple-600: var(--theme-purple-600);
+  --color-purple-700: var(--theme-purple-700);
+
+  --color-indigo-50: var(--theme-indigo-50);
+  --color-indigo-100: var(--theme-indigo-100);
+  --color-indigo-200: var(--theme-indigo-200);
+  --color-indigo-600: var(--theme-indigo-600);
+  --color-indigo-700: var(--theme-indigo-700);
+
+  --color-violet-50: var(--theme-violet-50);
+  --color-violet-100: var(--theme-violet-100);
+  --color-violet-200: var(--theme-violet-200);
+  --color-violet-600: var(--theme-violet-600);
+  --color-violet-700: var(--theme-violet-700);
+
+  --color-sky-50: var(--theme-sky-50);
+  --color-sky-100: var(--theme-sky-100);
+  --color-sky-200: var(--theme-sky-200);
+  --color-sky-600: var(--theme-sky-600);
+  --color-sky-700: var(--theme-sky-700);
+
+  --color-orange-50: var(--theme-orange-50);
+  --color-orange-100: var(--theme-orange-100);
+  --color-orange-200: var(--theme-orange-200);
+  --color-orange-600: var(--theme-orange-600);
+  --color-orange-700: var(--theme-orange-700);
+
+  --color-pink-50: var(--theme-pink-50);
+  --color-pink-100: var(--theme-pink-100);
+  --color-pink-200: var(--theme-pink-200);
+  --color-pink-600: var(--theme-pink-600);
+  --color-pink-700: var(--theme-pink-700);
+
+  --color-teal-50: var(--theme-teal-50);
+  --color-teal-100: var(--theme-teal-100);
+  --color-teal-200: var(--theme-teal-200);
+  --color-teal-600: var(--theme-teal-600);
+  --color-teal-700: var(--theme-teal-700);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px) scale(0.97); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
+  from {
+    transform: translateY(20px) scale(0.97);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .animate-backdrop {
@@ -44,9 +301,50 @@ body {
 }
 
 @keyframes loadingBar {
-  0% { left: -50%; width: 30%; }
-  50% { left: 30%; width: 40%; }
-  100% { left: 100%; width: 30%; }
+  0% {
+    left: -50%;
+    width: 30%;
+  }
+
+  50% {
+    left: 30%;
+    width: 40%;
+  }
+
+  100% {
+    left: 100%;
+    width: 30%;
+  }
 }
 
 
+/* Insights Card Hover Effect */
+.insights-card {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: #0d0f17;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.insights-card:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+  transform: translateY(-4px);
+}
+
+.insights-img-container {
+  overflow: hidden;
+  position: relative;
+}
+
+.insights-img-container img {
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.insights-card:hover .insights-img-container img {
+  transform: scale(1.06);
+}
+
+/* Scroll Offset */
+.scroll-mt-24 {
+  scroll-margin-top: 6rem;
+}

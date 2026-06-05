@@ -4,6 +4,7 @@ import Task from "@/lib/models/Task";
 import User from "@/lib/models/User";
 import Team from "@/lib/models/Team";
 import { verifyToken } from "@/lib/auth";
+import mongoose from "mongoose";
 
 // GET: Fetch tasks assigned to the current user (if employee/intern) or created by the current user (if manager/admin)
 export async function GET(request) {
@@ -42,11 +43,13 @@ export async function GET(request) {
 
     if (role === "Manager") {
       // Find all tasks assigned by this manager
+      const queries = [{ assignedBy: userId }];
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        queries.push({ assignedBy: new mongoose.Types.ObjectId(userId) });
+        queries.push({ assignedBy: userId.toString() });
+      }
       tasks = await Task.find({
-        $or: [
-          { assignedBy: userId },
-          { assignedByEmail: email }
-        ]
+        $or: queries
       }).sort({ createdAt: -1 });
     } else if (role === "Employee" || role === "Intern") {
       // Find the teams where this user is a member

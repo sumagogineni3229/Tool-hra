@@ -170,15 +170,29 @@ export default function HRAttendance() {
 
     const exportToCSV = () => {
         const headers = ["Employee Name", "ID", "Date", "Check-in", "Check-out", "Duration", "Status"];
-        const rows = filteredRecords.map(r => [
-            r.userId?.name,
-            r.userId?.employeeId,
-            new Date(r.date).toLocaleDateString(),
-            r.sessions[0]?.checkIn ? new Date(r.sessions[0].checkIn).toLocaleTimeString() : "-",
-            r.sessions[r.sessions.length - 1]?.checkOut ? new Date(r.sessions[r.sessions.length - 1].checkOut).toLocaleTimeString() : "-",
-            (r.totalDuration / (1000 * 60 * 60)).toFixed(2) + "h",
-            r.status
-        ]);
+        const rows = (filteredRecords || []).map(r => {
+            const sessions = r.sessions || [];
+            const checkInTime = sessions.length > 0 && sessions[0]?.checkIn
+                ? new Date(sessions[0].checkIn).toLocaleTimeString()
+                : "-";
+            const checkOutTime = sessions.length > 0 && sessions[sessions.length - 1]?.checkOut
+                ? new Date(sessions[sessions.length - 1].checkOut).toLocaleTimeString()
+                : "-";
+            const duration = typeof r.totalDuration === 'number'
+                ? (r.totalDuration / (1000 * 60 * 60)).toFixed(2) + "h"
+                : "-";
+            const dateStr = r.date ? new Date(r.date).toLocaleDateString() : "-";
+            
+            return [
+                r.userId?.name || "-",
+                r.userId?.employeeId || "-",
+                dateStr,
+                checkInTime,
+                checkOutTime,
+                duration,
+                r.status || "-"
+            ];
+        });
 
         const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -221,10 +235,6 @@ export default function HRAttendance() {
                     >
                         <Download className="w-4 h-4" />
                         Download Report
-                    </button>
-                    <button type="button" className="h-11 px-5 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95 cursor-pointer">
-                        <ArrowUpRight className="w-4 h-4" />
-                        Deep Insights
                     </button>
                 </div>
             </header>

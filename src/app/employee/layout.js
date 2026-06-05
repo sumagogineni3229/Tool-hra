@@ -24,6 +24,7 @@ import {
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
 import ProfileDropdown from "@/components/ProfileDropdown";
+import ThemeToggle from "@/components/Common/ThemeToggle";
 
 function EmployeeLayoutContent({ children }) {
   const router = useRouter();
@@ -222,6 +223,9 @@ function EmployeeLayoutContent({ children }) {
 
           {/* Right metadata tools */}
           <div className="flex items-center gap-6">
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Notification alert */}
             <NotificationBell currentUser={currentUser} />

@@ -22,11 +22,11 @@ import AttendanceWebcam from "@/app/employee/attendance/AttendanceWebcam";
 import { apiClient } from "@/lib/apiClient";
 
 const STATUS_CONFIG = {
-    "present": { color: "bg-emerald-500", label: "Present", bg: "bg-emerald-50/70", border: "border-emerald-250", text: "text-emerald-800 font-bold" },
-    "late": { color: "bg-blue-500", label: "Late", bg: "bg-blue-50/70", border: "border-blue-200", text: "text-blue-800 font-bold" },
-    "absent": { color: "bg-rose-500", label: "Absent", bg: "bg-rose-50/70", border: "border-rose-200", text: "text-rose-800 font-bold" },
-    "leave": { color: "bg-purple-500", label: "Leave", bg: "bg-purple-50/70", border: "border-purple-200", text: "text-purple-800 font-bold" },
-    "holiday": { color: "bg-amber-400", label: "Holiday", bg: "bg-amber-50/70", border: "border-amber-250", text: "text-amber-850 font-bold" },
+    "present": { color: "bg-emerald-500", label: "Present", bg: "bg-emerald-50/70", border: "border-emerald-200", text: "text-emerald-700 font-bold" },
+    "late": { color: "bg-blue-500", label: "Late", bg: "bg-blue-50/70", border: "border-blue-200", text: "text-blue-700 font-bold" },
+    "absent": { color: "bg-rose-500", label: "Absent", bg: "bg-rose-50/70", border: "border-rose-200", text: "text-rose-700 font-bold" },
+    "leave": { color: "bg-purple-500", label: "Leave", bg: "bg-purple-50/70", border: "border-purple-200", text: "text-purple-700 font-bold" },
+    "holiday": { color: "bg-amber-400", label: "Holiday", bg: "bg-amber-50/70", border: "border-amber-200", text: "text-amber-700 font-bold" },
 };
 
 export default function EmployeeAttendanceTab({ user: propUser }) {
@@ -278,7 +278,7 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
                         {/* LEFT SIDE: COMMAND & STATS */}
                         <div className="lg:col-span-5 space-y-10">
                             {/* Mission Console */}
-                            <div className="bg-slate-900 p-10 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                            <div className="bg-[#0f172a] dark:bg-[#090d16] p-10 rounded-[3rem] shadow-2xl relative overflow-hidden group border border-[#1e293b] dark:border-[#1e293b]/50">
                                 <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-all">
                                     <Clock className="w-24 h-24 text-blue-400" />
                                 </div>
@@ -287,14 +287,14 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
                                         <div className="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center border border-blue-500/20">
                                             <Zap className="w-6 h-6" />
                                         </div>
-                                        <div className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${todayAttendance?.sessions?.find(s => !s.checkOut) ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-slate-800 text-slate-500 border-slate-700"}`}>
+                                        <div className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${todayAttendance?.sessions?.find(s => !s.checkOut) ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-[#1e293b] text-[#94a3b8] border-[#334155]"}`}>
                                             {todayAttendance?.sessions?.find(s => !s.checkOut) ? "Protocol Active" : "Operational Idle"}
                                         </div>
                                     </div>
 
                                     <div className="mb-10">
-                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Live Log Duration</p>
-                                        <h3 className="text-5xl font-black text-white tracking-tighter">
+                                        <p className="text-[10px] font-black text-[#94a3b8] uppercase tracking-[0.2em] mb-3">Live Log Duration</p>
+                                        <h3 className="text-5xl font-black text-[#ffffff] tracking-tighter">
                                             {formatDuration(todayAttendance?.totalDuration || 0)}
                                         </h3>
                                     </div>
@@ -303,7 +303,7 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
                                         type="button"
                                         onClick={() => setIsWebcamOpen(true)}
                                         disabled={isAttendanceLoading}
-                                        className="w-full py-5 bg-white text-slate-900 rounded-[1.8rem] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-blue-400 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-4 disabled:opacity-50 cursor-pointer"
+                                        className="w-full py-5 bg-[#ffffff] text-[#0f172a] rounded-[1.8rem] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-blue-400 hover:text-[#ffffff] transition-all active:scale-95 flex items-center justify-center gap-4 disabled:opacity-50 cursor-pointer"
                                     >
                                         {isAttendanceLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
                                         {todayAttendance?.sessions?.find(s => !s.checkOut) ? "Secure Out" : "Initiate Signal"}

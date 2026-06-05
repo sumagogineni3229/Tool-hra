@@ -77,6 +77,7 @@ export default function SupportHubConsole({ portalType }) {
    const [updatingId, setUpdatingId] = useState(null);
    const [searchQuery, setSearchQuery] = useState("");
    const [filterCategory, setFilterCategory] = useState("all");
+   const [lightboxImage, setLightboxImage] = useState(null);
 
    const fetchFeedbacks = async () => {
       setLoading(true);
@@ -251,10 +252,10 @@ export default function SupportHubConsole({ portalType }) {
                   <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-lg">
                      <Ticket className="w-6 h-6 animate-pulse" />
                   </div>
-                  <h2 className="text-4xl font-black text-slate-900 tracking-tight">Support Hub Registry</h2>
+                  <h2 className="text-4xl font-black text-slate-900 tracking-tight">Support Tickets Hub</h2>
                </div>
                <p className="text-slate-500 font-medium italic max-w-2xl px-2 leading-relaxed">
-                  Operational dashboard for cross-departmental issue resolution, immediate corporate routing, and organization sentiment analysis.
+                  Operational dashboard for managing support tickets, resolving issues, and monitoring employee sentiment.
                </p>
             </div>
             <div className="flex gap-6 w-full lg:w-auto items-center">
@@ -263,7 +264,7 @@ export default function SupportHubConsole({ portalType }) {
                   className="flex items-center gap-2 px-6 py-4 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:border-slate-350 transition-all cursor-pointer shadow-sm active:scale-95"
                >
                   <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-indigo-650" : ""}`} />
-                  Reload logs
+                  Reload tickets
                </button>
                <div className="flex items-center gap-3 bg-white/60 backdrop-blur-3xl border border-slate-100 p-2 pr-8 rounded-full shadow-xl shadow-slate-200/50 hover:border-rose-250 transition-all group/pill cursor-default">
                   <div className="w-14 h-14 rounded-full bg-rose-600 flex items-center justify-center text-white shadow-lg shadow-rose-200 group-hover/pill:scale-110 transition-transform relative">
@@ -290,13 +291,13 @@ export default function SupportHubConsole({ portalType }) {
                   <div>
                      <h3 className="text-xl font-black text-slate-900 tracking-tight mb-1 uppercase flex items-center gap-3">
                         <BarChart3 className="w-5 h-5 text-blue-600 animate-pulse" />
-                        Support Routing Distribution
+                        Ticket Categories Distribution
                      </h3>
                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Live categorical load analysis</p>
                   </div>
                   <div className="flex gap-4">
                      <div className="h-14 px-8 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200">
-                        {feedbacks.length} Total Reports
+                        {feedbacks.length} Total Tickets
                      </div>
                   </div>
                </div>
@@ -416,14 +417,14 @@ export default function SupportHubConsole({ portalType }) {
                      <h4 className="text-xl font-black uppercase tracking-tight">Critical Escalation Pool</h4>
                   </div>
                   <p className="text-3xl font-black tracking-tight leading-none mb-6">
-                     {feedbacks.filter(f => f.priority === 'Critical' && f.status !== 'Resolved').length} High-Risk Signals
+                     {feedbacks.filter(f => f.priority === 'Critical' && f.status !== 'Resolved').length} High-Risk Tickets
                   </p>
                   <p className="text-sm font-medium text-rose-100 italic leading-relaxed max-w-xs text-left">
-                     Immediate review protocols initiated for these nodes. Ensure executive alert level is assigned where necessary to trigger rapid resolution path.
+                     Immediate review initiated for these tickets. Ensure appropriate priority and attention is given to resolve them rapidly.
                   </p>
                </div>
                <button className="mt-10 w-full py-5 bg-white text-rose-600 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] shadow-2xl shadow-rose-900/40 hover:scale-[1.02] transition-all active:scale-95 cursor-pointer">
-                  Access Executive Registry
+                  View Critical Tickets
                </button>
             </div>
          </div>
@@ -431,7 +432,7 @@ export default function SupportHubConsole({ portalType }) {
          {/* Main Registry List */}
          <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
             <div className="p-10 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-8 bg-slate-50/10">
-               <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase px-4 border-l-8 border-slate-900">Traffic Registry</h3>
+               <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase px-4 border-l-8 border-slate-900">Support Tickets List</h3>
                <div className="flex flex-col sm:flex-row items-center gap-6 flex-1 w-full max-w-2xl justify-end">
                   <div className="relative w-full sm:max-w-xs">
                      <Search className="w-4 h-4 text-slate-350 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -439,7 +440,7 @@ export default function SupportHubConsole({ portalType }) {
                         type="text"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        placeholder="Search ticket subject, payload, ID..."
+                        placeholder="Search ticket subject, description, ID..."
                         className="w-full h-14 pl-10 pr-6 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-bold outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all shadow-inner"
                      />
                   </div>
@@ -460,20 +461,20 @@ export default function SupportHubConsole({ portalType }) {
                {loading ? (
                   <div className="flex flex-col items-center justify-center py-48 space-y-6">
                      <Loader2 className="w-12 h-12 text-slate-300 animate-spin" />
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse italic">Connecting to Distributed Hub Registry...</p>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse italic">Connecting to Support Tickets Hub...</p>
                   </div>
                ) : filteredFeedbacks.length === 0 ? (
-                  <div className="text-center py-48 font-light italic text-slate-300 text-lg">Empty registry state detected for the current parameters.</div>
+                  <div className="text-center py-48 font-light italic text-slate-300 text-lg">No support tickets found.</div>
                ) : (
                   <table className="w-full border-separate border-spacing-0">
                      <thead>
                         <tr className="bg-slate-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-left border-b border-slate-100">
-                           <th className="px-12 py-6">Incident Node</th>
-                           <th className="px-12 py-6">Subject Hub</th>
-                           <th className="px-12 py-6">Urgency</th>
+                           <th className="px-12 py-6">Employee / Ticket ID</th>
+                           <th className="px-12 py-6">Subject</th>
+                           <th className="px-12 py-6">Priority</th>
                            <th className="px-12 py-6">Sentiment</th>
-                           <th className="px-12 py-6">System Status</th>
-                           <th className="px-12 py-6 text-right">Operation</th>
+                           <th className="px-12 py-6">Status</th>
+                           <th className="px-12 py-6 text-right">Action</th>
                         </tr>
                      </thead>
                      <tbody>
@@ -526,7 +527,7 @@ export default function SupportHubConsole({ portalType }) {
                                     onClick={() => openFeedback(f)}
                                     className="px-8 py-4 bg-white border border-slate-200 text-slate-900 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-slate-200/50 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all active:scale-95 flex items-center justify-center gap-3 float-right group-hover:bg-slate-900 group-hover:text-white cursor-pointer"
                                  >
-                                    Open Payload
+                                    Open Ticket
                                     <ArrowUpRight className="w-4 h-4" />
                                  </button>
                               </td>
@@ -567,15 +568,15 @@ export default function SupportHubConsole({ portalType }) {
                            <div>
                               <div className="flex flex-wrap items-center gap-3 mb-2">
                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">{selectedFeedback.ticketId}</span>
-                                 <h4 className="text-3xl font-black text-slate-900 tracking-tight">{selectedFeedback.isAnonymous ? "Anonymous Signal Submitter" : (selectedFeedback.employeeDetails?.name || selectedFeedback.userName)}</h4>
+                                 <h4 className="text-3xl font-black text-slate-900 tracking-tight">{selectedFeedback.isAnonymous ? "Anonymous Ticket Submitter" : (selectedFeedback.employeeDetails?.name || selectedFeedback.userName)}</h4>
                                  <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm ${PRIORITY_COLORS[selectedFeedback.priority] || "bg-slate-50 text-slate-500"}`}>
                                     {selectedFeedback.priority}
                                  </span>
                               </div>
                               <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.25em] italic flex items-center gap-4">
-                                 <span>Routing: {selectedFeedback.category}</span>
+                                 <span>Category: {selectedFeedback.category}</span>
                                  <span className="w-1 h-1 bg-slate-300 rounded-full" />
-                                 <span>Signal Detected: {new Date(selectedFeedback.createdAt).toLocaleString()}</span>
+                                 <span>Ticket Submitted: {new Date(selectedFeedback.createdAt).toLocaleString()}</span>
                               </p>
                            </div>
                         </div>
@@ -600,11 +601,11 @@ export default function SupportHubConsole({ portalType }) {
                      <div className="flex-1 overflow-y-auto p-12 space-y-16 custom-scrollbar bg-white relative">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                            
-                           {/* Main Content payload */}
+                           {/* Main Content description */}
                            <div className="lg:col-span-12 space-y-6 text-left">
                               <div className="flex items-center gap-3 px-2">
                                  <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400"><MessageSquare className="w-4 h-4" /></div>
-                                 <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Main Payload Report</h5>
+                                 <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Ticket Description</h5>
                               </div>
                               <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100 relative group">
                                  <p className="italic font-bold text-slate-800 leading-relaxed text-xl tracking-wide selection:bg-blue-100 selection:text-blue-600 first-letter:text-4xl first-letter:font-black first-letter:text-slate-400">
@@ -621,7 +622,7 @@ export default function SupportHubConsole({ portalType }) {
                               <div className="lg:col-span-12 space-y-6 text-left">
                                  <div className="flex items-center gap-3 px-2">
                                     <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-400"><Plus className="w-4 h-4" /></div>
-                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Proposed Optimizations / Solution Registry</h5>
+                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Proposed Solution / Suggestions</h5>
                                  </div>
                                  <div className="p-10 bg-indigo-50/30 rounded-[3rem] border border-indigo-100/50 text-slate-700 font-semibold tracking-wide text-lg relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none"><CheckCircle2 className="w-32 h-32" /></div>
@@ -635,7 +636,7 @@ export default function SupportHubConsole({ portalType }) {
                               <div className="lg:col-span-5 space-y-8 text-left">
                                  <div className="flex items-center gap-3 px-2">
                                     <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500"><Star className="w-4 h-4 fill-amber-500" /></div>
-                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Calibration Metrics</h5>
+                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Ratings & Sentiment</h5>
                                  </div>
                                  <div className="grid grid-cols-1 gap-4">
                                     {Object.entries(selectedFeedback.ratings).map(([key, val]) => (
@@ -657,26 +658,54 @@ export default function SupportHubConsole({ portalType }) {
                               <div className="lg:col-span-7 space-y-6 text-left">
                                  <div className="flex items-center gap-3 px-2">
                                     <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center text-slate-450"><Paperclip className="w-4 h-4" /></div>
-                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Evidence Registry</h5>
+                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Attachments</h5>
                                  </div>
                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {selectedFeedback.attachments.map((file, idx) => (
-                                       <a 
-                                          key={idx} 
-                                          href={file.url} 
-                                          target="_blank" 
-                                          rel="noreferrer" 
-                                          className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center gap-4 hover:bg-slate-100 transition-all cursor-pointer"
-                                       >
-                                          <div className="w-10 h-10 bg-indigo-50 text-indigo-650 rounded-lg flex items-center justify-center shadow-inner">
-                                             <Ticket className="w-5 h-5" />
+                                    {selectedFeedback.attachments.map((file, idx) => {
+                                       const isImage = file.type?.startsWith("image/") || file.url?.startsWith("data:image/");
+                                       return (
+                                          <div 
+                                             key={idx} 
+                                             className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:border-slate-300 transition-all"
+                                          >
+                                             <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 bg-indigo-50 text-indigo-650 rounded-lg flex items-center justify-center shadow-inner shrink-0">
+                                                   <Ticket className="w-4 h-4" />
+                                                </div>
+                                                <div className="truncate flex-1">
+                                                   <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest truncate" title={file.name}>{file.name}</p>
+                                                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{file.type || "ATTACHMENT"}</p>
+                                                </div>
+                                                <a 
+                                                   href={file.url} 
+                                                   download={file.name} 
+                                                   className="w-8 h-8 bg-white border border-slate-150 hover:bg-slate-900 hover:text-white rounded-lg flex items-center justify-center text-slate-500 transition-colors shrink-0"
+                                                   title={`Download ${file.name}`}
+                                                >
+                                                   <Paperclip className="w-3.5 h-3.5" />
+                                                </a>
+                                             </div>
+                                             {isImage && (
+                                                <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-white group/img aspect-video flex justify-center items-center">
+                                                   <img 
+                                                      src={file.url} 
+                                                      alt={file.name} 
+                                                      className="object-contain w-full h-full max-h-40 transition-transform duration-300 group-hover/img:scale-105"
+                                                   />
+                                                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                                                      <button 
+                                                         type="button"
+                                                         onClick={() => setLightboxImage(file)}
+                                                         className="px-4 py-2 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-wider hover:scale-105 transition-transform cursor-pointer"
+                                                      >
+                                                         View Full Image
+                                                      </button>
+                                                   </div>
+                                                </div>
+                                             )}
                                           </div>
-                                          <div className="truncate flex-1">
-                                             <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest truncate">{file.name}</p>
-                                             <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{file.type || "ATTACHMENT"}</p>
-                                          </div>
-                                       </a>
-                                    ))}
+                                       );
+                                    })}
                                  </div>
                               </div>
                            )}
@@ -687,7 +716,7 @@ export default function SupportHubConsole({ portalType }) {
                         <div className="space-y-6 text-left">
                            <div className="flex items-center gap-3 px-2">
                               <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500"><CheckCircle2 className="w-4 h-4" /></div>
-                              <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">System Resolution State</h5>
+                              <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Ticket Resolution State</h5>
                            </div>
                            <div className="flex flex-wrap gap-4 pt-2">
                               {["Pending", "In Review", "Resolved"].map((s) => (
@@ -711,7 +740,7 @@ export default function SupportHubConsole({ portalType }) {
                         <div className="space-y-6 pt-6 border-t border-slate-100 text-left">
                            <div className="flex items-center gap-3 px-2">
                               <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500"><MessageSquare className="w-4 h-4 animate-pulse" /></div>
-                              <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Discussion Registry ({selectedFeedback.replies?.length || 0})</h5>
+                              <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Discussion & Replies ({selectedFeedback.replies?.length || 0})</h5>
                            </div>
                            
                            <div className="bg-slate-50/50 border border-slate-100 rounded-[2rem] p-6 max-h-[300px] overflow-y-auto space-y-4 shadow-inner">
@@ -721,7 +750,7 @@ export default function SupportHubConsole({ portalType }) {
                                  <div className="flex justify-between items-center mb-1.5">
                                     <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">
                                        {selectedFeedback.isAnonymous ? "Protected Submitter" : (selectedFeedback.employeeDetails?.name || selectedFeedback.userName)}
-                                       <span className="text-[8px] font-bold text-slate-400 uppercase ml-2 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">Creator</span>
+                                       <span className="text-[8px] font-bold text-slate-400 uppercase ml-2 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">Submitter</span>
                                     </span>
                                  </div>
                                  <p className="text-xs text-slate-650 italic font-medium leading-relaxed">&ldquo;{selectedFeedback.content}&rdquo;</p>
@@ -787,6 +816,50 @@ export default function SupportHubConsole({ portalType }) {
 
                      </div>
 
+                  </motion.div>
+               </div>
+            )}
+         </AnimatePresence>
+
+         <AnimatePresence>
+            {lightboxImage && (
+               <div className="fixed inset-0 z-[120] flex items-center justify-center pointer-events-none">
+                  <motion.div
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     exit={{ opacity: 0 }}
+                     onClick={() => setLightboxImage(null)}
+                     className="absolute inset-0 bg-slate-950/85 backdrop-blur-md pointer-events-auto cursor-zoom-out"
+                  />
+                  <motion.div
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     exit={{ opacity: 0, scale: 0.9 }}
+                     className="relative max-w-[90vw] max-h-[90vh] pointer-events-auto z-10 flex flex-col items-center gap-4"
+                  >
+                     <img 
+                        src={lightboxImage.url} 
+                        alt={lightboxImage.name} 
+                        className="object-contain max-w-full max-h-[80vh] rounded-2xl border border-white/10 shadow-2xl"
+                     />
+                     <div className="flex gap-4">
+                        <a 
+                           href={lightboxImage.url} 
+                           download={lightboxImage.name}
+                           className="px-6 py-3 bg-white text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-colors shadow-lg flex items-center gap-2"
+                        >
+                           <Paperclip className="w-4 h-4" />
+                           Download File
+                        </a>
+                        <button
+                           type="button"
+                           onClick={() => setLightboxImage(null)}
+                           className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg flex items-center gap-2 cursor-pointer"
+                        >
+                           <X className="w-4 h-4" />
+                           Close Preview
+                        </button>
+                     </div>
                   </motion.div>
                </div>
             )}

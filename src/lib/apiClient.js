@@ -7,7 +7,7 @@ const DEFAULT_SEEDS = [
     email: "hragroups@gmail.com",
     password: "Hraconnect@7890",
     role: "Admin",
-    department: "Operations",
+    department: "Operation",
     permissions: "Full Access",
     status: "Active",
     session: "Offline",
@@ -27,7 +27,7 @@ const DEFAULT_SEEDS = [
     email: "sarah.j@hraconnect.com",
     password: "password123",
     role: "HR",
-    department: "Human Resources",
+    department: "Human Resource",
     permissions: "Read/Write",
     status: "Active",
     session: "Offline",
@@ -47,7 +47,7 @@ const DEFAULT_SEEDS = [
     email: "daniel.c@hraconnect.com",
     password: "password123",
     role: "Manager",
-    department: "Engineering",
+    department: "Engineer",
     permissions: "Read/Write",
     status: "Active",
     session: "Offline",
@@ -67,7 +67,7 @@ const DEFAULT_SEEDS = [
     email: "employee@hraconnect.com",
     password: "password123",
     role: "Employee",
-    department: "Engineering",
+    department: "Engineer",
     permissions: "Read/Write",
     status: "Active",
     session: "Offline",
@@ -87,7 +87,7 @@ const DEFAULT_SEEDS = [
     email: "intern@hraconnect.com",
     password: "password123",
     role: "Intern",
-    department: "Design",
+    department: "Operation",
     permissions: "Read Only",
     status: "Active",
     session: "Offline",
@@ -107,7 +107,7 @@ const DEFAULT_SEEDS = [
     email: "elena.r@hraconnect.com",
     password: "password123",
     role: "HR",
-    department: "Human Resources",
+    department: "Human Resource",
     permissions: "Read Only",
     status: "Suspended",
     session: "Offline",
@@ -448,7 +448,7 @@ export const apiClient = {
         email: normalizedEmail,
         password,
         role,
-        department: department || "Operations",
+        department: department || "Operation",
         permissions: permissions || "Read/Write",
         status: status || "Active",
         session: "Offline",
@@ -1214,9 +1214,36 @@ export const apiClient = {
       });
       if (response.ok) {
         if (typeof window !== "undefined") {
-          const stored = JSON.parse(localStorage.getItem("hra_departments") || "[]");
-          const filtered = stored.filter(d => d.id !== id && d._id !== id);
-          localStorage.setItem("hra_departments", JSON.stringify(filtered));
+          const storedDepts = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+          const deptToDelete = storedDepts.find(d => d.id === id || d._id === id);
+          const deptName = deptToDelete ? deptToDelete.name : "";
+
+          const filteredDepts = storedDepts.filter(d => d.id !== id && d._id !== id);
+          localStorage.setItem("hra_departments", JSON.stringify(filteredDepts));
+
+          // Sync teams
+          const storedTeams = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+          const operationsDept = filteredDepts.find(d => d.name === "Operations");
+          const fallbackDeptId = operationsDept ? (operationsDept.id || operationsDept._id) : "Operations";
+          
+          storedTeams.forEach((t, i) => {
+            const tDeptId = t.departmentId?.id || t.departmentId?._id || t.departmentId;
+            if (tDeptId === id) {
+              storedTeams[i].departmentId = fallbackDeptId;
+            }
+          });
+          localStorage.setItem("hra_teams", JSON.stringify(storedTeams));
+
+          // Sync users
+          if (deptName) {
+            const storedUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
+            storedUsers.forEach((u, i) => {
+              if (u.department === deptName) {
+                storedUsers[i].department = "Operations";
+              }
+            });
+            localStorage.setItem("hra_users", JSON.stringify(storedUsers));
+          }
         }
         return { success: true };
       } else {
@@ -1228,9 +1255,36 @@ export const apiClient = {
     }
 
     if (typeof window !== "undefined") {
-      const stored = JSON.parse(localStorage.getItem("hra_departments") || "[]");
-      const filtered = stored.filter(d => d.id !== id && d._id !== id);
-      localStorage.setItem("hra_departments", JSON.stringify(filtered));
+      const storedDepts = JSON.parse(localStorage.getItem("hra_departments") || "[]");
+      const deptToDelete = storedDepts.find(d => d.id === id || d._id === id);
+      const deptName = deptToDelete ? deptToDelete.name : "";
+
+      const filteredDepts = storedDepts.filter(d => d.id !== id && d._id !== id);
+      localStorage.setItem("hra_departments", JSON.stringify(filteredDepts));
+
+      // Sync teams
+      const storedTeams = JSON.parse(localStorage.getItem("hra_teams") || "[]");
+      const operationsDept = filteredDepts.find(d => d.name === "Operations");
+      const fallbackDeptId = operationsDept ? (operationsDept.id || operationsDept._id) : "Operations";
+      
+      storedTeams.forEach((t, i) => {
+        const tDeptId = t.departmentId?.id || t.departmentId?._id || t.departmentId;
+        if (tDeptId === id) {
+          storedTeams[i].departmentId = fallbackDeptId;
+        }
+      });
+      localStorage.setItem("hra_teams", JSON.stringify(storedTeams));
+
+      // Sync users
+      if (deptName) {
+        const storedUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
+        storedUsers.forEach((u, i) => {
+          if (u.department === deptName) {
+            storedUsers[i].department = "Operations";
+          }
+        });
+        localStorage.setItem("hra_users", JSON.stringify(storedUsers));
+      }
       return { success: true, offline: true };
     }
     return { success: false, message: "Window environment not available" };
@@ -2279,6 +2333,55 @@ export const apiClient = {
         };
         stored[idx] = updatedUser;
         localStorage.setItem("hra_users", JSON.stringify(stored));
+        return { success: true, user: updatedUser, offline: true };
+      }
+      return { success: false, message: "User not found in localStorage" };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  updateUserBankInfo: async (userId, bankData) => {
+    try {
+      const response = await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: userId, ...bankData })
+      });
+      if (response.ok) {
+        const resData = await response.json();
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_users") || "[]");
+          const idx = stored.findIndex(u => u._id === userId || u.id === userId);
+          if (idx !== -1) {
+            stored[idx] = { ...stored[idx], ...resData.user };
+            localStorage.setItem("hra_users", JSON.stringify(stored));
+          }
+          const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+          if (currentUser && (currentUser._id === userId || currentUser.id === userId)) {
+            localStorage.setItem("currentUser", JSON.stringify({ ...currentUser, ...resData.user }));
+          }
+        }
+        return { success: true, user: resData.user };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Updating bank info in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      const idx = stored.findIndex(u => u._id === userId || u.id === userId);
+      if (idx !== -1) {
+        const updatedUser = {
+          ...stored[idx],
+          ...bankData
+        };
+        stored[idx] = updatedUser;
+        localStorage.setItem("hra_users", JSON.stringify(stored));
+        
+        const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+        if (currentUser && (currentUser._id === userId || currentUser.id === userId)) {
+          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+        }
         return { success: true, user: updatedUser, offline: true };
       }
       return { success: false, message: "User not found in localStorage" };

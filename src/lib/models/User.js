@@ -106,6 +106,22 @@ const UserSchema = new mongoose.Schema({
   endDate: {
     type: String,
     default: '',
+  },
+  bankName: {
+    type: String,
+    default: '',
+  },
+  bankAccountNumber: {
+    type: String,
+    default: '',
+  },
+  bankIfscCode: {
+    type: String,
+    default: '',
+  },
+  bankBranch: {
+    type: String,
+    default: '',
   }
 }, {
   timestamps: true,
@@ -119,10 +135,14 @@ if (mongoose.models.User && (
   !mongoose.models.User.schema.paths.userPhoto ||
   !mongoose.models.User.schema.paths.aadhaarPhoto ||
   !mongoose.models.User.schema.paths.resetCode ||
-  !mongoose.models.User.schema.paths.college ||
-  !mongoose.models.User.schema.paths.course ||
-  !mongoose.models.User.schema.paths.startDate ||
-  !mongoose.models.User.schema.paths.endDate
+  !mongoose.models.User.schema.paths.college || 
+  !mongoose.models.User.schema.paths.course || 
+  !mongoose.models.User.schema.paths.startDate || 
+  !mongoose.models.User.schema.paths.endDate ||
+  !mongoose.models.User.schema.paths.bankName ||
+  !mongoose.models.User.schema.paths.bankAccountNumber ||
+  !mongoose.models.User.schema.paths.bankIfscCode ||
+  !mongoose.models.User.schema.paths.bankBranch
 )) {
   delete mongoose.models.User;
 }

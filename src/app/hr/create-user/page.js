@@ -19,6 +19,7 @@ import { apiClient } from "@/lib/apiClient";
 export default function HRCreateUserPage() {
   const router = useRouter();
   const [usersList, setUsersList] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState(null);
 
@@ -27,27 +28,31 @@ export default function HRCreateUserPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newRole, setNewRole] = useState("Employee");
-  const [newDepartment, setNewDepartment] = useState("Operations");
+  const [newDepartment, setNewDepartment] = useState("Operation");
   const [newPermissions, setNewPermissions] = useState("Read/Write");
   const [newStatus, setNewStatus] = useState("Active");
 
-  // Load recently created users to display in the history feed
-  async function loadUsers() {
+  // Load recently created users and departments
+  async function loadData() {
     setIsLoading(true);
     try {
-      const users = await apiClient.getUsers();
+      const [users, depts] = await Promise.all([
+        apiClient.getUsers(),
+        apiClient.getDepartments()
+      ]);
       // Filter list to only show Employee and Intern accounts in HR context
       const filtered = users.filter(u => u.role === "Employee" || u.role === "Intern");
       setUsersList(filtered);
+      setDepartments(depts || []);
     } catch (err) {
-      console.error("Failed to load users:", err);
+      console.error("Failed to load data:", err);
     } finally {
       setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    loadUsers();
+    loadData();
   }, []);
 
   const handleCreateUser = async (e) => {
@@ -76,14 +81,14 @@ export default function HRCreateUserPage() {
 
       if (result.success) {
         // Refresh the list immediately
-        await loadUsers();
+        await loadData();
 
         // Reset the form state
         setNewName("");
         setNewEmail("");
         setNewPassword("");
         setNewRole("Employee");
-        setNewDepartment("Operations");
+        setNewDepartment("Operation");
         setNewPermissions("Read/Write");
         setNewStatus("Active");
 
@@ -230,19 +235,19 @@ export default function HRCreateUserPage() {
                 </select>
               </div>
 
-              {/* Department */}
+              {/* Role Selection (maps to department field) */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Department Group</label>
+                <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Role</label>
                 <select
                   value={newDepartment}
                   onChange={(e) => setNewDepartment(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 focus:ring-2 focus:ring-slate-950/5 focus:border-slate-950 focus:outline-none transition-all cursor-pointer font-bold"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 focus:ring-2 focus:ring-slate-950/5 focus:border-slate-950 focus:outline-none transition-all cursor-pointer font-bold text-slate-700"
                 >
-                  <option value="Operations">Operations</option>
-                  <option value="Human Resources">Human Resources</option>
-                  <option value="Engineering">Engineering</option>
+                  <option value="Human Resource">Human Resource</option>
+                  <option value="Team Manager">Team Manager</option>
+                  <option value="Engineer">Engineer</option>
                   <option value="Finance">Finance</option>
-                  <option value="Support">Support</option>
+                  <option value="Operation">Operation</option>
                 </select>
               </div>
 
