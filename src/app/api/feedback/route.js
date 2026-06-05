@@ -115,6 +115,12 @@ export async function POST(request) {
       activeUserId = payload.id;
       activeUserEmail = payload.email;
       activeUserName = payload.name;
+      if (!activeUserName) {
+        const dbUser = await User.findById(activeUserId);
+        if (dbUser) {
+          activeUserName = dbUser.name;
+        }
+      }
     } else {
       const emailToLookup = (email || "").toLowerCase().trim();
       if (!emailToLookup) {
@@ -209,6 +215,12 @@ export async function PATCH(request) {
       activeUserId = payload.id;
       activeUserRole = payload.role;
       activeUserName = payload.name;
+      if (!activeUserName) {
+        const dbUser = await User.findById(activeUserId);
+        if (dbUser) {
+          activeUserName = dbUser.name;
+        }
+      }
     } else {
       const emailToLookup = (email || "").toLowerCase().trim();
       if (!emailToLookup) {

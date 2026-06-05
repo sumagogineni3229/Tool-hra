@@ -557,265 +557,289 @@ export default function SupportHubConsole({ portalType }) {
                      className="relative w-full max-w-5xl max-h-[92vh] bg-white rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden pointer-events-auto flex flex-col border border-white/20"
                   >
                      {/* Modal Header */}
-                     <div className="p-12 border-b border-slate-100 flex justify-between items-start bg-slate-50/40 relative">
-                        <div className="flex gap-8 relative z-10 text-left">
-                           <div className={`w-20 h-20 rounded-[2.5rem] flex items-center justify-center text-3xl font-black shadow-2xl relative ${selectedFeedback.isAnonymous ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-indigo-650"}`}>
-                              {selectedFeedback.isAnonymous ? <Shield className="w-10 h-10" /> : (selectedFeedback.employeeDetails?.name?.charAt(0).toUpperCase() || selectedFeedback.userName?.charAt(0).toUpperCase() || "E")}
-                              <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-xl ${SENTIMENT_COLORS[selectedFeedback.sentiment || "Neutral"]}`}>
-                                 {selectedFeedback.sentiment || "Neutral"}
-                              </div>
+                     <div className="p-8 lg:p-10 border-b border-slate-100 flex justify-between items-center bg-white relative">
+                        <div className="flex items-center gap-6 text-left">
+                           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-mono shadow-md ${selectedFeedback.priority === "Critical" ? "bg-rose-600" : selectedFeedback.priority === "High" ? "bg-orange-500" : "bg-indigo-600"}`}>
+                              <Ticket className="w-6 h-6" />
                            </div>
                            <div>
-                              <div className="flex flex-wrap items-center gap-3 mb-2">
+                              <div className="flex items-center flex-wrap gap-2.5 mb-1">
                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">{selectedFeedback.ticketId}</span>
-                                 <h4 className="text-3xl font-black text-slate-900 tracking-tight">{selectedFeedback.isAnonymous ? "Anonymous Ticket Submitter" : (selectedFeedback.employeeDetails?.name || selectedFeedback.userName)}</h4>
-                                 <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm ${PRIORITY_COLORS[selectedFeedback.priority] || "bg-slate-50 text-slate-500"}`}>
-                                    {selectedFeedback.priority}
+                                 <span className={`px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider ${selectedFeedback.priority === "Critical" ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-slate-100 text-slate-600"}`}>
+                                    {selectedFeedback.priority} Urgency
+                                 </span>
+                                 <span className="px-2.5 py-0.5 rounded-md bg-slate-900 text-white text-[8px] font-black uppercase tracking-wider">
+                                    {selectedFeedback.category}
                                  </span>
                               </div>
-                              <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.25em] italic flex items-center gap-4">
-                                 <span>Category: {selectedFeedback.category}</span>
-                                 <span className="w-1 h-1 bg-slate-300 rounded-full" />
-                                 <span>Ticket Submitted: {new Date(selectedFeedback.createdAt).toLocaleString()}</span>
-                              </p>
+                              <h4 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{selectedFeedback.subject}</h4>
                            </div>
                         </div>
-                        <div className="flex gap-3 relative z-10">
+                        <div className="flex items-center gap-3">
                            <button 
-                              className="h-14 px-6 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest gap-3 hover:bg-rose-650 hover:text-white transition-all shadow-xl shadow-rose-100/20 active:scale-95 border border-rose-100 cursor-pointer" 
+                              className="h-12 px-5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white rounded-xl flex items-center justify-center text-[9px] font-black uppercase tracking-widest gap-2 transition-all active:scale-95 border border-rose-100 cursor-pointer shadow-sm" 
                               onClick={() => handleUpdate(selectedFeedback._id || selectedFeedback.id, { escalationLevel: ((selectedFeedback.escalationLevel || 0) + 1) % 3 })}
                            >
-                              <ArrowUpCircle className={`w-5 h-5 ${selectedFeedback.escalationLevel > 0 ? "animate-bounce" : ""}`} />
-                              {selectedFeedback.escalationLevel === 0 ? "Apply Escalation" : `Level ${selectedFeedback.escalationLevel} Active`}
+                              <ArrowUpCircle className={`w-4 h-4 ${selectedFeedback.escalationLevel > 0 ? "animate-bounce" : ""}`} />
+                              {selectedFeedback.escalationLevel === 0 ? "Escalate" : `Escalated Level ${selectedFeedback.escalationLevel}`}
                            </button>
                            <button 
                               onClick={() => setSelectedFeedback(null)} 
-                              className="w-14 h-14 bg-white rounded-3xl flex items-center justify-center text-slate-400 hover:text-rose-600 shadow-2xl border border-slate-100 hover:rotate-90 transition-all duration-300 cursor-pointer"
+                              className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-600 shadow-sm border border-slate-150 hover:rotate-90 transition-all duration-300 cursor-pointer"
                            >
-                              <X className="w-7 h-7" />
+                              <X className="w-6 h-6" />
                            </button>
                         </div>
                      </div>
 
                      {/* Modal Content */}
-                     <div className="flex-1 overflow-y-auto p-12 space-y-16 custom-scrollbar bg-white relative">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                     <div className="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar bg-slate-50/50 relative">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                            
-                           {/* Main Content description */}
-                           <div className="lg:col-span-12 space-y-6 text-left">
-                              <div className="flex items-center gap-3 px-2">
-                                 <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400"><MessageSquare className="w-4 h-4" /></div>
-                                 <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Ticket Description</h5>
-                              </div>
-                              <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100 relative group">
-                                 <p className="italic font-bold text-slate-800 leading-relaxed text-xl tracking-wide selection:bg-blue-100 selection:text-blue-600 first-letter:text-4xl first-letter:font-black first-letter:text-slate-400">
-                                    {selectedFeedback.content}
-                                 </p>
-                                 <div className="absolute -top-4 -right-4 p-4 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 group-hover:opacity-100 transition-all pointer-events-none">
-                                    <p className="text-[9px] font-black uppercase text-slate-400">Detected Emotion: <span className="text-slate-900">{selectedFeedback.sentiment || "Neutral"}</span></p>
+                           {/* LEFT COLUMN: Submitter Context & Sentiment Ratings */}
+                           <div className="lg:col-span-4 space-y-8">
+                              {/* Submitter Info Card */}
+                              <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 text-center relative overflow-hidden group">
+                                 <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 to-indigo-650" />
+                                 <div className="mt-4 flex flex-col items-center">
+                                    <div className={`w-20 h-20 rounded-[2.2rem] flex items-center justify-center text-3xl font-black shadow-2xl relative mb-4 ${selectedFeedback.isAnonymous ? "bg-slate-950 text-white" : "bg-indigo-50 text-indigo-600 border border-indigo-105"}`}>
+                                       {selectedFeedback.isAnonymous ? <Shield className="w-10 h-10" /> : (selectedFeedback.employeeDetails?.name?.charAt(0).toUpperCase() || selectedFeedback.userName?.charAt(0).toUpperCase() || "E")}
+                                    </div>
+                                    <h4 className="text-xl font-black text-slate-900 tracking-tight mb-1">{selectedFeedback.isAnonymous ? "Anonymous Submitter" : (selectedFeedback.employeeDetails?.name || selectedFeedback.userName)}</h4>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 font-mono">{selectedFeedback.isAnonymous ? "Stealth Protocol Active" : selectedFeedback.employeeDetails?.role || "Staff"}</p>
+                                 </div>
+                                 
+                                 <div className="border-t border-slate-100 pt-6 mt-6 space-y-4 text-left text-xs font-semibold text-slate-600">
+                                    <div className="flex justify-between items-center">
+                                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Department</span>
+                                       <span className="text-slate-900 font-bold">{selectedFeedback.isAnonymous ? "Protected" : selectedFeedback.employeeDetails?.department || "Operations"}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Work Location</span>
+                                       <span className="text-slate-900 font-bold">{selectedFeedback.isAnonymous ? "Protected" : selectedFeedback.employeeDetails?.workLocation || "Office"}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Employee ID</span>
+                                       <span className="text-slate-900 font-bold font-mono">{selectedFeedback.isAnonymous ? "PROT-XXXX" : selectedFeedback.employeeDetails?.employeeId || "EMP-XXXX"}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Escalation</span>
+                                       <span className={`px-2 py-0.5 rounded font-black text-[9px] uppercase ${selectedFeedback.escalationLevel > 0 ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-slate-100 text-slate-500"}`}>
+                                          {selectedFeedback.escalationLevel > 0 ? `Level ${selectedFeedback.escalationLevel} Escalated` : "None"}
+                                       </span>
+                                    </div>
                                  </div>
                               </div>
+
+                              {/* Ratings details */}
+                              {selectedFeedback.ratings && (
+                                 <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 space-y-6 text-left">
+                                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                                       <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500"><Star className="w-4 h-4 fill-amber-500" /></div>
+                                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Feedback Ratings</h5>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-3">
+                                       {Object.entries(selectedFeedback.ratings).map(([key, val]) => (
+                                          <div key={key} className="flex flex-col gap-1.5 p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{RATING_LABELS[key] || key}</span>
+                                             <div className="flex gap-1">
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                   <Star key={star} className={`w-3.5 h-3.5 ${Number(val) >= star ? "text-amber-500 fill-amber-500" : "text-slate-200"}`} />
+                                                ))}
+                                             </div>
+                                          </div>
+                                       ))}
+                                    </div>
+                                 </div>
+                              )}
                            </div>
 
-                           {/* Solution proposed optimizations */}
-                           {selectedFeedback.suggestions && (
-                              <div className="lg:col-span-12 space-y-6 text-left">
-                                 <div className="flex items-center gap-3 px-2">
-                                    <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-400"><Plus className="w-4 h-4" /></div>
-                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Proposed Solution / Suggestions</h5>
+                           {/* RIGHT COLUMN: Ticket Body, Attachments, Resolution and Timeline */}
+                           <div className="lg:col-span-8 space-y-8">
+                              
+                              {/* Ticket Content Card */}
+                              <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 space-y-6 text-left relative overflow-hidden group">
+                                 <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                                    <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-650"><MessageSquare className="w-4 h-4" /></div>
+                                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Issue Description</h5>
                                  </div>
-                                 <div className="p-10 bg-indigo-50/30 rounded-[3rem] border border-indigo-100/50 text-slate-700 font-semibold tracking-wide text-lg relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none"><CheckCircle2 className="w-32 h-32" /></div>
-                                    {selectedFeedback.suggestions}
+                                 <div className="relative p-6 bg-gradient-to-br from-indigo-50/20 to-white border border-indigo-100/30 rounded-[2rem] shadow-inner">
+                                    <p className="italic font-bold text-slate-800 leading-relaxed text-lg tracking-wide first-letter:text-3xl first-letter:font-black first-letter:text-indigo-600">
+                                       &ldquo;{selectedFeedback.content}&rdquo;
+                                    </p>
                                  </div>
-                              </div>
-                           )}
 
-                           {/* Ratings details */}
-                           {selectedFeedback.ratings && (
-                              <div className="lg:col-span-5 space-y-8 text-left">
-                                 <div className="flex items-center gap-3 px-2">
-                                    <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500"><Star className="w-4 h-4 fill-amber-500" /></div>
-                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Ratings & Sentiment</h5>
-                                 </div>
-                                 <div className="grid grid-cols-1 gap-4">
-                                    {Object.entries(selectedFeedback.ratings).map(([key, val]) => (
-                                       <div key={key} className="flex items-center justify-between p-6 bg-slate-50 border border-slate-100 rounded-[2rem] hover:bg-white transition-all shadow-sm">
-                                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{RATING_LABELS[key] || key}</span>
-                                          <div className="flex gap-1">
-                                             {[1, 2, 3, 4, 5].map(star => (
-                                                <Star key={star} className={`w-4 h-4 ${Number(val) >= star ? "text-amber-500 fill-amber-500 scale-110 drop-shadow-md" : "text-slate-200"}`} />
-                                             ))}
-                                          </div>
+                                 {/* Solution proposed optimizations */}
+                                 {selectedFeedback.suggestions && (
+                                    <div className="space-y-4">
+                                       <div className="flex items-center gap-3">
+                                          <div className="w-7 h-7 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500"><Plus className="w-3.5 h-3.5" /></div>
+                                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Proposed Solution / Suggestions</span>
                                        </div>
+                                       <div className="p-6 bg-emerald-50/20 rounded-[2rem] border border-emerald-100/30 text-slate-705 font-semibold tracking-wide text-sm leading-relaxed">
+                                          {selectedFeedback.suggestions}
+                                       </div>
+                                    </div>
+                                 )}
+                              </div>
+
+                              {/* Evidence Hub attachments */}
+                              {selectedFeedback.attachments && selectedFeedback.attachments.length > 0 && (
+                                 <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 space-y-6 text-left">
+                                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                                       <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center text-slate-450"><Paperclip className="w-4 h-4" /></div>
+                                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Attachments Hub</h5>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                       {selectedFeedback.attachments.map((file, idx) => {
+                                          const isImage = file.type?.startsWith("image/") || file.url?.startsWith("data:image/");
+                                          return (
+                                             <div 
+                                                key={idx} 
+                                                className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:border-slate-300 transition-all"
+                                             >
+                                                <div className="flex items-center gap-3">
+                                                   <div className="w-8 h-8 bg-indigo-50 text-indigo-650 rounded-lg flex items-center justify-center shadow-inner shrink-0">
+                                                      <Ticket className="w-4 h-4" />
+                                                   </div>
+                                                   <div className="truncate flex-1">
+                                                      <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest truncate" title={file.name}>{file.name}</p>
+                                                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{file.type || "ATTACHMENT"}</p>
+                                                   </div>
+                                                   <a 
+                                                      href={file.url} 
+                                                      download={file.name} 
+                                                      className="w-8 h-8 bg-white border border-slate-150 hover:bg-slate-900 hover:text-white rounded-lg flex items-center justify-center text-slate-500 transition-colors shrink-0"
+                                                      title={`Download ${file.name}`}
+                                                   >
+                                                      <Paperclip className="w-3.5 h-3.5" />
+                                                   </a>
+                                                </div>
+                                                {isImage && (
+                                                   <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-white group/img aspect-video flex justify-center items-center">
+                                                      <img 
+                                                         src={file.url} 
+                                                         alt={file.name} 
+                                                         className="object-contain w-full h-full max-h-40 transition-transform duration-300 group-hover/img:scale-105"
+                                                      />
+                                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                                                         <button 
+                                                            type="button"
+                                                            onClick={() => setLightboxImage(file)}
+                                                            className="px-4 py-2 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-wider hover:scale-105 transition-transform cursor-pointer"
+                                                         >
+                                                            View Full Image
+                                                         </button>
+                                                      </div>
+                                                   </div>
+                                                )}
+                                             </div>
+                                          );
+                                       })}
+                                    </div>
+                                 </div>
+                              )}
+
+                              {/* Status Toggle Actions */}
+                              <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 space-y-6 text-left">
+                                 <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                                    <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500"><CheckCircle2 className="w-4 h-4" /></div>
+                                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Workflow Resolution State</h5>
+                                 </div>
+                                 <div className="flex flex-wrap gap-4 pt-2">
+                                    {["Pending", "In Review", "Resolved"].map((s) => (
+                                       <button
+                                          key={s}
+                                          disabled={updatingId !== null}
+                                          onClick={() => handleUpdate(selectedFeedback._id || selectedFeedback.id, { status: s })}
+                                          className={`flex-1 min-w-[120px] py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border cursor-pointer ${
+                                             selectedFeedback.status === s
+                                                ? (s === "Resolved" ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100" : s === "In Review" ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100" : "bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-100")
+                                                : "bg-slate-50 text-slate-400 border-slate-100 hover:bg-slate-100 hover:text-slate-800"
+                                          }`}
+                                       >
+                                          {s}
+                                       </button>
                                     ))}
                                  </div>
                               </div>
-                           )}
 
-                           {/* Evidence Hub attachments */}
-                           {selectedFeedback.attachments && selectedFeedback.attachments.length > 0 && (
-                              <div className="lg:col-span-7 space-y-6 text-left">
-                                 <div className="flex items-center gap-3 px-2">
-                                    <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center text-slate-450"><Paperclip className="w-4 h-4" /></div>
-                                    <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Attachments</h5>
+                              {/* Replies Thread Feed */}
+                              <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 space-y-6 text-left">
+                                 <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                                    <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500"><MessageSquare className="w-4 h-4 animate-pulse" /></div>
+                                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Discussion Thread ({selectedFeedback.replies?.length || 0})</h5>
                                  </div>
-                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {selectedFeedback.attachments.map((file, idx) => {
-                                       const isImage = file.type?.startsWith("image/") || file.url?.startsWith("data:image/");
-                                       return (
-                                          <div 
-                                             key={idx} 
-                                             className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:border-slate-300 transition-all"
-                                          >
-                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-indigo-50 text-indigo-650 rounded-lg flex items-center justify-center shadow-inner shrink-0">
-                                                   <Ticket className="w-4 h-4" />
-                                                </div>
-                                                <div className="truncate flex-1">
-                                                   <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest truncate" title={file.name}>{file.name}</p>
-                                                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{file.type || "ATTACHMENT"}</p>
-                                                </div>
-                                                <a 
-                                                   href={file.url} 
-                                                   download={file.name} 
-                                                   className="w-8 h-8 bg-white border border-slate-150 hover:bg-slate-900 hover:text-white rounded-lg flex items-center justify-center text-slate-500 transition-colors shrink-0"
-                                                   title={`Download ${file.name}`}
-                                                >
-                                                   <Paperclip className="w-3.5 h-3.5" />
-                                                </a>
+                                 
+                                 <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {/* Nested replies */}
+                                    {(!selectedFeedback.replies || selectedFeedback.replies.length === 0) ? (
+                                       <p className="text-xs text-slate-400 italic text-center py-6">No responses logged yet. Use the composer below to begin discussion.</p>
+                                    ) : (
+                                       selectedFeedback.replies.map((reply, ridx) => (
+                                          <div key={reply._id || ridx} className="flex items-start gap-3 text-left">
+                                             <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-[10px] font-black uppercase tracking-wider ${reply.userRole === "HR" || reply.userRole === "Admin" ? "bg-slate-900 text-white" : "bg-indigo-50 text-indigo-650"}`}>
+                                                {reply.userName?.charAt(0).toUpperCase()}
                                              </div>
-                                             {isImage && (
-                                                <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-white group/img aspect-video flex justify-center items-center">
-                                                   <img 
-                                                      src={file.url} 
-                                                      alt={file.name} 
-                                                      className="object-contain w-full h-full max-h-40 transition-transform duration-300 group-hover/img:scale-105"
-                                                   />
-                                                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
-                                                      <button 
-                                                         type="button"
-                                                         onClick={() => setLightboxImage(file)}
-                                                         className="px-4 py-2 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-wider hover:scale-105 transition-transform cursor-pointer"
-                                                      >
-                                                         View Full Image
-                                                      </button>
-                                                   </div>
+                                             <div className="flex-1 p-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] relative">
+                                                <div className="flex justify-between items-center mb-1.5">
+                                                   <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">
+                                                      {reply.userName}{" "}
+                                                      <span className="text-[8px] font-bold text-indigo-650 uppercase px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-100/30 ml-2">
+                                                         {reply.userRole}
+                                                      </span>
+                                                   </span>
+                                                   <span className="text-[8px] text-slate-400 font-bold uppercase">
+                                                      {reply.createdAt ? new Date(reply.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}
+                                                   </span>
                                                 </div>
-                                             )}
+                                                <p className="text-xs text-slate-750 font-medium leading-relaxed italic">&ldquo;{reply.message}&rdquo;</p>
+                                             </div>
                                           </div>
-                                       );
-                                    })}
+                                       ))
+                                    )}
                                  </div>
-                              </div>
-                           )}
 
-                        </div>
-
-                        {/* Status Toggle Actions */}
-                        <div className="space-y-6 text-left">
-                           <div className="flex items-center gap-3 px-2">
-                              <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500"><CheckCircle2 className="w-4 h-4" /></div>
-                              <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Ticket Resolution State</h5>
-                           </div>
-                           <div className="flex flex-wrap gap-4 pt-2">
-                              {["Pending", "In Review", "Resolved"].map((s) => (
-                                 <button
-                                    key={s}
-                                    disabled={updatingId !== null}
-                                    onClick={() => handleUpdate(selectedFeedback._id || selectedFeedback.id, { status: s })}
-                                    className={`flex-1 min-w-[120px] py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border cursor-pointer ${
-                                       selectedFeedback.status === s
-                                          ? (s === "Resolved" ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-100" : s === "In Review" ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100" : "bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-100")
-                                          : "bg-slate-50 text-slate-400 border-slate-100 hover:bg-slate-100 hover:text-slate-800"
-                                    }`}
+                                 {/* Reply draft Form */}
+                                 <form
+                                    onSubmit={(e) => {
+                                       e.preventDefault();
+                                       if (!reply.trim()) return;
+                                       handleUpdate(selectedFeedback._id || selectedFeedback.id, { response: reply });
+                                    }}
+                                    className="space-y-4 pt-4 border-t border-slate-100 text-left"
                                  >
-                                    {s}
-                                 </button>
-                              ))}
-                           </div>
-                        </div>
-
-                        {/* Replies Thread Feed */}
-                        <div className="space-y-6 pt-6 border-t border-slate-100 text-left">
-                           <div className="flex items-center gap-3 px-2">
-                              <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500"><MessageSquare className="w-4 h-4 animate-pulse" /></div>
-                              <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Discussion & Replies ({selectedFeedback.replies?.length || 0})</h5>
-                           </div>
-                           
-                           <div className="bg-slate-50/50 border border-slate-100 rounded-[2rem] p-6 max-h-[300px] overflow-y-auto space-y-4 shadow-inner">
-                              
-                              {/* Original report */}
-                              <div className="p-5 bg-white border border-slate-150 rounded-2xl text-left shadow-sm">
-                                 <div className="flex justify-between items-center mb-1.5">
-                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">
-                                       {selectedFeedback.isAnonymous ? "Protected Submitter" : (selectedFeedback.employeeDetails?.name || selectedFeedback.userName)}
-                                       <span className="text-[8px] font-bold text-slate-400 uppercase ml-2 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">Submitter</span>
-                                    </span>
-                                 </div>
-                                 <p className="text-xs text-slate-650 italic font-medium leading-relaxed">&ldquo;{selectedFeedback.content}&rdquo;</p>
+                                    <div className="relative">
+                                       <textarea
+                                          required
+                                          value={reply}
+                                          onChange={(e) => setReply(e.target.value)}
+                                          placeholder={`Draft encrypted response to submitter as ${portalType}...`}
+                                          rows="3"
+                                          className="w-full p-5 bg-slate-50 border border-slate-150 focus:bg-white focus:border-slate-350 outline-none rounded-[1.5rem] text-xs font-semibold leading-relaxed transition-all resize-none shadow-inner"
+                                       />
+                                    </div>
+                                    <button
+                                       type="submit"
+                                       disabled={updatingId !== null || !reply.trim()}
+                                       className="w-full py-4 bg-slate-900 hover:bg-indigo-650 disabled:opacity-50 text-white rounded-2xl font-black uppercase tracking-[0.25em] text-[10px] shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-3 cursor-pointer"
+                                    >
+                                       {updatingId !== null ? (
+                                          <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                       ) : (
+                                          <>
+                                             <Send className="w-3.5 h-3.5" />
+                                             Broadcast Response
+                                          </>
+                                       )}
+                                    </button>
+                                 </form>
                               </div>
 
-                              {/* Nested replies */}
-                              {selectedFeedback.replies && selectedFeedback.replies.map((reply, ridx) => (
-                                 <div key={reply._id || ridx} className="flex items-start gap-2 text-left pl-6">
-                                    <CornerDownRight className="w-4 h-4 text-slate-350 shrink-0 mt-1" />
-                                    <div className="flex-1 p-4 bg-white border border-slate-150 rounded-2xl shadow-sm">
-                                       <div className="flex justify-between items-center mb-1.5">
-                                          <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">
-                                             {reply.userName}{" "}
-                                             <span className="text-[8px] font-bold text-indigo-650 uppercase px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-100/30 ml-2">
-                                                {reply.userRole}
-                                             </span>
-                                          </span>
-                                          <span className="text-[8px] text-slate-400 font-bold uppercase">
-                                             {reply.createdAt ? new Date(reply.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}
-                                          </span>
-                                       </div>
-                                       <p className="text-xs text-slate-650 italic font-medium leading-relaxed">&ldquo;{reply.message}&rdquo;</p>
-                                    </div>
-                                 </div>
-                              ))}
                            </div>
+
                         </div>
-
-                        {/* Reply draft Form */}
-                        <form
-                           onSubmit={(e) => {
-                              e.preventDefault();
-                              if (!reply.trim()) return;
-                              handleUpdate(selectedFeedback._id || selectedFeedback.id, { response: reply });
-                           }}
-                           className="space-y-4 pt-4 border-t border-slate-100 text-left"
-                        >
-                           <div className="relative">
-                              <textarea
-                                 required
-                                 value={reply}
-                                 onChange={(e) => setReply(e.target.value)}
-                                 placeholder={`Draft encrypted response to submitter as ${portalType}...`}
-                                 rows="3"
-                                 className="w-full p-6 bg-slate-50 border border-slate-150 focus:bg-white focus:border-slate-350 outline-none rounded-[2rem] text-xs font-semibold leading-relaxed transition-all resize-none shadow-inner"
-                              />
-                           </div>
-                           <button
-                              type="submit"
-                              disabled={updatingId !== null || !reply.trim()}
-                              className="w-full py-5 bg-slate-900 hover:bg-indigo-650 disabled:opacity-50 text-white rounded-[1.8rem] font-black uppercase tracking-[0.25em] text-[10px] shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-3 cursor-pointer"
-                           >
-                              {updatingId !== null ? (
-                                 <Loader2 className="w-4 h-4 animate-spin text-white" />
-                              ) : (
-                                 <>
-                                    <Send className="w-3.5 h-3.5" />
-                                    Broadcast Response
-                                 </>
-                              )}
-                           </button>
-                        </form>
-
                      </div>
-
                   </motion.div>
                </div>
             )}
