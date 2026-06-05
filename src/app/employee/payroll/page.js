@@ -108,48 +108,55 @@ export default function EmployeePayroll() {
         <title>Payslip - ${slip.period} - ${user.name}</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+          * { box-sizing: border-box; }
+          @page { size: A4; margin: 10mm; }
           body {
             font-family: 'Inter', sans-serif;
             margin: 0;
-            padding: 40px;
+            padding: 20px;
             color: #1e293b;
             background-color: #ffffff;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+            font-size: 11px;
+          }
+          @media print {
+            body { padding: 0; }
+            html, body { height: 100%; overflow: hidden; }
           }
           .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
           }
           .company-info {
             text-align: right;
           }
           .company-name {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 800;
             color: #0f172a;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             letter-spacing: -0.5px;
           }
           .company-details {
-            font-size: 11px;
+            font-size: 10px;
             color: #64748b;
-            line-height: 1.5;
+            line-height: 1.4;
             font-weight: 500;
           }
           .logo {
-            height: 50px;
+            height: 40px;
           }
           .title-section {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 14px;
           }
           .slip-title {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 900;
             color: #0f172a;
             text-transform: uppercase;
@@ -157,32 +164,32 @@ export default function EmployeePayroll() {
             margin: 0;
           }
           .slip-period {
-            font-size: 13px;
+            font-size: 11px;
             color: #64748b;
             font-weight: 600;
-            margin-top: 5px;
+            margin-top: 3px;
           }
           .info-grid {
             display: grid;
-            grid-template-cols: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-            font-size: 12px;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+            font-size: 10px;
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 8px;
+            padding: 12px;
           }
           .info-block {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
           }
           .info-row {
             display: flex;
             justify-content: space-between;
             border-bottom: 1px dashed #e2e8f0;
-            padding-bottom: 4px;
+            padding-bottom: 3px;
           }
           .info-row:last-child {
             border-bottom: none;
@@ -199,8 +206,8 @@ export default function EmployeePayroll() {
           .salary-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
-            font-size: 12px;
+            margin-bottom: 14px;
+            font-size: 10px;
           }
           .salary-table th {
             background-color: #0f172a;
@@ -208,14 +215,14 @@ export default function EmployeePayroll() {
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            padding: 10px 15px;
+            padding: 7px 10px;
             text-align: left;
           }
           .salary-table th:nth-child(even), .salary-table td:nth-child(even) {
             text-align: right;
           }
           .salary-table td {
-            padding: 12px 15px;
+            padding: 7px 10px;
             border-bottom: 1px solid #e2e8f0;
             font-weight: 500;
           }
@@ -224,56 +231,56 @@ export default function EmployeePayroll() {
             font-weight: 800;
             border-top: 2px solid #e2e8f0;
             border-bottom: 2px solid #e2e8f0;
-            font-size: 13px;
+            font-size: 11px;
           }
           .net-pay-box {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: #ffffff;
-            padding: 24px;
-            border-radius: 16px;
+            padding: 14px 18px;
+            border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 14px;
           }
           .net-pay-label {
-            font-size: 13px;
+            font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #94a3b8;
           }
           .net-pay-value {
-            font-size: 26px;
+            font-size: 20px;
             font-weight: 900;
             letter-spacing: -0.5px;
           }
           .footer-note {
             text-align: center;
-            font-size: 10px;
+            font-size: 9px;
             color: #94a3b8;
-            margin-top: 60px;
+            margin-top: 10px;
             border-top: 1px solid #e2e8f0;
-            padding-top: 20px;
+            padding-top: 10px;
             font-weight: 500;
           }
           .signatures {
             display: flex;
             justify-content: space-between;
-            margin-top: 50px;
+            margin-top: 18px;
             padding: 0 20px;
           }
           .sig-box {
             text-align: center;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: #64748b;
           }
           .sig-line {
-            width: 150px;
+            width: 120px;
             border-top: 1px solid #94a3b8;
-            margin-bottom: 8px;
-            margin-top: 40px;
+            margin-bottom: 6px;
+            margin-top: 25px;
           }
         </style>
       </head>
@@ -281,10 +288,10 @@ export default function EmployeePayroll() {
         <div class="header">
           <img class="logo" src="/logo.png" alt="Company Logo" onerror="this.src='/logo_transparent.png'" />
           <div class="company-info">
-            <div class="company-name">HRA People Connect Inc.</div>
+            <div class="company-name">HRA GROUPS PRIVATE LIMITED</div>
             <div class="company-details">
-              HQ Tech Suite B, 123 Operational Avenue<br/>
-              support@hraconnect.com | +1 (555) 019-2831
+              Madhapur, Hyderabad.<br/>
+              contact@hragroups.com | +91 9676272283
             </div>
           </div>
         </div>
