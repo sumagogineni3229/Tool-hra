@@ -382,26 +382,37 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-7 gap-4">
-                                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                                    <div key={d} className="text-center text-[9px] font-black text-slate-300 uppercase tracking-widest py-2 italic">{d}</div>
+                            <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-4">
+                                {[
+                                    ['S', 'Sun'],
+                                    ['M', 'Mon'],
+                                    ['T', 'Tue'],
+                                    ['W', 'Wed'],
+                                    ['T', 'Thu'],
+                                    ['F', 'Fri'],
+                                    ['S', 'Sat']
+                                ].map(([short, full], i) => (
+                                    <div key={full} className="text-center font-black text-slate-300 uppercase tracking-widest py-1 sm:py-2 italic">
+                                        <span className="hidden sm:inline text-[9px]">{full}</span>
+                                        <span className="sm:hidden text-[8px]">{short}</span>
+                                    </div>
                                 ))}
                                 {calendarDays.map((day, idx) => (
-                                    <div key={idx} className="aspect-square relative flex items-center justify-center">
+                                    <div key={idx} className="aspect-square flex items-center justify-center">
                                         {day ? (
-                                            <div className={`w-full h-full rounded-2xl border flex flex-col items-center justify-center transition-all relative hover:scale-105 duration-200
+                                            <div className={`w-full h-full rounded-lg sm:rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all hover:scale-105 duration-200 overflow-hidden
                                                 ${day.status 
                                                     ? `${STATUS_CONFIG[day.status].bg} ${STATUS_CONFIG[day.status].border}` 
-                                                    : "bg-white border-slate-50 text-slate-300"
+                                                    : "bg-white border-slate-50"
                                                 }
                                             `}>
-                                                <span className={`text-sm font-black ${
+                                                <span className={`text-[10px] sm:text-sm font-black leading-none ${
                                                     day.status 
                                                         ? STATUS_CONFIG[day.status].text 
-                                                        : "text-slate-350"
+                                                        : "text-slate-300"
                                                 }`}>{day.day}</span>
                                                 {day.status && (
-                                                    <div className={`absolute bottom-2.5 w-1.5 h-1.5 rounded-full ${STATUS_CONFIG[day.status].color}`} />
+                                                    <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full flex-shrink-0 ${STATUS_CONFIG[day.status].color}`} />
                                                 )}
                                             </div>
                                         ) : (
@@ -411,10 +422,10 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
                                 ))}
                             </div>
 
-                            <div className="mt-10 flex flex-wrap gap-4 pt-8 border-t border-slate-100">
+                            <div className="mt-6 sm:mt-10 flex flex-wrap gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-slate-100">
                                 {Object.values(STATUS_CONFIG).map(s => (
-                                    <div key={s.label} className="flex items-center gap-2">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${s.color}`} />
+                                    <div key={s.label} className="flex items-center gap-1.5">
+                                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.color}`} />
                                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">{s.label}</span>
                                     </div>
                                 ))}
