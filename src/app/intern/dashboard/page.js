@@ -530,11 +530,21 @@ export default function InternDashboard() {
       {/* 1. Dynamic Greeting Header with Real-Time Clock */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
         <div className="flex flex-col gap-1 text-left">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 capitalize">
               {getGreeting()}, {currentUser?.name || "Intern"}!
             </h1>
             <Sparkles className="w-5 h-5 text-amber-500 fill-amber-100 shrink-0" />
+            {currentUser?.employeeId && (
+              <span className="text-[10px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-mono shrink-0">
+                {currentUser.employeeId}
+              </span>
+            )}
+            {currentUser?.designation && (
+              <span className="text-[10px] font-bold text-amber-755 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded shrink-0">
+                {currentUser.designation}
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 font-medium">
             Welcome to your internship portal dashboard. Keep track of your metrics, attendance, and tasks.

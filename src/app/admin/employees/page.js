@@ -215,15 +215,27 @@ export default function AdminEmployeesDirectory() {
                                 {user.initials}
                               </div>
                             )}
-                            <div className="flex flex-col">
-                              <span className="font-bold text-slate-900 text-xs">{user.name}</span>
+                             <div className="flex flex-col">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-slate-900 text-xs">{user.name}</span>
+                                {user.employeeId && (
+                                  <span className="text-[9px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded font-mono shrink-0">
+                                    {user.employeeId}
+                                  </span>
+                                )}
+                              </div>
                               <span className="text-[10px] text-slate-400 mt-0.5">{user.email}</span>
                             </div>
                           </div>
                         </td>
 
                         <td className="px-6 py-4">
-                          <span className="text-xs font-bold text-slate-800">{user.role}</span>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-slate-800">{user.role}</span>
+                            {user.designation && (
+                              <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{user.designation}</span>
+                            )}
+                          </div>
                         </td>
 
                         <td className="px-6 py-4">

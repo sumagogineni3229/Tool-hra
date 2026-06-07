@@ -12,7 +12,8 @@ import {
   Lock,
   History,
   ShieldCheck,
-  Users
+  Users,
+  Briefcase
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
@@ -31,6 +32,7 @@ export default function HRCreateUserPage() {
   const [newDepartment, setNewDepartment] = useState("Operation");
   const [newPermissions, setNewPermissions] = useState("Read/Write");
   const [newStatus, setNewStatus] = useState("Active");
+  const [newDesignation, setNewDesignation] = useState("");
 
   // Load recently created users and departments
   async function loadData() {
@@ -76,7 +78,8 @@ export default function HRCreateUserPage() {
         role: newRole,
         department: newDepartment,
         permissions: newPermissions,
-        status: newStatus
+        status: newStatus,
+        designation: newDesignation
       });
 
       if (result.success) {
@@ -91,6 +94,7 @@ export default function HRCreateUserPage() {
         setNewDepartment("Operation");
         setNewPermissions("Read/Write");
         setNewStatus("Active");
+        setNewDesignation("");
 
         // Set success notification
         setNotification({
@@ -201,7 +205,7 @@ export default function HRCreateUserPage() {
               </div>
             </div>
 
-            {/* Initial Password */}
+             {/* Initial Password */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Initial Passcode / Password</label>
               <div className="relative">
@@ -214,6 +218,23 @@ export default function HRCreateUserPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••••••"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-slate-950/5 focus:border-slate-950 focus:outline-none transition-all duration-200 font-semibold"
+                />
+              </div>
+            </div>
+
+            {/* Job Designation */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Job Designation</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                  <Briefcase className="w-4 h-4" />
+                </span>
+                <input
+                  type="text"
+                  value={newDesignation}
+                  onChange={(e) => setNewDesignation(e.target.value)}
+                  placeholder="e.g. Frontend Developer, UI/UX Designer (defaults to role if blank)"
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-slate-950/5 focus:border-slate-950 focus:outline-none transition-all duration-200 font-semibold"
                 />
               </div>

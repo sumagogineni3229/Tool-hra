@@ -122,6 +122,15 @@ const UserSchema = new mongoose.Schema({
   bankBranch: {
     type: String,
     default: '',
+  },
+  employeeId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  designation: {
+    type: String,
+    default: '',
   }
 }, {
   timestamps: true,
@@ -142,7 +151,9 @@ if (mongoose.models.User && (
   !mongoose.models.User.schema.paths.bankName ||
   !mongoose.models.User.schema.paths.bankAccountNumber ||
   !mongoose.models.User.schema.paths.bankIfscCode ||
-  !mongoose.models.User.schema.paths.bankBranch
+  !mongoose.models.User.schema.paths.bankBranch ||
+  !mongoose.models.User.schema.paths.employeeId ||
+  !mongoose.models.User.schema.paths.designation
 )) {
   delete mongoose.models.User;
 }

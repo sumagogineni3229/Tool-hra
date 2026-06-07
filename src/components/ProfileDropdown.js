@@ -72,9 +72,21 @@ export default function ProfileDropdown({ currentUser, badgeColorClass = "bg-ros
             <div className="flex flex-col overflow-hidden text-left">
               <span className="text-xs font-bold text-slate-900 truncate">{currentUser?.name || "Portal User"}</span>
               <span className="text-[9.5px] text-slate-500 font-medium truncate mt-0.5">{currentUser?.email}</span>
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] font-extrabold uppercase bg-slate-100/85 text-slate-650 rounded border border-slate-200/30 w-fit mt-1.5">
-                {currentUser?.role || "Staff Member"}
-              </span>
+              {currentUser?.employeeId && (
+                <span className="text-[9.5px] text-slate-400 font-bold font-mono tracking-tight mt-0.5">
+                  ID: {currentUser.employeeId}
+                </span>
+              )}
+              <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[8px] font-extrabold uppercase bg-slate-100/85 text-slate-650 rounded border border-slate-200/30 w-fit">
+                  {currentUser?.role || "Staff Member"}
+                </span>
+                {currentUser?.designation && (
+                  <span className="text-[9.5px] text-slate-500 font-semibold truncate max-w-[100px]" title={currentUser.designation}>
+                    {currentUser.designation}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

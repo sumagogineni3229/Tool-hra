@@ -74,7 +74,9 @@ export default function EmployeePayroll() {
       name: "John Doe",
       email: "employee@hraconnect.com",
       role: "Employee",
-      department: "Engineer"
+      department: "Engineer",
+      employeeId: "EMP-2026-0004",
+      designation: "Software Engineer"
     };
 
     const formatNum = (val) => {
@@ -109,7 +111,7 @@ export default function EmployeePayroll() {
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
           * { box-sizing: border-box; }
-          @page { size: A4; margin: 10mm; }
+          @page { size: A4; margin: 0; }
           body {
             font-family: 'Inter', sans-serif;
             margin: 0;
@@ -121,8 +123,8 @@ export default function EmployeePayroll() {
             font-size: 11px;
           }
           @media print {
-            body { padding: 0; }
-            html, body { height: 100%; overflow: hidden; }
+            body { padding: 15mm 20mm; }
+            html, body { height: auto; overflow: visible; }
           }
           .header {
             display: flex;
@@ -297,12 +299,16 @@ export default function EmployeePayroll() {
         </div>
 
         <div class="title-section">
-          <h1 class="slip-title">Salary Slip / Payslip</h1>
+          <h1 class="slip-title">PAYSLIP</h1>
           <div class="slip-period">For the Pay Period of ${slip.period}</div>
         </div>
 
         <div class="info-grid">
           <div class="info-block">
+            <div class="info-row">
+              <span class="info-label">Employee ID</span>
+              <span class="info-value">${user.employeeId || 'N/A'}</span>
+            </div>
             <div class="info-row">
               <span class="info-label">Employee Name</span>
               <span class="info-value">${user.name}</span>
@@ -313,7 +319,7 @@ export default function EmployeePayroll() {
             </div>
             <div class="info-row">
               <span class="info-label">Designation / Role</span>
-              <span class="info-value">${user.role || 'Employee'}</span>
+              <span class="info-value">${user.designation || user.role || 'Employee'}</span>
             </div>
             <div class="info-row">
               <span class="info-label">Department</span>
@@ -375,7 +381,7 @@ export default function EmployeePayroll() {
               <td>₹0.00</td>
             </tr>
             <tr class="total-row">
-              <td>Total Earnings (Gross)</td>
+              <td>Gross Salary</td>
               <td>₹${formatNum(gross)}</td>
               <td>Total Deductions</td>
               <td>₹${formatNum(deductions + 200)}</td>
@@ -384,7 +390,7 @@ export default function EmployeePayroll() {
         </table>
 
         <div class="net-pay-box">
-          <div class="net-pay-label">Net Salary Disbursed</div>
+          <div class="net-pay-label">NET SALARY PAYABLE</div>
           <div class="net-pay-value">₹${formatNum(net)}</div>
         </div>
 

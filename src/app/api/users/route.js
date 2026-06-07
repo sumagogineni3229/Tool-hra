@@ -48,7 +48,9 @@ export async function GET(request) {
         bankName: user.bankName || '',
         bankAccountNumber: user.bankAccountNumber || '',
         bankIfscCode: user.bankIfscCode || '',
-        bankBranch: user.bankBranch || ''
+        bankBranch: user.bankBranch || '',
+        employeeId: user.employeeId || '',
+        designation: user.designation || ''
       };
       return NextResponse.json(sanitized, { status: 200 });
     }
@@ -88,7 +90,9 @@ export async function GET(request) {
         bankName: user.bankName || '',
         bankAccountNumber: user.bankAccountNumber || '',
         bankIfscCode: user.bankIfscCode || '',
-        bankBranch: user.bankBranch || ''
+        bankBranch: user.bankBranch || '',
+        employeeId: user.employeeId || '',
+        designation: user.designation || ''
       };
 
       if (includePhotos) {
@@ -110,7 +114,7 @@ export async function POST(req) {
   try {
     await dbConnect();
     const body = await req.json();
-    const { name, email, password, role, department, permissions, status } = body;
+    const { name, email, password, role, department, permissions, status, designation } = body;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json({ message: 'Name, email, password, and role are required fields' }, { status: 400 });
@@ -149,6 +153,25 @@ export async function POST(req) {
     const profileCompleted = isApprovedRole;
     const verificationStatus = isApprovedRole ? 'Approved' : 'Unsubmitted';
 
+    // Auto-generate a unique year-based corporate ID matching the ROLE-YYYY-XXXX structure
+    const year = new Date().getFullYear();
+    const prefix = role === 'Employee' ? 'EMP' : role === 'Intern' ? 'INT' : role === 'Manager' ? 'MGR' : role === 'HR' ? 'HR' : 'ADM';
+    let employeeId = '';
+    for (let i = 0; i < 5; i++) {
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      const candidateId = `${prefix}-${year}-${randomNum}`;
+      const duplicate = await User.findOne({ employeeId: candidateId });
+      if (!duplicate) {
+        employeeId = candidateId;
+        break;
+      }
+    }
+    if (!employeeId) {
+      employeeId = `${prefix}-${year}-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+
+    const resolvedDesignation = (designation || '').trim() || role;
+
     const newUser = new User({
       name,
       email: normalizedEmail,
@@ -161,7 +184,9 @@ export async function POST(req) {
       initials,
       badgeColor,
       profileCompleted,
-      verificationStatus
+      verificationStatus,
+      employeeId,
+      designation: resolvedDesignation
     });
 
     await newUser.save();
@@ -178,7 +203,9 @@ export async function POST(req) {
       initials,
       badgeColor,
       profileCompleted,
-      verificationStatus
+      verificationStatus,
+      employeeId,
+      designation: newUser.designation
     };
 
     return NextResponse.json(result, { status: 201 });
@@ -312,6 +339,8 @@ export async function PUT(req) {
     if (body.email !== undefined) user.email = body.email;
     if (body.role !== undefined) user.role = body.role;
     if (body.department !== undefined) user.department = body.department;
+    if (body.designation !== undefined) user.designation = body.designation;
+    if (body.employeeId !== undefined) user.employeeId = body.employeeId;
     if (phone !== undefined) user.phone = phone;
     if (dob !== undefined) user.dob = dob;
     if (address !== undefined) user.address = address;

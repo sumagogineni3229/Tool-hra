@@ -19,7 +19,9 @@ const DEFAULT_SEEDS = [
     dob: "1988-04-12",
     address: "HQ Operations Core Room",
     emergencyContactName: "Security Desk",
-    emergencyContactPhone: "9876543211"
+    emergencyContactPhone: "9876543211",
+    employeeId: "ADM-2026-0001",
+    designation: "System Administrator"
   },
   {
     id: "seed-2",
@@ -39,7 +41,9 @@ const DEFAULT_SEEDS = [
     dob: "1991-08-23",
     address: "HRA Office Desk 4",
     emergencyContactName: "Daniel Jenkins",
-    emergencyContactPhone: "9876543212"
+    emergencyContactPhone: "9876543212",
+    employeeId: "HR-2026-0002",
+    designation: "HR Manager"
   },
   {
     id: "seed-3",
@@ -59,7 +63,9 @@ const DEFAULT_SEEDS = [
     dob: "1989-11-05",
     address: "HQ Tech Suite B",
     emergencyContactName: "Mary Cooper",
-    emergencyContactPhone: "9876543213"
+    emergencyContactPhone: "9876543213",
+    employeeId: "MGR-2026-0003",
+    designation: "Engineering Lead"
   },
   {
     id: "seed-4",
@@ -79,7 +85,9 @@ const DEFAULT_SEEDS = [
     dob: "1993-02-14",
     address: "123 Operational Avenue",
     emergencyContactName: "Jane Doe",
-    emergencyContactPhone: "9876543214"
+    emergencyContactPhone: "9876543214",
+    employeeId: "EMP-2026-0004",
+    designation: "Software Engineer"
   },
   {
     id: "seed-5",
@@ -99,7 +107,9 @@ const DEFAULT_SEEDS = [
     dob: "1997-06-30",
     address: "456 Learning Way",
     emergencyContactName: "Bob Smith",
-    emergencyContactPhone: "9876543215"
+    emergencyContactPhone: "9876543215",
+    employeeId: "INT-2026-0005",
+    designation: "Associate Intern"
   },
   {
     id: "seed-6",
@@ -119,7 +129,9 @@ const DEFAULT_SEEDS = [
     dob: "1992-09-12",
     address: "789 HR Boulevard",
     emergencyContactName: "Alex Rostov",
-    emergencyContactPhone: "9876543216"
+    emergencyContactPhone: "9876543216",
+    employeeId: "HR-2026-0006",
+    designation: "HR Officer"
   }
 ];
 
@@ -391,13 +403,13 @@ export const apiClient = {
   // Create new user record
   createUser: async (userData) => {
     initializeLocalStorage();
-    const { name, email, password, role, department, permissions, status } = userData;
+    const { name, email, password, role, department, permissions, status, designation } = userData;
 
     try {
       const response = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role, department, permissions, status })
+        body: JSON.stringify({ name, email, password, role, department, permissions, status, designation })
       });
 
       if (response.ok) {
@@ -442,6 +454,25 @@ export const apiClient = {
       const profileCompleted = isApprovedRole;
       const verificationStatus = isApprovedRole ? "Approved" : "Unsubmitted";
 
+      // Auto-generate employeeId for local fallback
+      const year = new Date().getFullYear();
+      const prefix = role === "Employee" ? "EMP" : role === "Intern" ? "INT" : role === "Manager" ? "MGR" : role === "HR" ? "HR" : "ADM";
+      let employeeId = "";
+      for (let i = 0; i < 5; i++) {
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        const candidateId = `${prefix}-${year}-${randomNum}`;
+        const duplicate = localUsers.some(u => u.employeeId === candidateId);
+        if (!duplicate) {
+          employeeId = candidateId;
+          break;
+        }
+      }
+      if (!employeeId) {
+        employeeId = `${prefix}-${year}-${Math.floor(1000 + Math.random() * 9000)}`;
+      }
+
+      const resolvedDesignation = (designation || "").trim() || role;
+
       const newUser = {
         id: `local-${Date.now()}`,
         name,
@@ -460,7 +491,9 @@ export const apiClient = {
         dob: "",
         address: "",
         emergencyContactName: "",
-        emergencyContactPhone: ""
+        emergencyContactPhone: "",
+        employeeId,
+        designation: resolvedDesignation
       };
 
       localUsers.push(newUser);

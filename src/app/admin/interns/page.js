@@ -224,7 +224,8 @@ export default function AdminInternsDashboard() {
         startDate: editingIntern.startDate,
         endDate: editingIntern.endDate,
         status: editingIntern.status,
-        department: editingIntern.department
+        department: editingIntern.department,
+        designation: editingIntern.designation
       });
 
       if (res.success) {
@@ -592,7 +593,14 @@ export default function AdminInternsDashboard() {
                                 </div>
                               )}
                               <div className="flex flex-col">
-                                <span className="font-bold text-slate-900 leading-tight">{intern.name}</span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-bold text-slate-900 leading-tight">{intern.name}</span>
+                                  {intern.employeeId && (
+                                    <span className="text-[9px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded font-mono shrink-0">
+                                      {intern.employeeId}
+                                    </span>
+                                  )}
+                                </div>
                                 <span className="text-[10px] text-slate-400 mt-0.5">{intern.email}</span>
                               </div>
                             </div>
@@ -602,7 +610,10 @@ export default function AdminInternsDashboard() {
                           <td className="px-5 py-4">
                             <div className="flex flex-col">
                               <span className="font-bold text-slate-800">{intern.department}</span>
-                              <span className="text-[10px] text-slate-400 mt-0.5">Team: {rel.teamName}</span>
+                              {intern.designation && (
+                                <span className="text-[10px] text-amber-700 font-semibold mt-0.5">{intern.designation}</span>
+                              )}
+                              <span className="text-[10px] text-slate-450 mt-0.5">Team: {rel.teamName}</span>
                             </div>
                           </td>
 
@@ -908,6 +919,16 @@ export default function AdminInternsDashboard() {
                     value={editingIntern.department || ""} 
                     onChange={e => setEditingIntern(prev => ({ ...prev, department: e.target.value }))}
                     className="p-2 border border-slate-250 rounded-xl focus:outline-none focus:border-slate-350"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-slate-700">Job Designation</label>
+                  <input 
+                    type="text" 
+                    value={editingIntern.designation || ""} 
+                    onChange={e => setEditingIntern(prev => ({ ...prev, designation: e.target.value }))}
+                    className="p-2 border border-slate-250 rounded-xl focus:outline-none focus:border-slate-350"
+                    placeholder="e.g. Frontend Developer"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
