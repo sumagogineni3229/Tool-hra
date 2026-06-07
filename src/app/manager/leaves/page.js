@@ -41,10 +41,13 @@ export default function ManagerLeaves() {
   const fetchAllData = useCallback(async () => {
     setLoading(true);
     try {
+      const session = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("currentUser") || "null") : null;
+      const emailParam = session?.email ? `?email=${encodeURIComponent(session.email)}&role=Manager` : "";
+      
       const [fetchedUsers, fetchedTeams, leaveRes] = await Promise.all([
         apiClient.getUsers(),
         apiClient.getTeams(),
-        fetch("/api/leave").catch(e => { console.warn("Muted leave fetch error:", e); return null; })
+        fetch(`/api/leave${emailParam}`).catch(e => { console.warn("Muted leave fetch error:", e); return null; })
       ]);
 
       setUsers(fetchedUsers || []);

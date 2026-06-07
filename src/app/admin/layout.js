@@ -115,6 +115,7 @@ function AdminLayoutContent({ children }) {
     { name: "Profile Verifications", href: "/admin/verifications", icon: ShieldCheck },
     { name: "Attendance Manage", href: "/admin/attendance", icon: Clock },
     { name: "Leave Approvals", href: "/admin/leaves", icon: CalendarDays },
+    { name: "Employee Self Service Request", href: "/admin/self-service", icon: Layers },
     { name: "Departments", href: "/admin/departments", icon: Building2 },
     { name: "Payroll", href: "/admin/payroll", icon: CreditCard },
     { name: "Reports", href: "/admin/reports", icon: FileBarChart2 },

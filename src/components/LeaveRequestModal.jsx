@@ -6,7 +6,7 @@ import { X, Calendar, FileText, Send, AlertCircle, Loader2 } from "lucide-react"
 
 export default function LeaveRequestModal({ isOpen, onClose, onRefresh, onSuccess }) {
   const [formData, setFormData] = useState({
-    leaveType: "Annual",
+    leaveType: "Earned",
     startDate: "",
     endDate: "",
     reason: "",
@@ -15,9 +15,11 @@ export default function LeaveRequestModal({ isOpen, onClose, onRefresh, onSucces
   const [error, setError] = useState("");
 
   const leaveTypes = [
-    { label: "Paid Leave", val: "Annual" },
+    { label: "Earned Leave", val: "Earned" },
     { label: "Sick Leave", val: "Sick" },
-    { label: "Casual Leave", val: "Casual" }
+    { label: "Emergency Leave", val: "Emergency" },
+    { label: "Optional / Festival Leave", val: "Optional" },
+    { label: "Maternity / Paternity Leave", val: "Maternity" }
   ];
 
   const calculateDays = (start, end) => {
@@ -58,7 +60,7 @@ export default function LeaveRequestModal({ isOpen, onClose, onRefresh, onSucces
         onRefresh();
         onSuccess?.();
         onClose();
-        setFormData({ leaveType: "Annual", startDate: "", endDate: "", reason: "" });
+        setFormData({ leaveType: "Earned", startDate: "", endDate: "", reason: "" });
       } else {
         const data = await res.json();
         throw new Error(data.message || "Failed to submit request");
@@ -101,7 +103,7 @@ export default function LeaveRequestModal({ isOpen, onClose, onRefresh, onSucces
         onRefresh();
         onSuccess?.();
         onClose();
-        setFormData({ leaveType: "Annual", startDate: "", endDate: "", reason: "" });
+        setFormData({ leaveType: "Earned", startDate: "", endDate: "", reason: "" });
       } else {
         setError("User session context missing. Please try logging in again.");
       }

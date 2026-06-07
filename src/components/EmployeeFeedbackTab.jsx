@@ -247,7 +247,7 @@ function FeedbackForm({ user, onSuccess }) {
         <div className="flex justify-between items-center pb-4 border-b border-slate-100">
           <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
             <Ticket className="w-5 h-5 text-indigo-600" />
-            1. Ticket Submitter Details
+            1. Employee Information
           </h3>
           <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
             <Shield className="w-4 h-4 text-slate-400" />
@@ -377,7 +377,7 @@ function FeedbackForm({ user, onSuccess }) {
       <section className="bg-white/95 backdrop-blur-2xl rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-8 text-left">
         <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest flex items-center gap-3 pb-4 border-b border-slate-100">
           <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-          4. Sentiment & Ratings
+          4. Experience and Feedback
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
@@ -622,7 +622,7 @@ export default function EmployeeFeedbackTab() {
       {/* Title Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Secure Support Ticket Hub</h2>
+          <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Employee Support Centre</h2>
           <p className="text-slate-500 font-light text-lg italic tracking-wide">Raise support tickets, suggest workspace optimizations, or track ticket resolutions.</p>
         </div>
         {activeTab === "logs" && (

@@ -129,15 +129,15 @@ const UserSchema = new mongoose.Schema({
 
 // Force Mongoose to recompile the model if the cached version is stale (missing the new fields)
 if (mongoose.models.User && (
-  !mongoose.models.User.schema.paths.phone || 
+  !mongoose.models.User.schema.paths.phone ||
   !mongoose.models.User.schema.paths.verificationStatus ||
-  !mongoose.models.User.schema.paths.aadhaarNumber || 
+  !mongoose.models.User.schema.paths.aadhaarNumber ||
   !mongoose.models.User.schema.paths.userPhoto ||
   !mongoose.models.User.schema.paths.aadhaarPhoto ||
   !mongoose.models.User.schema.paths.resetCode ||
-  !mongoose.models.User.schema.paths.college || 
-  !mongoose.models.User.schema.paths.course || 
-  !mongoose.models.User.schema.paths.startDate || 
+  !mongoose.models.User.schema.paths.college ||
+  !mongoose.models.User.schema.paths.course ||
+  !mongoose.models.User.schema.paths.startDate ||
   !mongoose.models.User.schema.paths.endDate ||
   !mongoose.models.User.schema.paths.bankName ||
   !mongoose.models.User.schema.paths.bankAccountNumber ||

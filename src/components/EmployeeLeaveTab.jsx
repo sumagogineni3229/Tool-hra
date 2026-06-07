@@ -93,6 +93,7 @@ export default function EmployeeLeaveTab() {
         <div>
           <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Leave Management</h2>
           <p className="text-slate-500 font-light text-lg italic tracking-wide">Track your balance and request official absence periods.</p>
+          <p className="text-xs font-bold text-indigo-500 mt-1 uppercase tracking-widest">Annual Cycle: Jan 1 – Dec 31, {new Date().getFullYear()}</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -104,19 +105,26 @@ export default function EmployeeLeaveTab() {
       </header>
 
       {/* Leave Balances Grid (Gauges) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 py-2">
         {[
-          { label: "Paid Leave", key: "paid", total: 10, colors: ["#10b981", "#059669"], dbType: "Annual" },
-          { label: "Casual Leave", key: "casual", total: 15, colors: ["#6366f1", "#4f46e5"], dbType: "Casual" },
-          { label: "Sick Leave", key: "sick", total: 12, colors: ["#ef4444", "#dc2626"], dbType: "Sick" },
+          { label: "Earned Leave", key: "earned", total: 15, colors: ["#10b981", "#059669"], dbType: "Earned" },
+          { label: "Sick Leave", key: "sick", total: 5, colors: ["#ef4444", "#dc2626"], dbType: "Sick" },
+          { label: "Emergency Leave", key: "emergency", total: 1, colors: ["#f59e0b", "#d97706"], dbType: "Emergency" },
+          { label: "Optional / Festival", key: "optional", total: null, colors: ["#8b5cf6", "#7c3aed"], dbType: "Optional" },
+          { label: "Maternity / Paternity", key: "maternity", total: null, colors: ["#ec4899", "#db2777"], dbType: "Maternity" },
         ].map((item) => {
+          const currentYear = new Date().getFullYear();
           const approvedDays = leaves
-            .filter(l => l.leaveType === item.dbType && l.status === "approved")
+            .filter(l => {
+              const leaveYear = new Date(l.startDate).getFullYear();
+              return l.leaveType === item.dbType && l.status === "approved" && leaveYear === currentYear;
+            })
             .reduce((acc, curr) => acc + curr.daysCount, 0);
 
-          const available = Math.max(item.total - approvedDays, 0);
+          const isPolicy = item.total === null;
+          const available = isPolicy ? null : Math.max(item.total - approvedDays, 0);
           const used = approvedDays;
-          const percentage = (available / item.total) * 100;
+          const percentage = isPolicy ? 100 : (available / item.total) * 100;
 
           // SVG Circle Constants
           const radius = 54;
@@ -127,18 +135,18 @@ export default function EmployeeLeaveTab() {
             <motion.div
               key={item.key}
               whileHover={{ y: -4, scale: 1.01 }}
-              className="bg-white border border-slate-100 p-8 rounded-[3rem] shadow-xl shadow-slate-200/30 relative flex flex-col items-center overflow-hidden transition-all"
+              className="bg-white border border-slate-100 p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/30 relative flex flex-col items-center overflow-hidden transition-all"
             >
-              <div className="w-full flex justify-between items-center mb-10">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">
+              <div className="w-full flex justify-between items-center mb-6">
+                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] leading-none">
                   {item.label}
                 </h4>
                 <div className="w-2 h-2 rounded-full" style={{ background: `linear-gradient(to tr, ${item.colors[0]}, ${item.colors[1]})` }} />
               </div>
 
-              <div className="relative flex items-center justify-center mb-10">
+              <div className="relative flex items-center justify-center mb-6">
                 {/* SVG Radial Progress Tracker */}
-                <svg className="w-40 h-40 transform -rotate-90">
+                <svg className="w-32 h-32 transform -rotate-90">
                   <defs>
                     <linearGradient id={`grad-${item.key}`} x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor={item.colors[0]} />
@@ -146,8 +154,8 @@ export default function EmployeeLeaveTab() {
                     </linearGradient>
                   </defs>
                   <circle
-                    cx="80"
-                    cy="80"
+                    cx="64"
+                    cy="64"
                     r={radius}
                     stroke="#f1f5f9"
                     strokeWidth="5"
@@ -157,8 +165,8 @@ export default function EmployeeLeaveTab() {
                     initial={{ strokeDashoffset: circumference }}
                     animate={{ strokeDashoffset: offset }}
                     transition={{ duration: 2, ease: "circOut" }}
-                    cx="80"
-                    cy="80"
+                    cx="64"
+                    cy="64"
                     r={radius}
                     stroke={`url(#grad-${item.key})`}
                     strokeWidth="5"
@@ -168,12 +176,21 @@ export default function EmployeeLeaveTab() {
                   />
                 </svg>
 
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-1">Available</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{available}</span>
-                    <span className="text-xl font-bold text-slate-200">/{item.total}</span>
-                  </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
+                  {isPolicy ? (
+                    <>
+                      <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mb-1">Policy</p>
+                      <p className="text-[9px] font-black text-slate-600 leading-tight">As per company<br/>policy</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mb-1">Available</p>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-3xl font-black text-slate-900 tracking-tighter leading-none">{available}</span>
+                        <span className="text-lg font-bold text-slate-200">/{item.total}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -184,8 +201,17 @@ export default function EmployeeLeaveTab() {
                   <p className="text-lg font-black text-slate-900 leading-none">{used}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Quota Used</p>
-                  <p className="text-lg font-black text-slate-900 leading-none">{Math.round((used / item.total) * 100 || 0)}%</p>
+                  {isPolicy ? (
+                    <>
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Entitlement</p>
+                      <p className="text-[9px] font-black text-slate-600 leading-none">Per Policy</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Quota Used</p>
+                      <p className="text-lg font-black text-slate-900 leading-none">{Math.round((used / item.total) * 100 || 0)}%</p>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

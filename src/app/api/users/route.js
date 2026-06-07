@@ -206,7 +206,7 @@ export async function DELETE(req) {
 
     // Clean up references in teams
     const userObjectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
-    
+
     // 1. Remove this user from the members list of any team
     if (userObjectId) {
       await Team.updateMany(
@@ -250,8 +250,8 @@ export async function PUT(req) {
     let user;
     if (mongoose.Types.ObjectId.isValid(id)) {
       user = await User.findById(id);
-    } 
-    
+    }
+
     // Primary fallback: match by email passed from frontend session
     if (!user && email) {
       user = await User.findOne({ email: email.toLowerCase().trim() });

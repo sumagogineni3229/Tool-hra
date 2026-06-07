@@ -118,12 +118,13 @@ function InternLayoutContent({ children }) {
     { name: "Dashboard", href: "/intern/dashboard", icon: LayoutDashboard },
     { name: "Attendance", href: "/intern/attendance", icon: Clock },
     { name: "Leave Request", href: "/intern/leaves", icon: CalendarDays },
+    { name: "Self Service", href: "/intern/self-service", icon: ClipboardList },
     { name: "Calendar", href: "/intern/calendar", icon: Calendar },
     { name: "My Tasks", href: "/intern/tasks", icon: CheckSquare },
     { name: "My Projects", href: "/intern/projects", icon: Briefcase },
     { name: "Reports", href: "/intern/reports", icon: TrendingUp },
     { name: "Training and Learning", href: "/intern/training", icon: GraduationCap },
-    { name: "Feedback", href: "/intern/feedback", icon: MessageSquare }
+    { name: "Helpdesk", href: "/intern/feedback", icon: MessageSquare }
   ];
 
   if (!isAuthorized) {

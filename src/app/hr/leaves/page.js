@@ -18,7 +18,10 @@ export default function HRLeaveManagement() {
   const fetchLeaves = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/leave");
+      // Pass the current user email as a context hint for the API
+      const currentUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("currentUser") || "null") : null;
+      const emailParam = currentUser?.email ? `?email=${encodeURIComponent(currentUser.email)}&role=${currentUser.role || "HR"}` : "";
+      const res = await fetch(`/api/leave${emailParam}`);
       if (res.ok) {
         const data = await res.json();
         setLeaves(data.leaves || []);

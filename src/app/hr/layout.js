@@ -96,6 +96,7 @@ function HRLayoutContent({ children }) {
     { name: "Profile Verifications", href: "/hr/verifications", icon: ShieldCheck },
     { name: "Attendance Manage", href: "/hr/attendance", icon: Clock },
     { name: "Leave Approvals", href: "/hr/leaves", icon: CalendarDays },
+    { name: "Employee Self Service Request", href: "/hr/self-service", icon: FileSpreadsheet },
     { name: "Calendar", href: "/hr/calendar", icon: Calendar },
     { name: "Payroll Console", href: "/hr/payroll", icon: CreditCard },
     { name: "Holidays Publisher", href: "/hr/holidays", icon: FileSpreadsheet },

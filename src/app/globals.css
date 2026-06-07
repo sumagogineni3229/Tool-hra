@@ -19,6 +19,8 @@
   --theme-slate-900: #0f172a;
   --theme-slate-955: #020617;
   --theme-slate-950: #020617;
+  --theme-slate-55: #f4f6fa;
+  --theme-slate-150: #eaedf2;
 
   /* Light mode status colors */
   --theme-amber-50: #fffbeb;
@@ -106,6 +108,8 @@
   --theme-slate-900: #ffffff;   /* slate-900 maps to white */
   --theme-slate-955: #ffffff;   /* slate-955 maps to white */
   --theme-slate-950: #ffffff;   /* slate-950 maps to white */
+  --theme-slate-55: #121a28;
+  --theme-slate-150: #242f42;
 
   /* Dark mode status colors (subtle dark backgrounds & bright texts) */
   --theme-amber-50: rgba(180, 83, 9, 0.15);
@@ -194,6 +198,8 @@
   --color-slate-800: var(--theme-slate-800);
   --color-slate-900: var(--theme-slate-900);
   --color-slate-950: var(--theme-slate-950);
+  --color-slate-55: var(--theme-slate-55);
+  --color-slate-150: var(--theme-slate-150);
 
   /* Override Tailwind v4 status palettes dynamically */
   --color-amber-50: var(--theme-amber-50);

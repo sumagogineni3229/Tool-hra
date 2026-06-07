@@ -23,7 +23,9 @@ import {
   Plus,
   Camera,
   MapPin,
-  Loader2
+  Loader2,
+  Home,
+  Building2
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import AttendanceWebcam from "@/app/employee/attendance/AttendanceWebcam";
@@ -34,6 +36,7 @@ export default function EmployeeDashboard() {
   const [dbHolidays, setDbHolidays] = useState([]);
   const [dbAnnouncements, setDbAnnouncements] = useState([]);
   const [activeInsurance, setActiveInsurance] = useState(null);
+  const [essRequests, setEssRequests] = useState([]);
 
   // Today's attendance from database
   const [todayAttendance, setTodayAttendance] = useState(null);
@@ -332,6 +335,19 @@ export default function EmployeeDashboard() {
           console.warn("Could not fetch insurance policy on dashboard mount:", err);
         });
 
+      // 7. Fetch ESS Requests
+      fetch(`/api/ess-requests?email=${encodeURIComponent(currentUser.email)}`)
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error("Failed to fetch ESS requests");
+        })
+        .then(data => {
+          setEssRequests(data.requests || []);
+        })
+        .catch(err => {
+          console.warn("Could not fetch ESS requests for dashboard:", err);
+        });
+
       return () => clearInterval(poll);
     }
   }, [currentUser?.email]);
@@ -493,17 +509,24 @@ export default function EmployeeDashboard() {
   };
 
   const calculateUsedLeaves = (typeLabel) => {
-    const approvedLeavesOfType = dbLeaves.filter(l => 
-      l.type.toLowerCase().trim() === typeLabel.toLowerCase().trim() &&
-      l.status.toLowerCase().trim() === "approved"
-    );
+    const currentYear = new Date().getFullYear();
+    const approvedLeavesOfType = dbLeaves.filter(l => {
+      const leaveYear = new Date(l.startDate).getFullYear();
+      return (
+        l.type.toLowerCase().trim() === typeLabel.toLowerCase().trim() &&
+        l.status.toLowerCase().trim() === "approved" &&
+        leaveYear === currentYear
+      );
+    });
     return approvedLeavesOfType.reduce((acc, curr) => acc + parseDuration(curr.duration), 0);
   };
 
   const leaves = [
-    { type: "Sick Leaves", used: calculateUsedLeaves("Sick Leave"), limit: 12, color: "bg-rose-500", raw: "bg-rose-100/50" },
-    { type: "Casual Leaves", used: calculateUsedLeaves("Casual Leave"), limit: 15, color: "bg-indigo-500", raw: "bg-indigo-100/50" },
-    { type: "Paid Leaves", used: calculateUsedLeaves("Paid Leave"), limit: 10, color: "bg-emerald-500", raw: "bg-emerald-100/50" }
+    { type: "Earned Leaves", used: calculateUsedLeaves("Earned Leave"), limit: 15, color: "bg-emerald-500", raw: "bg-emerald-100/50" },
+    { type: "Sick Leaves", used: calculateUsedLeaves("Sick Leave"), limit: 5, color: "bg-rose-500", raw: "bg-rose-100/50" },
+    { type: "Emergency Leave", used: calculateUsedLeaves("Emergency Leave"), limit: 1, color: "bg-amber-500", raw: "bg-amber-100/50" },
+    { type: "Optional / Festival", used: calculateUsedLeaves("Optional Leave"), limit: null, color: "bg-violet-500", raw: "bg-violet-100/50" },
+    { type: "Maternity / Paternity", used: calculateUsedLeaves("Maternity Leave"), limit: null, color: "bg-pink-500", raw: "bg-pink-100/50" },
   ];
 
   // Dynamic Shift Progress Calculations
@@ -809,20 +832,21 @@ export default function EmployeeDashboard() {
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-extrabold text-rose-600 bg-rose-50 border border-rose-100/50 px-2 py-0.5 rounded w-fit uppercase tracking-wider">Leave Balance</span>
             <h3 className="font-bold text-slate-950 text-sm mt-1.5 font-sans">My Annual Leave Entitlements</h3>
-            <p className="text-[11px] text-slate-400 font-medium">Verify your approved used counts against standard corporate quotas.</p>
+            <p className="text-[11px] text-slate-400 font-medium">Current cycle: Jan 1 – Dec 31, {new Date().getFullYear()} &nbsp;&bull;&nbsp; Balances reset each calendar year.</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {leaves.map((leave, i) => {
-            const daysLeft = Math.max(leave.limit - leave.used, 0);
-            const pct = Math.min((daysLeft / leave.limit) * 100, 100);
+            const isPolicy = leave.limit === null;
+            const daysLeft = isPolicy ? null : Math.max(leave.limit - leave.used, 0);
+            const pct = isPolicy ? 100 : Math.min((daysLeft / leave.limit) * 100, 100);
             return (
               <div key={i} className="p-5 rounded-2xl border border-slate-150/60 bg-slate-50/20 hover:shadow-sm hover:translate-y-[-1px] transition-all text-left flex flex-col gap-3.5">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-slate-900">{leave.type}</span>
                   <span className="text-[10px] font-extrabold text-slate-500 font-mono">
-                    {daysLeft} / {leave.limit} Days Left
+                    {isPolicy ? "Policy" : `${daysLeft} / ${leave.limit} Left`}
                   </span>
                 </div>
 
@@ -835,13 +859,65 @@ export default function EmployeeDashboard() {
                 </div>
 
                 <div className="flex items-center justify-between text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-                  <span>Approved: {leave.used} days used</span>
-                  <span>Limit: {leave.limit}d</span>
+                  <span>Used: {leave.used} days</span>
+                  <span>{isPolicy ? "As per policy" : `Limit: ${leave.limit}d`}</span>
                 </div>
               </div>
             );
           })}
         </div>
+      </div>
+
+      {/* Employee Self Service (ESS) Section */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col gap-5 text-left">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-extrabold text-rose-600 bg-rose-50 border border-rose-100/50 px-2 py-0.5 rounded w-fit uppercase tracking-wider">Employee Self Service</span>
+            <h3 className="font-bold text-slate-950 text-sm mt-1.5 font-sans">Self Service Requests</h3>
+            <p className="text-[11px] text-slate-405 font-medium">Manage WFH / WFO scheduling requests. Requests go to HR, Admin, and Manager for approval.</p>
+          </div>
+          <a
+            href="/employee/self-service"
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
+          >
+            Go to Self Service Portal
+          </a>
+        </div>
+
+        {essRequests.length === 0 ? (
+          <div className="p-6 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400 font-medium">
+            No active Self Service requests.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {essRequests.slice(0, 2).map((req, idx) => {
+              const startStr = req.startDate ? new Date(req.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "";
+              const endStr = req.endDate ? new Date(req.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "";
+              return (
+                <div key={req._id || idx} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50/40">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      req.requestType === "WFH" ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                    }`}>
+                      {req.requestType === "WFH" ? <Home className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block">{req.requestType === "WFH" ? "Work From Home" : "Work From Office"}</span>
+                      <span className="text-[10px] text-slate-400 font-medium block">{startStr} - {endStr}</span>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${
+                    req.status === "approved" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                    req.status === "rejected" ? "bg-rose-50 text-rose-700 border-rose-100" :
+                    "bg-amber-50 text-amber-700 border-amber-100"
+                  }`}>
+                    {req.status}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* 5. Split Bottom Grid: Calendar/Holidays (4 columns) & Announcements (4 columns) & Trainings (4 columns) */}

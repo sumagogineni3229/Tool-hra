@@ -20,6 +20,7 @@ import {
   Briefcase,
   TrendingUp,
   ShieldCheck,
+  ClipboardList,
   Menu
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
@@ -119,13 +120,14 @@ function EmployeeLayoutContent({ children }) {
     { name: "My Dashboard", href: "/employee/dashboard", icon: LayoutDashboard },
     { name: "Attendance", href: "/employee/attendance", icon: Clock },
     { name: "Leave Request", href: "/employee/leaves", icon: CalendarDays },
+    { name: "Self Service", href: "/employee/self-service", icon: ClipboardList },
     { name: "Calender", href: "/employee/calendar", icon: Calendar },
     { name: "My Tasks", href: "/employee/tasks", icon: CheckSquare },
     { name: "My Projects", href: "/employee/projects", icon: Briefcase },
     { name: "Reports", href: "/employee/reports", icon: TrendingUp },
-    { name: "My Insurance", href: "/employee/insurance", icon: ShieldCheck },
+    { name: "Health Insurance", href: "/employee/insurance", icon: ShieldCheck },
     { name: "Payroll", href: "/employee/payroll", icon: CreditCard },
-    { name: "Feedback", href: "/employee/feedback", icon: MessageSquare }
+    { name: "Helpdesk", href: "/employee/feedback", icon: MessageSquare }
   ];
 
   if (!isAuthorized) {
@@ -159,8 +161,8 @@ function EmployeeLayoutContent({ children }) {
                   />
                 </div>
                 <div className="border-l border-slate-200 pl-2.5 text-left">
-                  <span className="font-bold text-xs uppercase tracking-tight text-slate-900 block">Staff</span>
-                  <span className="block text-[8px] text-slate-400 font-bold tracking-widest uppercase -mt-0.5">HQ Console</span>
+                  <span className="font-bold text-xs uppercase tracking-tight text-slate-900 block">Employee</span>
+                  <span className="block text-[8px] text-slate-400 font-bold tracking-widest uppercase -mt-0.5">Service Portal</span>
                 </div>
               </Link>
               <button

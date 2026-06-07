@@ -73,7 +73,7 @@ export default function UserManagementConsole() {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     let matchesFilter = true;
     if (filterParam === "hr") {
       matchesFilter = user.role === "HR";
@@ -180,14 +180,13 @@ export default function UserManagementConsole() {
 
   return (
     <div className="flex flex-col gap-8">
-      
+
       {/* Global Toast/Notification Banner */}
       {modalNotification && actionParam !== "create" && (
-        <div className={`p-3.5 rounded-xl text-xs font-semibold leading-relaxed flex items-start gap-2.5 border animate-fade-in ${
-          modalNotification.type === "success"
+        <div className={`p-3.5 rounded-xl text-xs font-semibold leading-relaxed flex items-start gap-2.5 border animate-fade-in ${modalNotification.type === "success"
             ? "bg-emerald-50/70 text-emerald-800 border-emerald-100/70"
             : "bg-rose-50/70 text-rose-800 border-rose-100/70"
-        }`}>
+          }`}>
           {modalNotification.type === "success" ? (
             <CheckCircle className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
           ) : (
@@ -204,8 +203,8 @@ export default function UserManagementConsole() {
             {filterParam === "hr"
               ? "HR Accounts Console"
               : filterParam === "manager"
-              ? "Manager Accounts Console"
-              : "User Management Portal"}
+                ? "Manager Accounts Console"
+                : "User Management Portal"}
           </h1>
           <p className="text-xs text-slate-500">Configure administrative access credentials, group roles, and secure system session scopes.</p>
         </div>
@@ -221,7 +220,7 @@ export default function UserManagementConsole() {
 
       {/* Quick Access Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+
         {/* Card 1: Total Admins */}
         <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex items-center gap-4 hover:shadow-md transition-all duration-300">
           <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-800 shrink-0">
@@ -259,7 +258,7 @@ export default function UserManagementConsole() {
 
       {/* Directory Table Card */}
       <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-        
+
         {/* Table Filters Header */}
         <div className="border-b border-slate-150/75 px-6 py-4.5 bg-slate-50/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -303,7 +302,7 @@ export default function UserManagementConsole() {
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-slate-55/10 transition-colors">
-                    
+
                     {/* User profile avatar, name, email */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -333,24 +332,22 @@ export default function UserManagementConsole() {
                     {/* Live Session Status */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${
-                          user.session === "Online"
+                        <span className={`w-2 h-2 rounded-full ${user.session === "Online"
                             ? "bg-emerald-500"
                             : user.session === "Away"
-                            ? "bg-amber-400 animate-pulse"
-                            : "bg-slate-300"
-                        }`} />
+                              ? "bg-amber-400 animate-pulse"
+                              : "bg-slate-300"
+                          }`} />
                         <span className="text-xs font-semibold text-slate-600">{user.session}</span>
                       </div>
                     </td>
 
                     {/* User Status (Active/Suspended) */}
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        user.status === "Active"
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${user.status === "Active"
                           ? "bg-emerald-50/60 text-emerald-800 border-emerald-100"
                           : "bg-rose-50/60 text-rose-800 border-rose-100"
-                      }`}>
+                        }`}>
                         {user.status === "Active" ? (
                           <CheckCircle className="w-3 h-3 text-emerald-600" />
                         ) : (
@@ -420,7 +417,7 @@ export default function UserManagementConsole() {
       {actionParam === "create" && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-md animate-backdrop">
           <div className="absolute inset-0 cursor-default" onClick={() => router.push("/admin/users")} />
-          
+
           <div className="relative z-10 w-full max-w-4xl bg-white border border-slate-200/80 rounded-2xl shadow-2xl shadow-slate-950/20 flex flex-col animate-modal text-left overflow-hidden">
             {/* Close button */}
             <button
@@ -441,11 +438,10 @@ export default function UserManagementConsole() {
 
                 {/* Modal Toast/Notification Banner */}
                 {modalNotification && (
-                  <div className={`p-3.5 rounded-xl text-xs font-semibold leading-relaxed flex items-start gap-2.5 border animate-fade-in ${
-                    modalNotification.type === "success"
+                  <div className={`p-3.5 rounded-xl text-xs font-semibold leading-relaxed flex items-start gap-2.5 border animate-fade-in ${modalNotification.type === "success"
                       ? "bg-emerald-50/70 text-emerald-800 border-emerald-100/70"
                       : "bg-rose-50/70 text-rose-800 border-rose-100/70"
-                  }`}>
+                    }`}>
                     {modalNotification.type === "success" ? (
                       <CheckCircle className="w-4.5 h-4.5 text-emerald-650 shrink-0 mt-0.5" />
                     ) : (
@@ -621,7 +617,7 @@ export default function UserManagementConsole() {
                 {/* History Stream */}
                 <div className="flex flex-col gap-3 overflow-y-auto max-h-[430px] pr-1 scrollbar-thin">
                   {usersList.slice(0, 4).map((user) => (
-                    <div 
+                    <div
                       key={user.id || user.email}
                       className="bg-white border border-slate-150/75 p-3.5 rounded-xl shadow-xs flex items-center gap-3 hover:border-slate-350 transition-all duration-350 group animate-fade-in"
                     >
@@ -629,16 +625,15 @@ export default function UserManagementConsole() {
                       <div className={`w-9.5 h-9.5 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300 ${user.badgeColor || 'bg-slate-900 text-white'}`}>
                         {user.initials || 'U'}
                       </div>
-                      
+
                       {/* Meta Info */}
                       <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-bold text-slate-900 text-xs truncate group-hover:text-indigo-950 transition-colors">{user.name}</span>
-                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold border shrink-0 ${
-                            user.status === "Active"
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold border shrink-0 ${user.status === "Active"
                               ? "bg-emerald-50/50 text-emerald-800 border-emerald-100"
                               : "bg-rose-50/50 text-rose-800 border-rose-100"
-                          }`}>
+                            }`}>
                             {user.role}
                           </span>
                         </div>
@@ -675,7 +670,7 @@ export default function UserManagementConsole() {
       {userToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-md animate-backdrop">
           <div className="absolute inset-0 cursor-default" onClick={() => setUserToDelete(null)} />
-          
+
           <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-950/20 p-6 flex flex-col gap-5 text-left animate-modal overflow-hidden">
             {/* Header info */}
             <div className="flex items-start gap-4">

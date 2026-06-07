@@ -10,6 +10,7 @@ export async function GET(request) {
     await dbConnect();
     const { searchParams } = new URL(request.url);
     const emailParam = searchParams.get('email');
+    const roleParam = searchParams.get('role'); // HR/Admin/Manager context hint when no cookie
 
     // Attempt to verify session from token cookie
     const token = request.cookies.get('token')?.value;
@@ -20,11 +21,43 @@ export async function GET(request) {
 
     // Resolve user context
     let leaves = [];
-    const isPrivileged = payload && (payload.role === "HR" || payload.role === "Admin" || payload.role === "Manager");
+    
+    // Determine privilege: from JWT token OR from role query param (fallback for no-cookie environments)
+    const tokenRole = payload?.role;
+    const effectiveRole = tokenRole || roleParam;
+    const isPrivileged = effectiveRole === "HR" || effectiveRole === "Admin" || effectiveRole === "Manager";
 
-    if (isPrivileged && !emailParam) {
-      if (payload.role === "Manager") {
-        // Dynamic import to prevent circularity if any
+    if (isPrivileged && emailParam) {
+      // Privileged user with an email param → fetch ALL leaves (email is just their identity, not a filter)
+      if (effectiveRole === "HR" || effectiveRole === "Admin") {
+        leaves = await Leave.find({}).sort({ createdAt: -1 });
+      } else if (effectiveRole === "Manager") {
+        // Manager: fetch team leaves
+        const Team = (await import('@/lib/models/Team')).default;
+        const managerUser = await User.findOne({ email: emailParam.toLowerCase().trim() }).lean();
+        if (managerUser) {
+          const managedTeams = await Team.find({
+            $or: [
+              { managerId: managerUser._id },
+              { managerId: managerUser._id.toString() }
+            ]
+          });
+          const memberIds = managedTeams.flatMap(t => t.members || []).map(m => m.toString());
+          const teamUsers = await User.find({ _id: { $in: memberIds } }).lean();
+          const teamEmails = teamUsers.map(u => u.email.toLowerCase().trim());
+          leaves = await Leave.find({
+            $or: [
+              { userId: { $in: memberIds } },
+              { userEmail: { $in: teamEmails } }
+            ]
+          }).sort({ createdAt: -1 });
+        } else {
+          leaves = await Leave.find({}).sort({ createdAt: -1 });
+        }
+      }
+    } else if (isPrivileged && !emailParam) {
+      if (effectiveRole === "Manager" && payload?.id) {
+        // Manager with JWT: fetch their team leaves
         const Team = (await import('@/lib/models/Team')).default;
         const managedTeams = await Team.find({
           $or: [
@@ -33,10 +66,8 @@ export async function GET(request) {
           ]
         });
         const memberIds = managedTeams.flatMap(t => t.members || []).map(m => m.toString());
-        
         const teamUsers = await User.find({ _id: { $in: memberIds } }).lean();
         const teamEmails = teamUsers.map(u => u.email.toLowerCase().trim());
-        
         leaves = await Leave.find({
           $or: [
             { userId: { $in: memberIds } },
@@ -51,17 +82,16 @@ export async function GET(request) {
       // Authenticated employee → fetch only their own leaves
       leaves = await Leave.find({ userId: payload.id }).sort({ createdAt: -1 });
     } else if (emailParam) {
-      // Fallback query parameter-based personal view (offline / no cookie)
+      // Fallback query parameter-based personal view (offline / no cookie, employee role)
       const email = emailParam.toLowerCase().trim();
       const user = await User.findOne({ email });
       if (user) {
-        // If the requester is privileged and passes an email, respect it as a filter
         leaves = await Leave.find({
           $or: [{ userId: user._id }, { userEmail: email }]
         }).sort({ createdAt: -1 });
       }
     } else {
-      // No token, no email param → also return all (HR dashboard offline fallback)
+      // No token, no email param → return all (HR dashboard offline fallback)
       leaves = await Leave.find({}).sort({ createdAt: -1 });
     }
 
@@ -166,7 +196,7 @@ export async function POST(request) {
     }
 
     // Modern fields parsed with fallback compatibility
-    const resolvedLeaveType = leaveType || (type ? type.replace(" Leave", "") : "Sick");
+    const resolvedLeaveType = leaveType || (type ? type.replace(" Leave", "") : "Earned");
     
     let resolvedStartDate = startDate;
     let resolvedEndDate = endDate;
@@ -199,7 +229,16 @@ export async function POST(request) {
       status: 'pending'
     });
 
-    return NextResponse.json({ message: 'Leave request submitted', leave: newLeave }, { status: 201 });
+    // Fetch user info to return enriched response
+    const leaveUser = await User.findById(activeUserId).lean();
+    const enrichedLeave = {
+      ...newLeave.toObject(),
+      id: newLeave._id.toString(),
+      name: leaveUser?.name || 'Unknown User',
+      role: leaveUser?.role || 'Employee',
+    };
+
+    return NextResponse.json({ message: 'Leave request submitted successfully', leave: enrichedLeave }, { status: 201 });
   } catch (error) {
     console.error('API POST Leave Error:', error);
     return NextResponse.json({ message: 'Server error', error: error.message }, { status: 500 });

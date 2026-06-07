@@ -14,7 +14,7 @@ const LeaveSchema = new mongoose.Schema(
     },
     leaveType: {
       type: String,
-      enum: ["Annual", "Sick", "Casual", "Maternity", "Paternity", "Unpaid"],
+      enum: ["Annual", "Sick", "Casual", "Maternity", "Paternity", "Unpaid", "Earned", "Emergency", "Optional"],
       required: true,
     },
     type: {
@@ -52,13 +52,7 @@ const LeaveSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Force recompilation of Leave model if the schema is cached in memory
-if (mongoose.models.Leave && (
-  !mongoose.models.Leave.schema.paths.userId ||
-  !mongoose.models.Leave.schema.paths.leaveType ||
-  !mongoose.models.Leave.schema.paths.adminComments
-)) {
-  delete mongoose.models.Leave;
-}
+// Force recompilation of Leave model to pick up schema changes (enum updates etc.)
+delete mongoose.models.Leave;
 
-export default mongoose.models.Leave || mongoose.model("Leave", LeaveSchema);
+export default mongoose.model("Leave", LeaveSchema);

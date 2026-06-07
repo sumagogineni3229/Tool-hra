@@ -82,6 +82,7 @@ function ManagerLayoutContent({ children }) {
     { name: "Team Management", href: "/manager/team-management", icon: Users },
     { name: "Attendance management", href: "/manager/attendance", icon: Clock },
     { name: "Leave Management", href: "/manager/leaves", icon: CalendarDays },
+    { name: "Employee Self Service Request", href: "/manager/self-service", icon: ClipboardList },
     { name: "Calendar", href: "/manager/calendar", icon: Calendar },
     { name: "Task Management", href: "/manager/task-management", icon: CheckSquare },
     { name: "Projects", href: "/manager/projects", icon: Briefcase },
