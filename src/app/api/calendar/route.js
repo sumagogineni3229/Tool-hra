@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import CalendarEvent from '@/lib/models/CalendarEvent';
 import User from '@/lib/models/User';
+import Holiday from '@/lib/models/Holiday';
 
 async function getDefaultCreator() {
   const defaultCreator = await User.findOne({ role: { $in: ['Admin', 'HR', 'Manager'] } });
@@ -15,7 +16,26 @@ export async function GET() {
   try {
     await dbConnect();
     const events = await CalendarEvent.find({}).sort({ date: 1 }).lean();
-    return NextResponse.json({ events }, { status: 200 });
+    
+    let holidays = [];
+    try {
+      holidays = await Holiday.find({}).lean();
+    } catch (err) {
+      console.error('Failed to fetch holidays in calendar API route:', err);
+    }
+
+    const holidayEvents = holidays.map(h => ({
+      _id: h._id.toString(),
+      title: h.name,
+      date: new Date(h.date),
+      type: 'holiday',
+      description: `${h.type} (${h.scope})`,
+      startTime: '',
+      endTime: '',
+      isReadOnly: true
+    }));
+
+    return NextResponse.json({ events: [...events, ...holidayEvents] }, { status: 200 });
   } catch (error) {
     console.error('API GET Calendar Error:', error);
     return NextResponse.json({ message: 'Database fetch failed', error: error.message }, { status: 500 });

@@ -10,7 +10,9 @@ import {
   DollarSign,
   UserCheck,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Building,
+  Search
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
@@ -29,6 +31,9 @@ export default function AdminPayroll() {
 
   const [success, setSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+
+  const [showBankModal, setShowBankModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -99,9 +104,18 @@ export default function AdminPayroll() {
   return (
     <div className="flex flex-col gap-8 text-left">
       {/* Header */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Administrative Payroll Console</h1>
-        <p className="text-xs text-slate-500">Calculate, verify, and publish active payroll records and monthly direct-deposits for HRA staff members.</p>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Administrative Payroll Console</h1>
+          <p className="text-xs text-slate-500">Calculate, verify, and publish active payroll records and monthly direct-deposits for HRA staff members.</p>
+        </div>
+        <button
+          onClick={() => setShowBankModal(true)}
+          className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer"
+        >
+          <Building className="w-4 h-4 text-indigo-600" />
+          <span>Employee Bank Accounts</span>
+        </button>
       </div>
 
       {/* Metrics Row */}
@@ -176,6 +190,40 @@ export default function AdminPayroll() {
                 ))}
               </select>
             </div>
+
+            {(() => {
+              const selectedEmployee = employees.find(emp => emp.email === selectedEmail);
+              return selectedEmployee && (
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-1.5 text-[10px]">
+                  <div className="flex justify-between items-center pb-1 border-b border-slate-200/40">
+                    <span className="font-bold text-slate-400 uppercase tracking-wider text-[8px]">Selected Direct Deposit</span>
+                    <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-100 uppercase">Verified</span>
+                  </div>
+                  {selectedEmployee.bankName ? (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[8px] uppercase">Bank Name</span>
+                        <span className="font-bold text-slate-800">{selectedEmployee.bankName}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[8px] uppercase">Account Number</span>
+                        <span className="font-bold text-slate-800">{selectedEmployee.bankAccountNumber}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[8px] uppercase">IFSC Code</span>
+                        <span className="font-bold text-slate-800">{selectedEmployee.bankIfscCode}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[8px] uppercase">Branch</span>
+                        <span className="font-bold text-slate-800">{selectedEmployee.bankBranch}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-amber-600 font-semibold italic text-[9px]">No bank details provided by this staff member.</span>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Pay Period */}
             <div className="flex flex-col gap-1.5">
@@ -293,6 +341,128 @@ export default function AdminPayroll() {
         </div>
 
       </div>
+
+      {/* Employee Bank Directory Modal */}
+      {showBankModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md">
+          <div className="relative w-full max-w-4xl bg-white rounded-[2rem] p-8 shadow-2xl overflow-hidden text-left border border-slate-100">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 blur-[100px] -z-10 rounded-full translate-x-1/2 -translate-y-1/2" />
+            
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+              <div>
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Employee Bank Directory</h3>
+                <p className="text-[10px] text-slate-400 font-semibold">Registered direct deposit accounts for Employees and Interns.</p>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    placeholder="Search by name, email, ID..."
+                    className="pl-8 pr-4 py-2 w-64 rounded-xl border border-slate-200 text-xs bg-white text-slate-950 focus:outline-none focus:border-indigo-400 transition-all font-semibold"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    setShowBankModal(false);
+                    setSearchTerm("");
+                  }}
+                  className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all cursor-pointer font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto max-h-[450px] border border-slate-200/60 rounded-2xl">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200/60 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                    <th className="py-3 px-4">Staff Member</th>
+                    <th className="py-3 px-4">Role</th>
+                    <th className="py-3 px-4">Bank Name</th>
+                    <th className="py-3 px-4">Account Number</th>
+                    <th className="py-3 px-4">IFSC Code</th>
+                    <th className="py-3 px-4">Branch</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-150/60 text-xs font-semibold text-slate-800">
+                  {(() => {
+                    const filteredEmployees = employees.filter(emp => 
+                      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      (emp.employeeId && emp.employeeId.toLowerCase().includes(searchTerm.toLowerCase()))
+                    );
+
+                    if (filteredEmployees.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan="6" className="text-center py-8 text-slate-400 italic">
+                            No staff members found matching your search.
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    return filteredEmployees.map(emp => (
+                      <tr key={emp.id || emp._id} className="hover:bg-slate-50/40 transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-slate-900 text-xs">{emp.name}</span>
+                            <span className="text-[10px] text-slate-400 font-medium">{emp.email}</span>
+                            {emp.employeeId && (
+                              <span className="text-[8px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 w-fit mt-1">
+                                {emp.employeeId}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
+                            emp.role === "Employee"
+                              ? "bg-rose-50 text-rose-700 border-rose-100"
+                              : "bg-amber-50 text-amber-700 border-amber-100"
+                          }`}>
+                            {emp.role}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-slate-900">
+                          {emp.bankName || <span className="text-slate-300 font-normal italic">Unsubmitted</span>}
+                        </td>
+                        <td className="py-3.5 px-4 font-bold">
+                          {emp.bankAccountNumber || <span className="text-slate-300 font-normal italic">Unsubmitted</span>}
+                        </td>
+                        <td className="py-3.5 px-4 uppercase text-slate-600">
+                          {emp.bankIfscCode || <span className="text-slate-300 font-normal italic">Unsubmitted</span>}
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-500 text-[11px]">
+                          {emp.bankBranch || <span className="text-slate-300 font-normal italic">Unsubmitted</span>}
+                        </td>
+                      </tr>
+                    ));
+                  })()}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => {
+                  setShowBankModal(false);
+                  setSearchTerm("");
+                }}
+                className="px-5 py-2.5 font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all text-xs cursor-pointer"
+              >
+                Close Directory
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
