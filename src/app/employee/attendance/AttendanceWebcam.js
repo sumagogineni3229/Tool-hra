@@ -88,19 +88,24 @@ export default function AttendanceWebcam({ onCapture, onClose }) {
         <h3 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">Attendance Verification</h3>
 
         <div className="relative aspect-video bg-slate-100 rounded-3xl overflow-hidden shadow-inner border border-slate-200">
-          {!isCaptured ? (
+          {error ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white">
+              <XCircle className="w-12 h-12 text-rose-500 mb-4" />
+              <p className="text-rose-600 font-bold text-xs">{error}</p>
+            </div>
+          ) : (
             <>
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover ${isCaptured ? "hidden" : ""}`}
               />
-              {error ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                  <XCircle className="w-12 h-12 text-rose-500 mb-4" />
-                  <p className="text-rose-600 font-bold text-xs">{error}</p>
-                </div>
+              {isCaptured ? (
+                <>
+                  <img src={capturedImage} className="w-full h-full object-cover" alt="Captured" />
+                  <div className="absolute inset-0 bg-slate-900/10 transition-opacity" />
+                </>
               ) : (
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
                   <button
@@ -112,11 +117,6 @@ export default function AttendanceWebcam({ onCapture, onClose }) {
                   </button>
                 </div>
               )}
-            </>
-          ) : (
-            <>
-              <img src={capturedImage} className="w-full h-full object-cover" alt="Captured" />
-              <div className="absolute inset-0 bg-slate-900/10 transition-opacity" />
             </>
           )}
         </div>
