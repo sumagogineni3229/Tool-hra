@@ -63,8 +63,7 @@ function EmployeeLayoutContent({ children }) {
 
     async function verifyAndAuthorize() {
       try {
-        const users = await apiClient.getUsers();
-        const latest = users.find(u => u.email.toLowerCase().trim() === session.email.toLowerCase().trim());
+        const latest = await apiClient.getUsers({ id: session.id || session._id });
         if (latest) {
           const sessionPayload = { ...latest };
           delete sessionPayload.password;

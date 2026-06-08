@@ -374,9 +374,21 @@ export const apiClient = {
         if (typeof window !== "undefined") {
           // Keep passwords from localStorage for offline logins
           const localUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
-          const synced = users.map(u => {
+          const isArray = Array.isArray(users);
+          const userList = isArray ? users : [users];
+          const synced = userList.map(u => {
             const match = localUsers.find(lu => lu.email === u.email);
-            return match ? { ...u, password: match.password } : u;
+            if (match) {
+              const merged = { ...u, password: match.password };
+              if (u.userPhoto === undefined && match.userPhoto !== undefined) {
+                merged.userPhoto = match.userPhoto;
+              }
+              if (u.aadhaarPhoto === undefined && match.aadhaarPhoto !== undefined) {
+                merged.aadhaarPhoto = match.aadhaarPhoto;
+              }
+              return merged;
+            }
+            return u;
           });
           // Only overwrite local list if we queried all users
           if (!params.verificationStatus && !params.id) {
@@ -392,6 +404,10 @@ export const apiClient = {
     // LocalStorage Fallback list
     if (typeof window !== "undefined") {
       const localUsers = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      if (params.id) {
+        const match = localUsers.find(u => u.id === params.id || u._id === params.id);
+        return match ? { ...match } : null;
+      }
       return localUsers.map(u => {
         const payload = { ...u };
         return payload;
@@ -2407,6 +2423,55 @@ export const apiClient = {
         const updatedUser = {
           ...stored[idx],
           ...bankData
+        };
+        stored[idx] = updatedUser;
+        localStorage.setItem("hra_users", JSON.stringify(stored));
+        
+        const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+        if (currentUser && (currentUser._id === userId || currentUser.id === userId)) {
+          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+        }
+        return { success: true, user: updatedUser, offline: true };
+      }
+      return { success: false, message: "User not found in localStorage" };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+  updateUserProfilePic: async (userId, userPhoto) => {
+    try {
+      const response = await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: userId, userPhoto })
+      });
+      if (response.ok) {
+        const resData = await response.json();
+        if (typeof window !== "undefined") {
+          const stored = JSON.parse(localStorage.getItem("hra_users") || "[]");
+          const idx = stored.findIndex(u => u._id === userId || u.id === userId);
+          if (idx !== -1) {
+            stored[idx] = { ...stored[idx], userPhoto: resData.user.userPhoto };
+            localStorage.setItem("hra_users", JSON.stringify(stored));
+          }
+          const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+          if (currentUser && (currentUser._id === userId || currentUser.id === userId)) {
+            localStorage.setItem("currentUser", JSON.stringify({ ...currentUser, userPhoto: resData.user.userPhoto }));
+          }
+        }
+        return { success: true, user: resData.user };
+      }
+    } catch (err) {
+      console.warn("MongoDB API unreachable. Updating profile pic in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("hra_users") || "[]");
+      const idx = stored.findIndex(u => u._id === userId || u.id === userId);
+      if (idx !== -1) {
+        const updatedUser = {
+          ...stored[idx],
+          userPhoto: userPhoto
         };
         stored[idx] = updatedUser;
         localStorage.setItem("hra_users", JSON.stringify(stored));

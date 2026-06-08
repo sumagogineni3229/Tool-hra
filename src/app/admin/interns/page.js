@@ -83,7 +83,7 @@ export default function AdminInternsDashboard() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const allUsers = await apiClient.getUsers();
+      const allUsers = await apiClient.getUsers({ includePhotos: "true" });
       const resolvedInterns = allUsers.filter(u => u.role === "Intern");
       setInterns(resolvedInterns);
 

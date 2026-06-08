@@ -59,7 +59,9 @@ export async function POST(req) {
       dob: user.dob || '',
       address: user.address || '',
       emergencyContactName: user.emergencyContactName || '',
-      emergencyContactPhone: user.emergencyContactPhone || ''
+      emergencyContactPhone: user.emergencyContactPhone || '',
+      userPhoto: user.userPhoto || '',
+      aadhaarPhoto: user.aadhaarPhoto || ''
     };
 
     // Generate JWT Token

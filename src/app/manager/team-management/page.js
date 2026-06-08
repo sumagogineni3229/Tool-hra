@@ -63,7 +63,7 @@ export default function TeamManagementPage() {
         attRes,
         leaveRes
       ] = await Promise.all([
-        apiClient.getUsers(),
+        apiClient.getUsers({ includePhotos: "true" }),
         apiClient.getDepartments(),
         apiClient.getTeams(),
         fetch(`/api/attendance?t=${Date.now()}`, { cache: 'no-store' }).catch(e => { console.warn("Muted attendance fetch error:", e); return null; }),
@@ -523,11 +523,17 @@ export default function TeamManagementPage() {
                   <div className="flex justify-between items-start gap-4 text-left">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="relative">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shadow-inner border border-white relative z-10 ${
-                          member.badgeColor || 'bg-slate-100 text-slate-650'
-                        }`}>
-                          {member.initials || member.name?.split(" ").map(n => n[0]).join("") || "E"}
-                        </div>
+                        {member.userPhoto ? (
+                          <div className="w-12 h-12 rounded-xl overflow-hidden shadow-inner border border-white relative z-10 bg-slate-50">
+                            <img src={member.userPhoto} alt={member.name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shadow-inner border border-white relative z-10 ${
+                            member.badgeColor || 'bg-slate-100 text-slate-655'
+                          }`}>
+                            {member.initials || member.name?.split(" ").map(n => n[0]).join("") || "E"}
+                          </div>
+                        )}
                         <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center shadow-sm z-20 ${
                           member.todayStatus === "Clocked In" ? "bg-emerald-500" :
                           member.todayStatus === "On Leave" ? "bg-purple-500" : "bg-slate-405"
@@ -639,9 +645,15 @@ export default function TeamManagementPage() {
               {/* Header card details */}
               <div className="flex justify-between items-start pb-5 border-b border-slate-100">
                 <div className="flex items-center gap-4 text-left min-w-0">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shadow-inner shrink-0 ${selectedMember.badgeColor || 'bg-slate-100 text-slate-700'}`}>
-                    {selectedMember.initials || selectedMember.name?.split(" ").map(n => n[0]).join("") || "E"}
-                  </div>
+                  {selectedMember.userPhoto ? (
+                    <div className="w-12 h-12 rounded-xl overflow-hidden shadow-inner border border-slate-200 shrink-0 bg-slate-50">
+                      <img src={selectedMember.userPhoto} alt={selectedMember.name} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shadow-inner shrink-0 ${selectedMember.badgeColor || 'bg-slate-100 text-slate-700'}`}>
+                      {selectedMember.initials || selectedMember.name?.split(" ").map(n => n[0]).join("") || "E"}
+                    </div>
+                  )}
                   <div className="flex flex-col min-w-0">
                     <h3 className="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight leading-none truncate">{selectedMember.name}</h3>
                     <span className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider leading-none mt-2 flex items-center gap-1.5">

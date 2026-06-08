@@ -29,7 +29,7 @@ export default function HREmployeesDirectory() {
   useEffect(() => {
     async function loadData() {
       try {
-        const list = await apiClient.getUsers();
+        const list = await apiClient.getUsers({ includePhotos: "true" });
         setUsers(list);
       } catch (err) {
         console.error(err);

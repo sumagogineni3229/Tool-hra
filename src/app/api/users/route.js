@@ -16,7 +16,26 @@ export async function GET(request) {
     const verificationStatus = searchParams.get('verificationStatus');
 
     if (id) {
-      const user = await User.findById(id);
+      let user;
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        user = await User.findById(id);
+      }
+      
+      if (!user) {
+        const seedEmails = {
+          'seed-1': 'hragroups@gmail.com',
+          'seed-2': 'sarah.j@hraconnect.com',
+          'seed-3': 'daniel.c@hraconnect.com',
+          'seed-4': 'employee@hraconnect.com',
+          'seed-5': 'intern@hraconnect.com',
+          'seed-6': 'elena.r@hraconnect.com',
+        };
+        const fallbackEmail = seedEmails[id];
+        if (fallbackEmail) {
+          user = await User.findOne({ email: fallbackEmail.toLowerCase().trim() });
+        }
+      }
+
       if (!user) {
         return NextResponse.json({ message: 'User not found' }, { status: 404 });
       }
@@ -352,6 +371,8 @@ export async function PUT(req) {
     if (bankAccountNumber !== undefined) user.bankAccountNumber = bankAccountNumber;
     if (bankIfscCode !== undefined) user.bankIfscCode = bankIfscCode;
     if (bankBranch !== undefined) user.bankBranch = bankBranch;
+    if (userPhoto !== undefined) user.userPhoto = userPhoto;
+    if (aadhaarPhoto !== undefined) user.aadhaarPhoto = aadhaarPhoto;
 
     await user.save();
     return NextResponse.json({ message: 'User updated successfully', user }, { status: 200 });

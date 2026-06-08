@@ -54,7 +54,7 @@ export default function UserManagementConsole() {
       setIsLoading(true);
       try {
         const [users, depts] = await Promise.all([
-          apiClient.getUsers(),
+          apiClient.getUsers({ includePhotos: "true" }),
           apiClient.getDepartments()
         ]);
         setUsersList(users);
@@ -104,7 +104,7 @@ export default function UserManagementConsole() {
 
       if (result.success) {
         // Refresh users list immediately
-        const users = await apiClient.getUsers();
+        const users = await apiClient.getUsers({ includePhotos: "true" });
         setUsersList(users);
 
         // Reset Form State
@@ -151,7 +151,7 @@ export default function UserManagementConsole() {
       const result = await apiClient.deleteUser(id);
       if (result.success) {
         // Refresh users list immediately
-        const users = await apiClient.getUsers();
+        const users = await apiClient.getUsers({ includePhotos: "true" });
         setUsersList(users);
 
         // Set success notification
@@ -310,8 +310,14 @@ export default function UserManagementConsole() {
                     {/* User profile avatar, name, email */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${user.badgeColor}`}>
-                          {user.initials}
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0 shadow-inner bg-slate-50 flex items-center justify-center">
+                          {user.userPhoto ? (
+                            <img src={user.userPhoto} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className={`w-full h-full flex items-center justify-center text-xs font-bold text-white ${user.badgeColor}`}>
+                              {user.initials}
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col text-left min-w-0">
                           <div className="flex items-center gap-1.5">
@@ -653,8 +659,14 @@ export default function UserManagementConsole() {
                       className="bg-white border border-slate-150/75 p-3.5 rounded-xl shadow-xs flex items-center gap-3 hover:border-slate-350 transition-all duration-350 group animate-fade-in"
                     >
                       {/* Badge / Avatar */}
-                      <div className={`w-9.5 h-9.5 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300 ${user.badgeColor || 'bg-slate-900 text-white'}`}>
-                        {user.initials || 'U'}
+                      <div className="w-9.5 h-9.5 rounded-full overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300 border border-slate-200 flex items-center justify-center bg-slate-50">
+                        {user.userPhoto ? (
+                          <img src={user.userPhoto} alt={user.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className={`w-full h-full flex items-center justify-center text-xs font-extrabold text-white ${user.badgeColor || 'bg-slate-900 text-white'}`}>
+                            {user.initials || 'U'}
+                          </div>
+                        )}
                       </div>
 
                       {/* Meta Info */}
@@ -718,8 +730,14 @@ export default function UserManagementConsole() {
 
             {/* Profile summary card */}
             <div className="bg-slate-50 border border-slate-200/60 p-4.5 rounded-xl flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${userToDelete.badgeColor || 'bg-slate-900 text-white'}`}>
-                {userToDelete.initials || 'U'}
+              <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-inner border border-slate-200 flex items-center justify-center bg-slate-50">
+                {userToDelete.userPhoto ? (
+                  <img src={userToDelete.userPhoto} alt={userToDelete.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className={`w-full h-full flex items-center justify-center text-xs font-bold text-white ${userToDelete.badgeColor || 'bg-slate-900 text-white'}`}>
+                    {userToDelete.initials || 'U'}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-slate-900 text-xs truncate">{userToDelete.name}</span>
