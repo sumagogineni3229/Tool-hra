@@ -14,11 +14,11 @@ export default function CEOInsightsSplash({ onComplete }) {
   const [current, setCurrent] = useState(0);
   const intervalRef = useRef(null);
 
-  /* Auto Slider - 4 Seconds */
+  /* Auto Slider */
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
-    }, 4000); // changed from 3000 to 4000
+    }, 4000);
 
     return () => clearInterval(intervalRef.current);
   }, [slides.length]);
@@ -27,25 +27,26 @@ export default function CEOInsightsSplash({ onComplete }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (onComplete) onComplete();
-    }, 12000); // adjusted for 4 sec per slide
+    }, 12000);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
+
       {/* Background Slider */}
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
-          initial={{ opacity: 0, scale: 1.08 }}
+          initial={{ opacity: 0, scale: 1.03 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{
-            duration: 1.5,
+            duration: 1.2,
             ease: "easeInOut",
           }}
-          className="absolute inset-0"
+          className="absolute inset-0 flex items-center justify-center"
         >
           <Image
             src={slides[current].image}
@@ -53,7 +54,13 @@ export default function CEOInsightsSplash({ onComplete }) {
             fill
             priority
             quality={100}
-            className="object-cover"
+
+            /* IMPORTANT CHANGE */
+            className="
+              object-contain
+              sm:object-cover
+              bg-black
+            "
           />
         </motion.div>
       </AnimatePresence>
@@ -61,9 +68,9 @@ export default function CEOInsightsSplash({ onComplete }) {
       {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/35 z-10" />
 
-      {/* Loading Content */}
-      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
-        
+      {/* Center Loading Content */}
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center">
+
         {/* Loading Spinner */}
         <motion.div
           animate={{ rotate: 360 }}
@@ -72,10 +79,19 @@ export default function CEOInsightsSplash({ onComplete }) {
             duration: 1,
             ease: "linear",
           }}
-          className="w-14 h-14 border-4 border-white/20 border-t-white rounded-full"
+          className="
+            w-12 h-12
+            sm:w-14 sm:h-14
+            md:w-16 md:h-16
+            border-[3px]
+            sm:border-4
+            border-white/20
+            border-t-white
+            rounded-full
+          "
         />
 
-        {/* Small Text */}
+        {/* Loading Text */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -84,25 +100,42 @@ export default function CEOInsightsSplash({ onComplete }) {
             repeatType: "reverse",
             duration: 1.2,
           }}
-          className="mt-5 text-white/80 text-sm tracking-[4px] uppercase"
+          className="
+            mt-4 sm:mt-5
+            text-white/80
+            text-xs sm:text-sm md:text-base
+            tracking-[3px]
+            sm:tracking-[4px]
+            uppercase
+            font-medium
+          "
         >
           Loading Dashboard
         </motion.p>
       </div>
 
-      {/* Bottom Slider Indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+      {/* Bottom Indicators */}
+      <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-2 sm:gap-3">
+
         {slides.map((_, index) => (
           <div
             key={index}
-            className={`h-2 rounded-full transition-all duration-500 ${
-              current === index
-                ? "w-10 bg-white"
-                : "w-2 bg-white/40"
-            }`}
+            className={`
+              rounded-full
+              transition-all
+              duration-500
+              ${
+                current === index
+                  ? "w-8 sm:w-10 h-2 bg-white"
+                  : "w-2 h-2 bg-white/40"
+              }
+            `}
           />
         ))}
       </div>
+
+      {/* Bottom Gradient */}
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/40 to-transparent z-10" />
     </div>
   );
 }
