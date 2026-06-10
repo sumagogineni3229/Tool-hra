@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function CEOInsightsSplash({ onComplete }) {
   const slides = [
-    { image: "/image5.png" },
+    { image: "/image6.png" },
     { image: "/image2.png" },
     { image: "/image3.png" },
   ];
