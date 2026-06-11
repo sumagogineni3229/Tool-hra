@@ -27,7 +27,9 @@ export default function HRPayroll() {
   const [basic, setBasic] = useState("45000");
   const [hra, setHra] = useState("18000");
   const [allowances, setAllowances] = useState("12000");
-  const [deductions, setDeductions] = useState("12500");
+  const [pf, setPf] = useState("6750");
+  const [tds, setTds] = useState("5750");
+  const [professionalTax, setProfessionalTax] = useState("200");
 
   const [success, setSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -60,7 +62,10 @@ export default function HRPayroll() {
   const basicVal = Number(basic) || 0;
   const hraVal = Number(hra) || 0;
   const allowancesVal = Number(allowances) || 0;
-  const deductionsVal = Number(deductions) || 0;
+  const pfVal = Number(pf) || 0;
+  const tdsVal = Number(tds) || 0;
+  const professionalTaxVal = Number(professionalTax) || 0;
+  const deductionsVal = pfVal + tdsVal + professionalTaxVal;
   const calculatedNet = basicVal + hraVal + allowancesVal - deductionsVal;
 
   const handleSubmit = async (e) => {
@@ -77,6 +82,9 @@ export default function HRPayroll() {
       basic: basicVal,
       hra: hraVal,
       allowances: allowancesVal,
+      pf: pfVal,
+      tds: tdsVal,
+      professionalTax: professionalTaxVal,
       deductions: deductionsVal,
       net: calculatedNet
     };
@@ -86,12 +94,14 @@ export default function HRPayroll() {
       setPayrolls(prev => [res.payroll, ...prev]);
       setSuccessMsg(`Payroll slip published successfully for ${empName}!`);
       setSuccess(true);
-      
+
       // Reset form options
       setBasic("45000");
       setHra("18000");
       setAllowances("12000");
-      setDeductions("12500");
+      setPf("6750");
+      setTds("5750");
+      setProfessionalTax("200");
       setTimeout(() => setSuccess(false), 3000);
     }
   };
@@ -158,7 +168,7 @@ export default function HRPayroll() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        
+
         {/* Form panel: 5 Columns */}
         <div className="lg:col-span-5 bg-white border border-slate-200/80 rounded-2xl p-8 shadow-sm flex flex-col gap-6 text-left h-fit">
           <div className="flex flex-col gap-1">
@@ -174,7 +184,7 @@ export default function HRPayroll() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            
+
             {/* Select Employee */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Select Employee Account</label>
@@ -276,14 +286,52 @@ export default function HRPayroll() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Deductions (₹)</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Deductions (₹)</label>
                 <input
-                  required
+                  disabled
                   type="number"
-                  value={deductions}
-                  onChange={e => setDeductions(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-800 focus:border-slate-950"
+                  value={deductionsVal}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-slate-50 text-slate-500 focus:outline-none cursor-not-allowed font-semibold"
                 />
+              </div>
+            </div>
+
+            {/* Deductions Breakdown */}
+            <div className="border-t border-slate-150/50 my-1 pt-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Deductions Breakdown</span>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">PF (₹)</label>
+                  <input
+                    required
+                    type="number"
+                    value={pf}
+                    onChange={e => setPf(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-850 focus:border-slate-950"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">TDS (₹)</label>
+                  <input
+                    required
+                    type="number"
+                    value={tds}
+                    onChange={e => setTds(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-850 focus:border-slate-950"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Prof. Tax (₹)</label>
+                  <input
+                    required
+                    type="number"
+                    value={professionalTax}
+                    onChange={e => setProfessionalTax(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-850 focus:border-slate-950"
+                  />
+                </div>
               </div>
             </div>
 
@@ -325,6 +373,11 @@ export default function HRPayroll() {
                   </div>
                   <span className="text-[10px] text-slate-400 font-semibold mt-1">
                     Basic: ₹{Number(payroll.basic).toLocaleString("en-IN")} — HRA: ₹{Number(payroll.hra).toLocaleString("en-IN")} — Deductions: ₹{Number(payroll.deductions).toLocaleString("en-IN")}
+                    {(payroll.pf !== undefined || payroll.tds !== undefined || payroll.professionalTax !== undefined) && (
+                      <span className="text-[9px] text-slate-400 block mt-0.5">
+                        Breakdown: PF: ₹{Number(payroll.pf || 0).toLocaleString("en-IN")} | TDS: ₹{Number(payroll.tds || 0).toLocaleString("en-IN")} | PT: ₹{Number(payroll.professionalTax || 0).toLocaleString("en-IN")}
+                      </span>
+                    )}
                   </span>
                 </div>
 
@@ -347,13 +400,13 @@ export default function HRPayroll() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md">
           <div className="relative w-full max-w-4xl bg-white rounded-[2rem] p-8 shadow-2xl overflow-hidden text-left border border-slate-100">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 blur-[100px] -z-10 rounded-full translate-x-1/2 -translate-y-1/2" />
-            
+
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
               <div>
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Employee Bank Directory</h3>
                 <p className="text-[10px] text-slate-400 font-semibold">Registered direct deposit accounts for Employees and Interns.</p>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -391,7 +444,7 @@ export default function HRPayroll() {
                 </thead>
                 <tbody className="divide-y divide-slate-150/60 text-xs font-semibold text-slate-800">
                   {(() => {
-                    const filteredEmployees = employees.filter(emp => 
+                    const filteredEmployees = employees.filter(emp =>
                       emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                       emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                       (emp.employeeId && emp.employeeId.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -421,11 +474,10 @@ export default function HRPayroll() {
                           </div>
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                            emp.role === "Employee"
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${emp.role === "Employee"
                               ? "bg-rose-50 text-rose-700 border-rose-100"
                               : "bg-amber-50 text-amber-700 border-amber-100"
-                          }`}>
+                            }`}>
                             {emp.role}
                           </span>
                         </td>

@@ -4,26 +4,45 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { Orbitron, Poppins } from "next/font/google";
+
+/* ================= FONTS ================= */
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["700", "800"],
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+/* ================= COMPONENT ================= */
+
 export default function CEOInsightsSplash({ onComplete }) {
   const slides = [
     {
       image: "/image1.png",
-     
+      
     },
     {
       image: "/image2.png",
-      title: "Creative Technology",
+      title: "CREATIVE TECHNOLOGY",
+      
     },
     {
       image: "/image3.png",
-      title: "Future Driven",
+      title: "FUTURE DRIVEN",
+      
     },
   ];
 
   const [current, setCurrent] = useState(0);
   const audioRef = useRef(null);
 
-  /* PRELOAD IMAGES */
+  /* ================= PRELOAD ================= */
+
   useEffect(() => {
     slides.forEach((slide) => {
       const img = document.createElement("img");
@@ -31,7 +50,8 @@ export default function CEOInsightsSplash({ onComplete }) {
     });
   }, []);
 
-  /* AUTO SLIDER */
+  /* ================= AUTO SLIDER ================= */
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
@@ -40,7 +60,8 @@ export default function CEOInsightsSplash({ onComplete }) {
     return () => clearInterval(interval);
   }, []);
 
-  /* AUTO COMPLETE */
+  /* ================= AUTO COMPLETE ================= */
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (onComplete) onComplete();
@@ -49,10 +70,11 @@ export default function CEOInsightsSplash({ onComplete }) {
     return () => clearTimeout(timer);
   }, [onComplete]);
 
-  /* MUSIC */
+  /* ================= MUSIC ================= */
+
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.18;
+      audioRef.current.volume = 0.15;
 
       audioRef.current.play().catch(() => {
         console.log("Autoplay blocked");
@@ -61,13 +83,15 @@ export default function CEOInsightsSplash({ onComplete }) {
   }, []);
 
   return (
-    <div className="relative w-full h-[100dvh] overflow-hidden bg-[#030712]">
-      {/* AUDIO */}
+    <div className="relative w-full h-[100dvh] overflow-hidden bg-[#040816]">
+
+      {/* ================= AUDIO ================= */}
+
       <audio ref={audioRef} autoPlay loop>
         <source src="/soft.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* ================= BACKGROUND ================= */}
+      {/* ================= HRA BACKGROUND ================= */}
 
       {/* Animated Gradient */}
       <motion.div
@@ -75,43 +99,23 @@ export default function CEOInsightsSplash({ onComplete }) {
           backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
         }}
         transition={{
-          duration: 18,
+          duration: 16,
           repeat: Infinity,
           ease: "linear",
         }}
         className="
           absolute
           inset-0
-          opacity-80
-          bg-[linear-gradient(-45deg,#020617,#111827,#0f172a,#1e293b,#0f172a)]
+          bg-[linear-gradient(-45deg,#050816,#111827,#1d1f48,#111827,#060816)]
           bg-[length:400%_400%]
         "
       />
 
-      {/* Moving Grid */}
+      {/* HRA Purple Glow */}
       <motion.div
         animate={{
-          backgroundPosition: ["0px 0px", "0px 120px"],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-        className="
-          absolute
-          inset-0
-          opacity-[0.04]
-          bg-[linear-gradient(rgba(255,255,255,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.15)_1px,transparent_1px)]
-          bg-[size:50px_50px]
-        "
-      />
-
-      {/* Glow Light Left */}
-      <motion.div
-        animate={{
-          x: [0, 80, 0],
-          y: [0, -40, 0],
+          x: [0, 60, 0],
+          y: [0, -30, 0],
           scale: [1, 1.1, 1],
         }}
         transition={{
@@ -123,23 +127,23 @@ export default function CEOInsightsSplash({ onComplete }) {
           absolute
           top-[-100px]
           left-[-100px]
-          w-[250px]
-          sm:w-[350px]
-          md:w-[450px]
-          h-[250px]
-          sm:h-[350px]
-          md:h-[450px]
+          w-[260px]
+          sm:w-[380px]
+          md:w-[500px]
+          h-[260px]
+          sm:h-[380px]
+          md:h-[500px]
           rounded-full
-          bg-cyan-500/20
+          bg-[#6C63FF]/25
           blur-[120px]
         "
       />
 
-      {/* Glow Light Right */}
+      {/* HRA Orange Glow */}
       <motion.div
         animate={{
-          x: [0, -70, 0],
-          y: [0, 50, 0],
+          x: [0, -60, 0],
+          y: [0, 40, 0],
           scale: [1, 1.15, 1],
         }}
         transition={{
@@ -151,20 +155,39 @@ export default function CEOInsightsSplash({ onComplete }) {
           absolute
           bottom-[-120px]
           right-[-100px]
-          w-[250px]
-          sm:w-[350px]
-          md:w-[450px]
-          h-[250px]
-          sm:h-[350px]
-          md:h-[450px]
+          w-[260px]
+          sm:w-[380px]
+          md:w-[500px]
+          h-[260px]
+          sm:h-[380px]
+          md:h-[500px]
           rounded-full
-          bg-fuchsia-500/20
+          bg-[#FF6A4D]/20
           blur-[120px]
         "
       />
 
+      {/* Grid */}
+      <motion.div
+        animate={{
+          backgroundPosition: ["0px 0px", "0px 100px"],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="
+          absolute
+          inset-0
+          opacity-[0.04]
+          bg-[linear-gradient(rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.2)_1px,transparent_1px)]
+          bg-[size:40px_40px]
+        "
+      />
+
       {/* Floating Particles */}
-      {[...Array(18)].map((_, i) => (
+      {[...Array(20)].map((_, i) => (
         <motion.div
           key={i}
           animate={{
@@ -172,25 +195,21 @@ export default function CEOInsightsSplash({ onComplete }) {
             opacity: [0, 1, 0],
           }}
           transition={{
-            duration: 6 + i,
+            duration: 5 + i,
             repeat: Infinity,
             delay: i * 0.25,
             ease: "linear",
           }}
-          className="
-            absolute
-            w-[2px]
-            h-[2px]
-            rounded-full
-            bg-white
-          "
+          className="absolute w-[2px] h-[2px] rounded-full"
           style={{
             left: `${Math.random() * 100}%`,
+            background:
+              i % 2 === 0 ? "#161447" : "#f05d40",
           }}
         />
       ))}
 
-      {/* ================= CENTER CARD ================= */}
+      {/* ================= CENTER ================= */}
 
       <div
         className="
@@ -224,28 +243,28 @@ export default function CEOInsightsSplash({ onComplete }) {
             }}
             transition={{
               duration: 0.8,
-              ease: "easeOut",
             }}
             className="
               relative
               w-full
-              max-w-[95vw]
-              sm:max-w-[700px]
-              md:max-w-[950px]
+              max-w-[96vw]
+              sm:max-w-[720px]
+              md:max-w-[980px]
               lg:max-w-[1200px]
-              h-[70vh]
+              h-[72vh]
               sm:h-[78vh]
-              md:h-[82vh]
+              md:h-[84vh]
               overflow-hidden
-              rounded-[22px]
-              sm:rounded-[30px]
+              rounded-[24px]
+              sm:rounded-[34px]
               border
               border-white/10
               bg-white/[0.03]
-              backdrop-blur-xl
-              shadow-[0_0_50px_rgba(255,255,255,0.08)]
+              backdrop-blur-2xl
+              shadow-[0_0_50px_rgba(108,99,255,0.15)]
             "
           >
+
             {/* IMAGE */}
             <motion.div
               animate={{
@@ -264,7 +283,6 @@ export default function CEOInsightsSplash({ onComplete }) {
                 fill
                 priority
                 quality={100}
-                loading="eager"
                 unoptimized
                 sizes="100vw"
                 className="
@@ -274,8 +292,8 @@ export default function CEOInsightsSplash({ onComplete }) {
               />
             </motion.div>
 
-            {/* Soft Overlay */}
-            <div className="absolute inset-0 bg-black/10" />
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/25" />
 
             {/* Scan Light */}
             <motion.div
@@ -299,7 +317,8 @@ export default function CEOInsightsSplash({ onComplete }) {
               "
             />
 
-            {/* Bottom Content */}
+            {/* ================= TEXT ================= */}
+
             <div
               className="
                 absolute
@@ -307,42 +326,68 @@ export default function CEOInsightsSplash({ onComplete }) {
                 left-0
                 w-full
                 px-4
-                sm:px-6
-                py-5
-                sm:py-7
+                sm:px-8
+                py-6
+                sm:py-10
                 bg-gradient-to-t
-                from-black/80
+                from-black/90
                 via-black/40
                 to-transparent
                 text-center
               "
             >
+
               {/* TITLE */}
               <motion.h1
                 animate={{
                   opacity: [0.7, 1, 0.7],
-                  letterSpacing: ["2px", "6px", "2px"],
+                  letterSpacing: ["2px", "7px", "2px"],
                 }}
                 transition={{
                   duration: 3,
                   repeat: Infinity,
                 }}
-                className="
-                  text-white
-                  text-[20px]
+                className={`
+                  ${orbitron.className}
+                  text-[22px]
                   sm:text-4xl
                   md:text-5xl
                   lg:text-6xl
-                  font-extralight
+                  font-extrabold
                   uppercase
                   leading-tight
-                "
+                  tracking-[5px]
+                `}
+                style={{
+                  background:
+                    "linear-gradient(90deg,#6C63FF,#8DEBFF,#FF6A4D)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  textShadow:
+                    "0px 0px 25px rgba(108,99,255,0.35)",
+                }}
               >
                 {slides[current].title}
               </motion.h1>
 
+              {/* SUBTITLE */}
+              <p
+                className={`
+                  ${poppins.className}
+                  mt-3
+                  text-[10px]
+                  sm:text-sm
+                  md:text-base
+                  uppercase
+                  tracking-[4px]
+                  text-white/75
+                `}
+              >
+                {slides[current].subtitle}
+              </p>
+
               {/* LOADING DOTS */}
-              <div className="mt-4 sm:mt-6 flex justify-center gap-2">
+              <div className="mt-5 flex justify-center gap-2">
                 {[0, 1, 2].map((dot) => (
                   <motion.div
                     key={dot}
@@ -359,17 +404,22 @@ export default function CEOInsightsSplash({ onComplete }) {
                       w-2.5
                       h-2.5
                       rounded-full
-                      bg-white
                     "
+                    style={{
+                      background:
+                        dot % 2 === 0
+                          ? "#6C63FF"
+                          : "#FF6A4D",
+                    }}
                   />
                 ))}
               </div>
             </div>
 
-            {/* Top Edge Light */}
+            {/* Top Light */}
             <motion.div
               animate={{
-                opacity: [0.2, 0.9, 0.2],
+                opacity: [0.2, 1, 0.2],
               }}
               transition={{
                 duration: 2,
@@ -379,17 +429,17 @@ export default function CEOInsightsSplash({ onComplete }) {
                 absolute
                 top-0
                 left-0
-                w-20
-                sm:w-32
+                w-28
+                sm:w-40
                 h-[2px]
-                bg-white
+                bg-[#6C63FF]
               "
             />
 
-            {/* Bottom Edge Light */}
+            {/* Bottom Light */}
             <motion.div
               animate={{
-                opacity: [0.2, 0.9, 0.2],
+                opacity: [0.2, 1, 0.2],
               }}
               transition={{
                 duration: 2,
@@ -400,45 +450,46 @@ export default function CEOInsightsSplash({ onComplete }) {
                 absolute
                 bottom-0
                 right-0
-                w-20
-                sm:w-32
+                w-28
+                sm:w-40
                 h-[2px]
-                bg-white
+                bg-[#FF6A4D]
               "
             />
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* SLIDER INDICATORS */}
+      {/* ================= INDICATORS ================= */}
+
       <div
         className="
           absolute
           bottom-5
-          sm:bottom-7
           left-1/2
           -translate-x-1/2
           z-40
           flex
-          gap-2
-          sm:gap-3
+          gap-3
         "
       >
         {slides.map((_, index) => (
           <motion.div
             key={index}
             animate={{
-              width: current === index ? 40 : 10,
+              width: current === index ? 42 : 10,
               opacity: current === index ? 1 : 0.3,
             }}
             transition={{
               duration: 0.4,
             }}
-            className="
-              h-[3px]
-              rounded-full
-              bg-white
-            "
+            className="h-[3px] rounded-full"
+            style={{
+              background:
+                current === index
+                  ? "linear-gradient(90deg,#6C63FF,#FF6A4D)"
+                  : "#ffffff",
+            }}
           />
         ))}
       </div>
