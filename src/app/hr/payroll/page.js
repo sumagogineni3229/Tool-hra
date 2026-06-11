@@ -312,7 +312,7 @@ export default function HRPayroll() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">TDS (₹)</label>
+                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Employee Savings (₹)</label>
                   <input
                     required
                     type="number"
@@ -323,7 +323,7 @@ export default function HRPayroll() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Prof. Tax (₹)</label>
+                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Admin Tax (₹)</label>
                   <input
                     required
                     type="number"
