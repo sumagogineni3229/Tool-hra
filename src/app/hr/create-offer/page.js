@@ -64,6 +64,7 @@ export default function CreateOfferPage() {
     companyAddress: "Madhapur - Hyderabad",
     companyContact: "+91 9676272283",
     companyWebsite: "www.hragroups.com",
+    companyLogo: "",
 
     // Working schedule
     workingDays: "Monday to Saturday",
@@ -271,6 +272,25 @@ Alignment with company culture and values`
     }));
   };
 
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Logo image size should be less than 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(prev => ({
+        ...prev,
+        companyLogo: reader.result
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Form submission handler
   const handleSubmitOffer = async (e, customStatus = "Draft") => {
     e.preventDefault();
@@ -384,32 +404,11 @@ Alignment with company culture and values`
       pagesContent = `
         <!-- PAGE 1 -->
         <div class="page-container">
-          <!-- Top Right Stripes -->
-          <div class="corner-stripes-top-right">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
-          
-          <!-- Bottom Left Stripes -->
-          <div class="corner-stripes-bottom-left">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
+          <div class="page-header-accent"></div>
 
           <!-- Logo -->
           <div class="logo-header">
-            <svg class="logo-svg" width="55" height="55" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="15,20 38,15 38,80 15,85" fill="#0ea5e9" />
-              <path d="M38,42 L62,38 C72,36 78,42 78,50 C78,58 72,64 62,66 L38,70 Z" fill="#ef4444" />
-              <polygon points="58,62 82,90 95,87 73,59" fill="#1e3a8a" />
-              <polygon points="38,42 62,40 54,22" fill="#f97316" />
-            </svg>
-            <div class="logo-text-container">
-              <div class="logo-main-text">HRA <span class="divider">|</span> <span class="logo-sub-brand">GROUPS</span></div>
-              <div class="logo-tagline">FOR A BETTER CAREER</div>
-            </div>
+            <img class="logo-img" src="/logo.png" alt="HRA Groups Logo" onerror="this.src='/logo_transparent.png'" />
           </div>
 
           <!-- Document Title -->
@@ -433,23 +432,49 @@ Alignment with company culture and values`
 
           <!-- Internship Details Section -->
           <h3 class="section-title">Internship Details</h3>
-          <ul class="details-list">
-            <li><strong>Position:</strong> ${offer.position}</li>
-            <li><strong>Company Name:</strong> ${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</li>
-            <li><strong>Internship Duration:</strong> ${offer.internshipDuration || "3 Months"}</li>
-            <li><strong>Onboarding Date:</strong> ${joiningFormatted}</li>
-            <li><strong>Working Days:</strong> ${offer.workingDays || "Monday to Saturday"}</li>
-            <li><strong>Working Hours:</strong> ${offer.workingHours || "9:30 AM to 6:30 PM"}</li>
-            <li><strong>Mode of Work:</strong> ${offer.workMode || "Internship"}</li>
-          </ul>
+          <div class="details-grid">
+            <div class="grid-card">
+              <span class="card-label">Position</span>
+              <span class="card-value">${offer.position}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Company Name</span>
+              <span class="card-value">${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Internship Duration</span>
+              <span class="card-value">${offer.internshipDuration || "3 Months"}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Onboarding Date</span>
+              <span class="card-value">${joiningFormatted}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Working Days</span>
+              <span class="card-value">${offer.workingDays || "Monday to Saturday"}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Working Hours</span>
+              <span class="card-value">${offer.workingHours || "9:30 AM to 6:30 PM"}</span>
+            </div>
+            <div class="grid-card" style="grid-column: span 2;">
+              <span class="card-label">Mode of Work</span>
+              <span class="card-value">${offer.workMode || "Internship"}</span>
+            </div>
+          </div>
 
           <!-- Stipend and Incentives Section -->
           <h3 class="section-title">Stipend and Incentives</h3>
-          <ul class="details-list">
-            <li><strong>Monthly Stipend:</strong> ₹${Number(offer.monthlyStipend || 0).toLocaleString("en-IN")}/- per month</li>
-            <li>Performance recognition based on contribution and participation</li>
-            <li>Learning opportunities and practical industry exposure</li>
-            <li>Internship completion certificate upon successful completion of internship terms</li>
+          <div class="details-grid">
+            <div class="grid-card" style="grid-column: span 2;">
+              <span class="card-label">Monthly Stipend</span>
+              <span class="card-value">₹${Number(offer.monthlyStipend || 0).toLocaleString("en-IN")}/- per month</span>
+            </div>
+          </div>
+          <ul class="details-list font-medium">
+            <li>Performance recognition based on contribution and participation.</li>
+            <li>Learning opportunities and practical industry exposure.</li>
+            <li>Internship completion certificate upon successful completion of internship terms.</li>
           </ul>
 
           <!-- Roles and Responsibilities Section -->
@@ -459,26 +484,19 @@ Alignment with company culture and values`
             ${renderListItems(offer.rolesResponsibilities)}
           </ul>
 
+          <!-- Footer -->
+          <div class="page-number-footer">
+            <span>HRA GROUPS PRIVATE LIMITED</span>
+            <span>Page 1 of 2</span>
+          </div>
         </div>
 
         <!-- PAGE 2 -->
         <div class="page-container page-break">
-          <!-- Top Right Stripes -->
-          <div class="corner-stripes-top-right">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
-          
-          <!-- Bottom Left Stripes -->
-          <div class="corner-stripes-bottom-left">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
+          <div class="page-header-accent"></div>
 
           <!-- Training Sessions & Learning Exposure -->
-          <h3 class="section-title" style="margin-top: 40px;">Training Sessions & Learning Exposure</h3>
+          <h3 class="section-title" style="margin-top: 25px;">Training Sessions & Learning Exposure</h3>
           <p class="body-intro">During the internship period, you will receive exposure to:</p>
           <ul class="details-list font-medium">
             ${renderListItems(offer.trainingSessions)}
@@ -506,7 +524,7 @@ Alignment with company culture and values`
             We are excited to welcome you to <strong>${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</strong> and look forward to supporting your professional learning journey. We wish you success and a rewarding internship experience with our organization.
           </p>
           
-          <p class="body-p" style="font-weight: 800; color: #1e1b4b; margin-top: 20px;">
+          <p class="body-p" style="font-weight: 800; color: #673de6; margin-top: 20px;">
             Welcome to HRA GROUPS and wishing you a great journey ahead.
           </p>
 
@@ -516,43 +534,52 @@ Alignment with company culture and values`
             <div class="stamp-col">
               <span class="regards-title">Regards,</span>
               
-              <!-- High fidelity corporate stamp -->
-              <div class="circular-stamp">
-                <svg viewBox="0 0 100 100" class="stamp-svg" style="fill: transparent;">
-                  <!-- Outer double circle -->
-                  <circle cx="50" cy="50" r="45" stroke="#1e3a8a" stroke-width="1.8" fill="none" />
-                  <circle cx="50" cy="50" r="42" stroke="#1e3a8a" stroke-width="0.6" fill="none" />
-                  
-                  <!-- Inner dashed circle -->
-                  <circle cx="50" cy="50" r="28" stroke="#1e3a8a" stroke-width="0.6" fill="none" stroke-dasharray="0.8, 0.8" />
-                  
-                  <!-- Text paths -->
-                  <path id="stampTextTop" d="M 14 50 A 36 36 0 0 1 86 50" fill="none" />
-                  <path id="stampTextBottom" d="M 14 50 A 36 36 0 0 0 86 50" fill="none" />
-                  
-                  <text fill="#1e3a8a" font-size="8" font-weight="800" font-family="'Inter', sans-serif" letter-spacing="1">
-                    <textPath href="#stampTextTop" startOffset="50%" text-anchor="middle">HRA GROUPS</textPath>
-                  </text>
-                  
-                  <text fill="#1e3a8a" font-size="8" font-weight="800" font-family="'Inter', sans-serif" letter-spacing="1">
-                    <textPath href="#stampTextBottom" startOffset="50%" text-anchor="middle">PVT LTD</textPath>
-                  </text>
-                  
-                  <!-- Stars -->
-                  <text x="17.5" y="52.5" fill="#1e3a8a" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
-                  <text x="82.5" y="52.5" fill="#1e3a8a" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
-                  
-                  <!-- Center elements -->
-                  <text x="50" y="42" fill="#1e3a8a" font-size="17" font-weight="900" font-family="'Inter', sans-serif" text-anchor="middle" letter-spacing="0.5">HRA</text>
-                  
-                  <!-- Cursive Signature for P. Hemanth -->
-                  <text x="50" y="52" fill="#1e3a8a" font-size="9" font-family="'Dancing Script', 'Brush Script MT', cursive" font-weight="bold" text-anchor="middle">P. Hemanth</text>
-                  <line x1="30" y1="54" x2="70" y2="54" stroke="#1e3a8a" stroke-width="0.8" />
-                  
-                  <!-- Subtexts -->
-                  <text x="50" y="63" fill="#1e3a8a" font-size="4.8" font-weight="700" font-family="'Inter', sans-serif" text-anchor="middle">Founder & CEO</text>
-                  <text x="50" y="69" fill="#1e3a8a" font-size="5.2" font-weight="700" font-family="'Inter', sans-serif" text-anchor="middle">Hemanth Pulavarthi</text>
-                </svg>
+              <div style="display: flex; align-items: center; gap: 20px;">
+                <!-- High fidelity corporate stamp -->
+                <div class="circular-stamp">
+                  <svg viewBox="0 0 100 100" class="stamp-svg" style="fill: transparent;">
+                    <!-- Outer double circle -->
+                    <circle cx="50" cy="50" r="45" stroke="#5025d1" stroke-width="1.8" fill="none" />
+                    <circle cx="50" cy="50" r="42" stroke="#5025d1" stroke-width="0.6" fill="none" />
+                    
+                    <!-- Inner dashed circle -->
+                    <circle cx="50" cy="50" r="28" stroke="#5025d1" stroke-width="0.6" fill="none" stroke-dasharray="0.8, 0.8" />
+                    
+                    <!-- Text paths -->
+                    <path id="stampTextTop" d="M 14 50 A 36 36 0 0 1 86 50" fill="none" />
+                    <path id="stampTextBottom" d="M 14 50 A 36 36 0 0 0 86 50" fill="none" />
+                    
+                    <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
+                      <textPath href="#stampTextTop" startOffset="50%" text-anchor="middle">HRA GROUPS</textPath>
+                    </text>
+                    
+                    <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
+                      <textPath href="#stampTextBottom" startOffset="50%" text-anchor="middle">PVT LTD</textPath>
+                    </text>
+                    
+                    <!-- Stars -->
+                    <text x="17.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
+                    <text x="82.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
+                    
+                    <!-- Center elements -->
+                    <text x="50" y="42" fill="#5025d1" font-size="17" font-weight="900" font-family="'Roboto', sans-serif" text-anchor="middle" letter-spacing="0.5">HRA</text>
+                    
+                    <!-- Cursive Signature for P. Hemanth -->
+                    <text x="50" y="52" fill="#5025d1" font-size="9" font-family="'Dancing Script', 'Brush Script MT', cursive" font-weight="bold" text-anchor="middle">P. Hemanth</text>
+                    <line x1="30" y1="54" x2="70" y2="54" stroke="#5025d1" stroke-width="0.8" />
+                    
+                    <!-- Subtexts -->
+                    <text x="50" y="63" fill="#5025d1" font-size="4.8" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Founder & CEO</text>
+                    <text x="50" y="69" fill="#5025d1" font-size="5.2" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Hemanth Pulavarthi</text>
+                  </svg>
+                </div>
+
+                ${offer.companyLogo ? `
+                  <!-- Custom Org Logo -->
+                  <div class="custom-org-logo-container">
+                    <img src="${offer.companyLogo}" alt="Organization Logo" class="custom-org-logo-img" />
+                  </div>
+                ` : ''}
               </div>
 
               <span class="sign-name">HRA GROUPS MANAGEMENT</span>
@@ -565,8 +592,8 @@ Alignment with company culture and values`
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                <div>
-                  <div class="label">ADDRESS.</div>
+                <div class="contact-info-text">
+                  <div class="label">ADDRESS</div>
                   <div class="value">${offer.companyAddress || "Madhapur - Hyderabad"}</div>
                 </div>
               </div>
@@ -575,8 +602,8 @@ Alignment with company culture and values`
                 <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                 </svg>
-                <div>
-                  <div class="label">CONTACT.</div>
+                <div class="contact-info-text">
+                  <div class="label">CONTACT</div>
                   <div class="value">${offer.companyContact || "+91 9676272283"}</div>
                 </div>
               </div>
@@ -587,46 +614,31 @@ Alignment with company culture and values`
                   <line x1="2" y1="12" x2="22" y2="12" />
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
-                <div>
-                  <div class="label">WEBSITE.</div>
+                <div class="contact-info-text">
+                  <div class="label">WEBSITE</div>
                   <div class="value">${offer.companyWebsite || "www.hragroups.com"}</div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Footer -->
+          <div class="page-number-footer">
+            <span>HRA GROUPS PRIVATE LIMITED</span>
+            <span>Page 2 of 2</span>
+          </div>
         </div>
       `;
     } else {
-      // 2-page document structure for Employee / Operations Executive with Annexure Table
+      // 3-page document structure for Employee / Operations Executive with Annexure Table
       pagesContent = `
         <!-- PAGE 1 -->
         <div class="page-container">
-          <!-- Top Right Stripes -->
-          <div class="corner-stripes-top-right">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
-          
-          <!-- Bottom Left Stripes -->
-          <div class="corner-stripes-bottom-left">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
+          <div class="page-header-accent"></div>
 
           <!-- Logo -->
           <div class="logo-header">
-            <svg class="logo-svg" width="55" height="55" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="15,20 38,15 38,80 15,85" fill="#0ea5e9" />
-              <path d="M38,42 L62,38 C72,36 78,42 78,50 C78,58 72,64 62,66 L38,70 Z" fill="#ef4444" />
-              <polygon points="58,62 82,90 95,87 73,59" fill="#1e3a8a" />
-              <polygon points="38,42 62,40 54,22" fill="#f97316" />
-            </svg>
-            <div class="logo-text-container">
-              <div class="logo-main-text">HRA <span class="divider">|</span> <span class="logo-sub-brand">GROUPS</span></div>
-              <div class="logo-tagline">FOR A BETTER CAREER</div>
-            </div>
+            <img class="logo-img" src="/logo.png" alt="HRA Groups Logo" onerror="this.src='/logo_transparent.png'" />
           </div>
 
           <!-- Document Title -->
@@ -651,24 +663,57 @@ Alignment with company culture and values`
 
           <!-- Employment Details Section -->
           <h3 class="section-title">Employment Details</h3>
-          <ul class="details-list">
-            <li><strong>Position:</strong> ${offer.position}</li>
-            <li><strong>Company Name:</strong> ${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</li>
-            <li><strong>Onboarding Date:</strong> ${joiningFormatted}</li>
-            <li><strong>Working Days:</strong> ${offer.workingDays || "Monday to Saturday"}</li>
-            <li><strong>Working Hours:</strong> ${offer.workingHours || "9:30 AM to 6:30 PM"}</li>
-            <li><strong>Mode of Work:</strong> ${offer.workMode || "Full-Time"}</li>
-          </ul>
+          <div class="details-grid">
+            <div class="grid-card">
+              <span class="card-label">Position</span>
+              <span class="card-value">${offer.position}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Company Name</span>
+              <span class="card-value">${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Onboarding Date</span>
+              <span class="card-value">${joiningFormatted}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Working Days</span>
+              <span class="card-value">${offer.workingDays || "Monday to Saturday"}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Working Hours</span>
+              <span class="card-value">${offer.workingHours || "9:30 AM to 6:30 PM"}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Mode of Work</span>
+              <span class="card-value">${offer.workMode || "Full-Time"}</span>
+            </div>
+          </div>
 
           <!-- Compensation and Benefits Section -->
           <h3 class="section-title">Compensation and Benefits</h3>
-          <ul class="details-list">
-            <li><strong>Annual CTC:</strong> ₹${Number(offer.totalCTC || 0).toLocaleString("en-IN")}/- per annum (detailed breakdown in Annexure 1)</li>
-            <li><strong>Probation Period:</strong> ${offer.probationPeriod || "6 Months"}</li>
-            <li><strong>Notice Period:</strong> ${offer.noticePeriod || "90 Days"}</li>
-            <li><strong>Work Location:</strong> ${offer.workLocation || "Madhapur - Hyderabad"}</li>
-            <li>Performance recognition and career advancement opportunities</li>
-            <li>Paid leaves and statutory benefits as per company policy</li>
+          <div class="details-grid">
+            <div class="grid-card">
+              <span class="card-label">Annual CTC</span>
+              <span class="card-value">₹${Number(offer.totalCTC || 0).toLocaleString("en-IN")}/- per annum</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Probation Period</span>
+              <span class="card-value">${offer.probationPeriod || "6 Months"}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Notice Period</span>
+              <span class="card-value">${offer.noticePeriod || "90 Days"}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Work Location</span>
+              <span class="card-value">${offer.workLocation || "Madhapur - Hyderabad"}</span>
+            </div>
+          </div>
+          <ul class="details-list font-medium">
+            <li>Detailed compensation breakdown is provided in Annexure 1.</li>
+            <li>Performance recognition and career advancement opportunities.</li>
+            <li>Paid leaves and statutory benefits as per company policy.</li>
           </ul>
 
           <h3 class="section-title">Roles & Responsibilities</h3>
@@ -676,23 +721,17 @@ Alignment with company culture and values`
           <ul class="details-list font-medium">
             ${renderListItems(offer.rolesResponsibilities)}
           </ul>
+
+          <!-- Footer -->
+          <div class="page-number-footer">
+            <span>HRA GROUPS PRIVATE LIMITED</span>
+            <span>Page 1 of 3</span>
+          </div>
         </div>
 
         <!-- PAGE 2 -->
         <div class="page-container page-break">
-          <!-- Top Right Stripes -->
-          <div class="corner-stripes-top-right">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
-          
-          <!-- Bottom Left Stripes -->
-          <div class="corner-stripes-bottom-left">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
+          <div class="page-header-accent"></div>
 
           <div style="height: 15px;"></div>
 
@@ -719,25 +758,19 @@ Alignment with company culture and values`
           <p class="body-p" style="margin-top: 25px;">
             Please refer to the subsequent page for a comprehensive components-based structural breakdown of your Cost to Company (CTC) figures.
           </p>
+
+          <!-- Footer -->
+          <div class="page-number-footer">
+            <span>HRA GROUPS PRIVATE LIMITED</span>
+            <span>Page 2 of 3</span>
+          </div>
         </div>
 
         <!-- PAGE 3 (Annexure 1 Table matching Image 3) -->
         <div class="page-container page-break">
-          <!-- Top Right Stripes -->
-          <div class="corner-stripes-top-right">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
-          
-          <!-- Bottom Left Stripes -->
-          <div class="corner-stripes-bottom-left">
-            <div class="stripe-light-blue"></div>
-            <div class="stripe-orange"></div>
-            <div class="stripe-dark-blue"></div>
-          </div>
+          <div class="page-header-accent"></div>
 
-          <h1 class="document-title" style="font-size: 20px; text-decoration: underline; margin-top: 30px; margin-bottom: 25px;">Annexure 1</h1>
+          <h1 class="document-title" style="font-size: 18px; text-decoration: underline; margin-top: 30px; margin-bottom: 20px;">Annexure 1</h1>
 
           <!-- Annexure Table styled exactly like screenshot Image 3 -->
           <table class="annexure-table">
@@ -795,69 +828,78 @@ Alignment with company culture and values`
               </tr>
               <tr class="highlight-row font-bold">
                 <td>Cost to Company (CTC)</td>
-                <td style="background-color: #f1f5f9;"></td>
+                <td style="background-color: #fbfaff;"></td>
                 <td>${results.totalCTC.toLocaleString("en-IN")}</td>
               </tr>
             </tbody>
           </table>
 
           <!-- Sign-Off Footer -->
-          <div class="footer-signoff-row" style="margin-top: 50px;">
+          <div class="footer-signoff-row" style="margin-top: 35px;">
             <!-- Regards & Stamp Left -->
             <div class="stamp-col">
               <span class="regards-title">Regards,</span>
               
-              <!-- Circular stamp -->
-              <div class="circular-stamp">
-                <svg viewBox="0 0 100 100" class="stamp-svg" style="fill: transparent;">
-                  <!-- Outer double circle -->
-                  <circle cx="50" cy="50" r="45" stroke="#1e3a8a" stroke-width="1.8" fill="none" />
-                  <circle cx="50" cy="50" r="42" stroke="#1e3a8a" stroke-width="0.6" fill="none" />
-                  
-                  <!-- Inner dashed circle -->
-                  <circle cx="50" cy="50" r="28" stroke="#1e3a8a" stroke-width="0.6" fill="none" stroke-dasharray="0.8, 0.8" />
-                  
-                  <!-- Text paths -->
-                  <path id="stampTextTop" d="M 14 50 A 36 36 0 0 1 86 50" fill="none" />
-                  <path id="stampTextBottom" d="M 14 50 A 36 36 0 0 0 86 50" fill="none" />
-                  
-                  <text fill="#1e3a8a" font-size="8" font-weight="800" font-family="'Inter', sans-serif" letter-spacing="1">
-                    <textPath href="#stampTextTop" startOffset="50%" text-anchor="middle">HRA GROUPS</textPath>
-                  </text>
-                  
-                  <text fill="#1e3a8a" font-size="8" font-weight="800" font-family="'Inter', sans-serif" letter-spacing="1">
-                    <textPath href="#stampTextBottom" startOffset="50%" text-anchor="middle">PVT LTD</textPath>
-                  </text>
-                  
-                  <!-- Stars -->
-                  <text x="17.5" y="52.5" fill="#1e3a8a" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
-                  <text x="82.5" y="52.5" fill="#1e3a8a" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
-                  
-                  <!-- Center elements -->
-                  <text x="50" y="42" fill="#1e3a8a" font-size="17" font-weight="900" font-family="'Inter', sans-serif" text-anchor="middle" letter-spacing="0.5">HRA</text>
-                  
-                  <!-- Cursive Signature for P. Hemanth -->
-                  <text x="50" y="52" fill="#1e3a8a" font-size="9" font-family="'Dancing Script', 'Brush Script MT', cursive" font-weight="bold" text-anchor="middle">P. Hemanth</text>
-                  <line x1="30" y1="54" x2="70" y2="54" stroke="#1e3a8a" stroke-width="0.8" />
-                  
-                  <!-- Subtexts -->
-                  <text x="50" y="63" fill="#1e3a8a" font-size="4.8" font-weight="700" font-family="'Inter', sans-serif" text-anchor="middle">Founder & CEO</text>
-                  <text x="50" y="69" fill="#1e3a8a" font-size="5.2" font-weight="700" font-family="'Inter', sans-serif" text-anchor="middle">Hemanth Pulavarthi</text>
-                </svg>
+              <div style="display: flex; align-items: center; gap: 20px;">
+                <!-- Circular stamp -->
+                <div class="circular-stamp">
+                  <svg viewBox="0 0 100 100" class="stamp-svg" style="fill: transparent;">
+                    <!-- Outer double circle -->
+                    <circle cx="50" cy="50" r="45" stroke="#5025d1" stroke-width="1.8" fill="none" />
+                    <circle cx="50" cy="50" r="42" stroke="#5025d1" stroke-width="0.6" fill="none" />
+                    
+                    <!-- Inner dashed circle -->
+                    <circle cx="50" cy="50" r="28" stroke="#5025d1" stroke-width="0.6" fill="none" stroke-dasharray="0.8, 0.8" />
+                    
+                    <!-- Text paths -->
+                    <path id="stampTextTop" d="M 14 50 A 36 36 0 0 1 86 50" fill="none" />
+                    <path id="stampTextBottom" d="M 14 50 A 36 36 0 0 0 86 50" fill="none" />
+                    
+                    <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
+                      <textPath href="#stampTextTop" startOffset="50%" text-anchor="middle">HRA GROUPS</textPath>
+                    </text>
+                    
+                    <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
+                      <textPath href="#stampTextBottom" startOffset="50%" text-anchor="middle">PVT LTD</textPath>
+                    </text>
+                    
+                    <!-- Stars -->
+                    <text x="17.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
+                    <text x="82.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
+                    
+                    <!-- Center elements -->
+                    <text x="50" y="42" fill="#5025d1" font-size="17" font-weight="900" font-family="'Roboto', sans-serif" text-anchor="middle" letter-spacing="0.5">HRA</text>
+                    
+                    <!-- Cursive Signature for P. Hemanth -->
+                    <text x="50" y="52" fill="#5025d1" font-size="9" font-family="'Dancing Script', 'Brush Script MT', cursive" font-weight="bold" text-anchor="middle">P. Hemanth</text>
+                    <line x1="30" y1="54" x2="70" y2="54" stroke="#5025d1" stroke-width="0.8" />
+                    
+                    <!-- Subtexts -->
+                    <text x="50" y="63" fill="#5025d1" font-size="4.8" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Founder &amp; CEO</text>
+                    <text x="50" y="69" fill="#5025d1" font-size="5.2" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Hemanth Pulavarthi</text>
+                  </svg>
+                </div>
+
+                ${offer.companyLogo ? `
+                  <!-- Custom Org Logo -->
+                  <div class="custom-org-logo-container">
+                    <img src="${offer.companyLogo}" alt="Organization Logo" class="custom-org-logo-img" />
+                  </div>
+                ` : ''}
               </div>
 
               <span class="sign-name">HRA GROUPS MANAGEMENT</span>
             </div>
 
-            <!-- Contact info Right -->
+            <!-- Address contact block Right -->
             <div class="contact-card">
               <div class="contact-item">
                 <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                <div>
-                  <div class="label">ADDRESS.</div>
+                <div class="contact-info-text">
+                  <div class="label">ADDRESS</div>
                   <div class="value">${offer.companyAddress || "Madhapur - Hyderabad"}</div>
                 </div>
               </div>
@@ -866,8 +908,8 @@ Alignment with company culture and values`
                 <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                 </svg>
-                <div>
-                  <div class="label">CONTACT.</div>
+                <div class="contact-info-text">
+                  <div class="label">CONTACT</div>
                   <div class="value">${offer.companyContact || "+91 9676272283"}</div>
                 </div>
               </div>
@@ -878,24 +920,32 @@ Alignment with company culture and values`
                   <line x1="2" y1="12" x2="22" y2="12" />
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
-                <div>
-                  <div class="label">WEBSITE.</div>
+                <div class="contact-info-text">
+                  <div class="label">WEBSITE</div>
                   <div class="value">${offer.companyWebsite || "www.hragroups.com"}</div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Footer -->
+          <div class="page-number-footer">
+            <span>HRA GROUPS PRIVATE LIMITED</span>
+            <span>Page 3 of 3</span>
+          </div>
         </div>
       `;
     }
 
+    const baseOrigin = typeof window !== 'undefined' ? window.location.origin : '';
     return `
       <!DOCTYPE html>
       <html>
         <head>
+          <base href="${baseOrigin}/">
           <title>${offer.employmentType === 'Internship' ? 'Internship' : 'Employee'} Offer Letter - ${offer.candidateName}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Dancing+Script:wght@700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Dancing+Script:wght@700&display=swap');
             
             @page {
               size: A4;
@@ -908,8 +958,8 @@ Alignment with company culture and values`
               padding: 0;
             }
             body {
-              font-family: 'Inter', sans-serif;
-              color: #1e293b;
+              font-family: 'Roboto', sans-serif;
+              color: #334155;
               background-color: #f1f5f9;
               padding: 0;
             }
@@ -919,77 +969,39 @@ Alignment with company culture and values`
               height: 297mm;
               margin: 20px auto;
               background-color: #ffffff;
-              box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-              padding: 40px 55px;
+              box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+              padding: 55px 60px 70px 60px;
               box-sizing: border-box;
               overflow: hidden;
             }
 
-            /* Decorative Corner Stripes */
-            .corner-stripes-top-right {
+            /* Decorative Header Accent (double geometric border) */
+            .page-header-accent {
               position: absolute;
               top: 0;
-              right: 0;
-              width: 350px;
-              height: 180px;
-              overflow: hidden;
-              pointer-events: none;
-            }
-            .corner-stripes-top-right div {
-              position: absolute;
-              width: 500px;
-              transform: rotate(26deg);
-            }
-            .corner-stripes-top-right .stripe-light-blue {
-              height: 20px;
-              background-color: #38bdf8;
-              top: 50px;
-              right: -90px;
-            }
-            .corner-stripes-top-right .stripe-orange {
-              height: 25px;
-              background-color: #ea580c;
-              top: 25px;
-              right: -70px;
-            }
-            .corner-stripes-top-right .stripe-dark-blue {
-              height: 30px;
-              background-color: #1e3a8a;
-              top: -8px;
-              right: -40px;
-            }
-
-            .corner-stripes-bottom-left {
-              position: absolute;
-              bottom: 0;
               left: 0;
-              width: 350px;
-              height: 180px;
-              overflow: hidden;
-              pointer-events: none;
+              right: 0;
+              height: 10px;
+              background-color: #1e1b4b;
+              border-bottom: 3px solid #3b82f6;
             }
-            .corner-stripes-bottom-left div {
+            
+            /* Professional Page Number & Trademark Footer */
+            .page-number-footer {
               position: absolute;
-              width: 500px;
-              transform: rotate(26deg);
-            }
-            .corner-stripes-bottom-left .stripe-light-blue {
-              height: 20px;
-              background-color: #38bdf8;
-              bottom: -5px;
-              left: -90px;
-            }
-            .corner-stripes-bottom-left .stripe-orange {
-              height: 25px;
-              background-color: #ea580c;
-              bottom: 20px;
-              left: -70px;
-            }
-            .corner-stripes-bottom-left .stripe-dark-blue {
-              height: 30px;
-              background-color: #1e3a8a;
-              bottom: 50px;
-              left: -40px;
+              bottom: 25px;
+              left: 60px;
+              right: 60px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 8px;
+              color: #94a3b8;
+              font-weight: 600;
+              border-top: 1px solid #f1f5f9;
+              padding-top: 10px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
             }
 
             /* Branding Header */
@@ -997,138 +1009,176 @@ Alignment with company culture and values`
               display: flex;
               align-items: center;
               gap: 12px;
-              margin-top: 15px;
-              margin-bottom: 30px;
+              margin-top: 10px;
+              margin-bottom: 15px;
             }
-            .logo-svg {
-              width: 50px;
-              height: 50px;
-            }
-            .logo-text-container {
-              display: flex;
-              flex-direction: column;
-            }
-            .logo-main-text {
-              font-size: 20px;
-              font-weight: 900;
-              color: #1e3a8a;
-              letter-spacing: -0.5px;
-            }
-            .logo-main-text .divider {
-              color: #cbd5e1;
-              font-weight: 300;
-            }
-            .logo-main-text .logo-sub-brand {
-              color: #06b6d4;
-              font-weight: 500;
-            }
-            .logo-tagline {
-              font-size: 7.5px;
-              font-weight: 900;
-              color: #f97316;
-              letter-spacing: 1.5px;
-              margin-top: 1px;
+            .logo-img {
+              height: 60px;
+              object-fit: contain;
+              display: block;
             }
 
             /* Titles */
             .document-title {
-              font-size: 24px;
+              font-size: 20px;
               font-weight: 900;
-              color: #0f172a;
+              color: #1e1b4b;
               text-align: center;
-              margin-top: 25px;
-              margin-bottom: 25px;
+              margin-top: 30px;
+              margin-bottom: 22px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
             }
             .date-row {
               text-align: right;
-              font-size: 12px;
-              color: #334155;
+              font-size: 11px;
+              color: #64748b;
+              font-weight: 600;
               margin-bottom: 20px;
             }
             .recipient-block {
-              font-size: 13px;
+              font-size: 12px;
               line-height: 1.6;
-              color: #0f172a;
+              color: #1e1b4b;
               margin-bottom: 25px;
             }
             .body-p {
-              font-size: 11.5px;
+              font-size: 11px;
               line-height: 1.6;
-              color: #334155;
-              margin-bottom: 20px;
+              color: #475569;
+              margin-bottom: 18px;
               text-align: justify;
             }
             .body-intro {
-              font-size: 11.5px;
+              font-size: 11px;
               font-weight: 700;
-              color: #1e293b;
+              color: #1e1b4b;
               margin-bottom: 8px;
             }
 
-            /* Sections & Bullet lists */
+            /* Sections & Custom Bullet lists */
             .section-title {
-              font-size: 13px;
-              font-weight: 850;
-              color: #0f172a;
-              margin-top: 20px;
-              margin-bottom: 10px;
+              font-size: 11px;
+              font-weight: 900;
+              color: #1e1b4b;
+              margin-top: 22px;
+              margin-bottom: 12px;
               text-transform: uppercase;
-              letter-spacing: 0.2px;
+              letter-spacing: 0.5px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
             }
+            .section-title::after {
+              content: "";
+              flex: 1;
+              height: 1px;
+              background: linear-gradient(90deg, #4f46e5 0%, #e2e8f0 100%);
+            }
+
+            /* Dual-column Details Grid */
+            .details-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 10px;
+              margin-bottom: 20px;
+            }
+            .grid-card {
+              background-color: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              padding: 10px 14px;
+              display: flex;
+              flex-direction: column;
+              gap: 3px;
+            }
+            .card-label {
+              font-size: 7.5px;
+              font-weight: 800;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .card-value {
+              font-size: 10.5px;
+              font-weight: 700;
+              color: #1e1b4b;
+            }
+
             .details-list {
-              list-style-type: disc;
-              margin-left: 20px;
+              list-style-type: none;
               margin-bottom: 18px;
             }
             .details-list li {
-              font-size: 11px;
-              color: #334155;
-              line-height: 1.6;
-              margin-bottom: 5px;
+              font-size: 10.5px;
+              color: #475569;
+              line-height: 1.55;
+              margin-bottom: 6px;
+              position: relative;
+              padding-left: 14px;
+            }
+            .details-list li::before {
+              content: "■";
+              color: #4f46e5;
+              font-size: 7px;
+              position: absolute;
+              left: 0;
+              top: 1px;
             }
             .font-medium li {
               font-weight: 500;
               color: #475569;
             }
 
-            /* Shaded Tables matching Image 3 */
+            /* Modern Premium Table */
             .annexure-table {
               width: 100%;
               border-collapse: collapse;
-              margin: 25px 0;
-              font-size: 11.5px;
-              border: 1.5px solid #1e293b;
+              margin: 20px 0;
+              font-size: 10px;
+              background: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              border: 1px solid #e2e8f0;
             }
             .annexure-table th, .annexure-table td {
-              border: 1.5px solid #1e293b;
-              padding: 10px 14px;
+              border: 1px solid #e2e8f0;
+              padding: 9px 12px;
               text-align: left;
             }
             .annexure-title-row th {
-              background-color: #f8fafc;
+              background-color: #1e1b4b;
               text-align: center;
-              font-weight: 900;
-              font-size: 13px;
-              color: #0f172a;
-              padding: 12px;
+              font-weight: 800;
+              font-size: 11.5px;
+              color: #ffffff;
+              padding: 11px;
+              border: 1px solid #1e1b4b;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
             }
             .annexure-header-row th {
-              background-color: #f1f5f9;
-              font-weight: 800;
-              color: #334155;
+              background-color: #f8fafc;
+              font-weight: 700;
+              color: #1e1b4b;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              font-size: 9.5px;
             }
             .annexure-table tbody tr td:nth-child(2),
             .annexure-table tbody tr td:nth-child(3) {
               text-align: right;
             }
             .annexure-table .highlight-row td {
-              background-color: #f8fafc;
-              font-weight: 800;
-              color: #0f172a;
+              background-color: #eef2ff;
+              font-weight: 700;
+              color: #1e1b4b;
             }
             .annexure-table .font-bold td {
-              font-weight: 900;
-              font-size: 12px;
+              font-weight: 800;
+              font-size: 10.5px;
+              color: #1e1b4b;
+              background-color: #f8fafc;
             }
 
             /* Sign-Off Footer styling */
@@ -1136,7 +1186,7 @@ Alignment with company culture and values`
               display: flex;
               justify-content: space-between;
               align-items: flex-end;
-              margin-top: 40px;
+              margin-top: 35px;
             }
             .stamp-col {
               display: flex;
@@ -1144,22 +1194,22 @@ Alignment with company culture and values`
               gap: 8px;
             }
             .regards-title {
-              font-size: 14px;
+              font-size: 13px;
               font-weight: 800;
-              color: #334155;
+              color: #475569;
             }
             .sign-name {
-              font-size: 11px;
+              font-size: 10.5px;
               font-weight: 800;
-              color: #0f172a;
+              color: #1e1b4b;
               margin-top: 5px;
             }
 
             /* High fidelity circular stamp */
             .circular-stamp {
               position: relative;
-              width: 125px;
-              height: 125px;
+              width: 120px;
+              height: 120px;
               transform: rotate(-6deg);
               margin: 10px 0;
               background-color: transparent;
@@ -1171,39 +1221,58 @@ Alignment with company culture and values`
               top: 0;
               left: 0;
             }
+            .custom-org-logo-container {
+              width: 120px;
+              height: 120px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border: 1px solid #f1f5f9;
+              border-radius: 8px;
+              padding: 8px;
+              background-color: #ffffff;
+            }
+            .custom-org-logo-img {
+              max-width: 100%;
+              max-height: 100%;
+              object-fit: contain;
+            }
 
-            /* Address Contact Block */
+            /* Modern Contact Card */
             .contact-card {
               display: flex;
               flex-direction: column;
-              gap: 12px;
-              border-left: 2px solid #e2e8f0;
-              padding-left: 20px;
+              gap: 8px;
+              background-color: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 12px;
+              padding: 12px;
               width: 250px;
             }
             .contact-item {
               display: flex;
-              align-items: flex-start;
+              align-items: center;
               gap: 10px;
             }
             .contact-icon {
-              width: 14px;
-              height: 14px;
-              color: #64748b;
-              margin-top: 2.5px;
+              width: 13px;
+              height: 13px;
+              color: #4f46e5;
+              flex-shrink: 0;
             }
             .contact-item .label {
-              font-size: 8.5px;
-              font-weight: 950;
-              color: #0f172a;
+              font-size: 8px;
+              font-weight: 800;
+              color: #818cf8;
+              text-transform: uppercase;
               letter-spacing: 0.5px;
-              margin-bottom: 2px;
+              margin-bottom: 1px;
             }
             .contact-item .value {
-              font-size: 10px;
-              font-weight: 750;
-              color: #475569;
-              line-height: 1.3;
+              font-size: 9px;
+              font-weight: 600;
+              color: #334155;
+              line-height: 1.35;
             }
 
             /* Printing Rules */
@@ -1212,7 +1281,7 @@ Alignment with company culture and values`
               top: 15px;
               left: 50%;
               transform: translateX(-50%);
-              background: #0f172a;
+              background: #1e1b4b;
               color: white;
               padding: 10px 20px;
               border-radius: 9999px;
@@ -1222,7 +1291,7 @@ Alignment with company culture and values`
               box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
               z-index: 99999;
               font-size: 11px;
-              font-family: 'Inter', sans-serif;
+              font-family: 'Roboto', sans-serif;
             }
             .no-print-btn-primary {
               background: #4f46e5;
@@ -1235,12 +1304,12 @@ Alignment with company culture and values`
               transition: all 0.2s;
             }
             .no-print-btn-primary:hover {
-              background: #4338ca;
+              background: #3730a3;
             }
             .no-print-btn-secondary {
               background: transparent;
-              border: 1px solid #334155;
-              color: #94a3b8;
+              border: 1px solid #818cf8;
+              color: #c7d2fe;
               padding: 6px 12px;
               border-radius: 9999px;
               cursor: pointer;
@@ -1249,10 +1318,14 @@ Alignment with company culture and values`
             }
             .no-print-btn-secondary:hover {
               color: white;
-              border-color: #475569;
+              border-color: #818cf8;
             }
 
             @media print {
+              * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
               body {
                 background-color: #ffffff;
                 padding: 0;
@@ -1260,6 +1333,8 @@ Alignment with company culture and values`
               .page-container {
                 margin: 0;
                 box-shadow: none;
+                width: 210mm;
+                height: 297mm;
                 page-break-after: always;
               }
               .page-break {
@@ -1273,16 +1348,24 @@ Alignment with company culture and values`
         </head>
         <body>
           <div class="no-print-bar">
-            <span style="font-weight: 600; color: #cbd5e1;">Offer Letter Preview Mode</span>
+            <span style="font-weight: 600; color: #d5dfff;">Offer Letter Preview Mode</span>
             <button class="no-print-btn-primary" onclick="window.print()">Print / Save as PDF</button>
             <button class="no-print-btn-secondary" onclick="window.close()">Close Preview</button>
           </div>
           ${pagesContent}
           <script>
             window.onload = function() {
-              setTimeout(function() {
-                window.print();
-              }, 400);
+              if (document.fonts) {
+                document.fonts.ready.then(function() {
+                  setTimeout(function() {
+                    window.print();
+                  }, 300);
+                });
+              } else {
+                setTimeout(function() {
+                  window.print();
+                }, 1000);
+              }
             };
           </script>
         </body>
@@ -1504,11 +1587,11 @@ Alignment with company culture and values`
                           </td>
                           <td className="py-4 px-6">
                             <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${offer.status === "Approved" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                offer.status === "Sent" ? "bg-blue-50 text-blue-700 border-blue-100" :
-                                  offer.status === "Accepted" ? "bg-indigo-50 text-indigo-700 border-indigo-100" :
-                                    offer.status === "Rejected" ? "bg-rose-50 text-rose-700 border-rose-100" :
-                                      offer.status === "Under Review" ? "bg-amber-50 text-amber-700 border-amber-100" :
-                                        "bg-slate-100 text-slate-600 border-slate-200"
+                              offer.status === "Sent" ? "bg-blue-50 text-blue-700 border-blue-100" :
+                                offer.status === "Accepted" ? "bg-indigo-50 text-indigo-700 border-indigo-100" :
+                                  offer.status === "Rejected" ? "bg-rose-50 text-rose-700 border-rose-100" :
+                                    offer.status === "Under Review" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                                      "bg-slate-100 text-slate-600 border-slate-200"
                               }`}>
                               {offer.status}
                             </span>
@@ -1877,6 +1960,29 @@ Alignment with company culture and values`
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-800"
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Corporate Logo (Upload image)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                  />
+                </div>
+                {formData.companyLogo && (
+                  <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3 w-fit">
+                    <img src={formData.companyLogo} alt="Logo Preview" className="h-10 object-contain max-w-[150px]" />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, companyLogo: "" }))}
+                      className="text-xs text-rose-600 font-bold hover:text-rose-800 transition-colors"
+                    >
+                      Remove Logo
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -2290,11 +2396,11 @@ Alignment with company culture and values`
                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mt-1 flex items-center gap-2">
                   <span>{selectedOffer.offerNumber}</span>
                   <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase ${selectedOffer.status === "Approved" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                      selectedOffer.status === "Sent" ? "bg-blue-50 text-blue-700 border-blue-100" :
-                        selectedOffer.status === "Accepted" ? "bg-indigo-50 text-indigo-700 border-indigo-100" :
-                          selectedOffer.status === "Rejected" ? "bg-rose-50 text-rose-700 border-rose-100" :
-                            selectedOffer.status === "Under Review" ? "bg-amber-50 text-amber-700 border-amber-100" :
-                              "bg-slate-100 text-slate-600 border-slate-200"
+                    selectedOffer.status === "Sent" ? "bg-blue-50 text-blue-700 border-blue-100" :
+                      selectedOffer.status === "Accepted" ? "bg-indigo-50 text-indigo-700 border-indigo-100" :
+                        selectedOffer.status === "Rejected" ? "bg-rose-50 text-rose-700 border-rose-100" :
+                          selectedOffer.status === "Under Review" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                            "bg-slate-100 text-slate-600 border-slate-200"
                     }`}>
                     {selectedOffer.status}
                   </span>

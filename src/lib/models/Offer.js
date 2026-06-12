@@ -167,6 +167,10 @@ const OfferSchema = new mongoose.Schema({
     type: String,
     default: 'www.hragroups.com'
   },
+  companyLogo: {
+    type: String,
+    default: ''
+  },
 
   // Working schedule
   workingDays: {
