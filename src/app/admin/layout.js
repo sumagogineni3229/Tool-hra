@@ -27,7 +27,8 @@ import {
   ShieldCheck,
   Clock,
   CalendarDays,
-  Menu
+  Menu,
+  FileText
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -97,6 +98,7 @@ function AdminLayoutContent({ children }) {
     router.prefetch("/admin/departments");
     router.prefetch("/admin/payroll");
     router.prefetch("/admin/reports");
+    router.prefetch("/admin/create-offer");
     router.prefetch("/admin/settings");
   }, [router]);
 
@@ -119,6 +121,7 @@ function AdminLayoutContent({ children }) {
     { name: "Departments", href: "/admin/departments", icon: Building2 },
     { name: "Payroll", href: "/admin/payroll", icon: CreditCard },
     { name: "Reports", href: "/admin/reports", icon: FileBarChart2 },
+    { name: "Create Offer", href: "/admin/create-offer", icon: FileText },
     { name: "Support Hub", href: "/admin/support", icon: HelpCircle },
     { name: "Announcements", href: "/admin/announcements", icon: Megaphone },
     { name: "Settings", href: "/admin/settings", icon: SettingsIcon },

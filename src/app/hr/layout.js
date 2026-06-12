@@ -28,7 +28,8 @@ import {
   Award,
   Network,
   GraduationCap,
-  Menu
+  Menu,
+  FileText
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -103,6 +104,7 @@ function HRLayoutContent({ children }) {
     { name: "Support Hub", href: "/hr/support", icon: HelpCircle },
     { name: "Announcements", href: "/hr/announcements", icon: Megaphone },
     { name: "Recruitment & Hiring", href: "/hr/recruitment", icon: Briefcase },
+    { name: "Create Offer", href: "/hr/create-offer", icon: FileText },
     { name: "Performance Management", href: "/hr/performance", icon: Award }
   ];
 
