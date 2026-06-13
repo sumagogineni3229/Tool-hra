@@ -107,7 +107,7 @@ export default function EmployeeLeaveTab() {
       {/* Leave Balances Grid (Gauges) */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 py-2">
         {[
-          { label: "Earned Leave", key: "earned", total: 2, colors: ["#10b981", "#059669"], dbType: "Earned" },
+          { label: "Earned Leave", key: "earned", total: 6, colors: ["#10b981", "#059669"], dbType: "Earned" },
           { label: "Sick Leave", key: "sick", total: 2, colors: ["#ef4444", "#dc2626"], dbType: "Sick" },
           { label: "Emergency Leave", key: "emergency", total: 1, colors: ["#f59e0b", "#d97706"], dbType: "Emergency" },
           { label: "Optional / Festival", key: "optional", total: null, colors: ["#8b5cf6", "#7c3aed"], dbType: "Optional" },
