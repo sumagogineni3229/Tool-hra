@@ -379,7 +379,7 @@ export default function EmployeePayroll() {
             <tr>
               <td>House Rent Allowance (HRA)</td>
               <td>₹${formatNum(hra)}</td>
-              <td>Income Tax (TDS)</td>
+              <td>Employee Savings</td>
               <td>₹${formatNum(tds)}</td>
             </tr>
             <tr>
