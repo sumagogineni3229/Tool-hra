@@ -31,6 +31,18 @@ const PayrollSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  pf: {
+    type: Number,
+    default: 0,
+  },
+  tds: {
+    type: Number,
+    default: 0,
+  },
+  professionalTax: {
+    type: Number,
+    default: 0,
+  },
   net: {
     type: Number,
     required: true,
@@ -44,7 +56,7 @@ const PayrollSchema = new mongoose.Schema({
 });
 
 // Recompile if schema is stale from hot-reload
-if (mongoose.models.Payroll && !mongoose.models.Payroll.schema.paths.userName) {
+if (mongoose.models.Payroll && (!mongoose.models.Payroll.schema.paths.userName || !mongoose.models.Payroll.schema.paths.professionalTax)) {
   delete mongoose.models.Payroll;
 }
 
