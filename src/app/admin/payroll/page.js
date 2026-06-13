@@ -24,12 +24,12 @@ export default function AdminPayroll() {
   // Form states
   const [selectedEmail, setSelectedEmail] = useState("");
   const [period, setPeriod] = useState("June 1 - June 30, 2026");
-  const [basic, setBasic] = useState("45000");
-  const [hra, setHra] = useState("18000");
-  const [allowances, setAllowances] = useState("12000");
-  const [pf, setPf] = useState("6750");
-  const [tds, setTds] = useState("5750");
-  const [professionalTax, setProfessionalTax] = useState("200");
+  const [basic, setBasic] = useState("");
+  const [hra, setHra] = useState("");
+  const [allowances, setAllowances] = useState("");
+  const [pf, setPf] = useState("");
+  const [tds, setTds] = useState("");
+  const [professionalTax, setProfessionalTax] = useState("");
 
   const [success, setSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -96,12 +96,12 @@ export default function AdminPayroll() {
       setSuccess(true);
 
       // Reset form options
-      setBasic("45000");
-      setHra("18000");
-      setAllowances("12000");
-      setPf("6750");
-      setTds("5750");
-      setProfessionalTax("200");
+      setBasic("");
+      setHra("");
+      setAllowances("");
+      setPf("");
+      setTds("");
+      setProfessionalTax("");
       setTimeout(() => setSuccess(false), 3000);
     }
   };
@@ -312,7 +312,7 @@ export default function AdminPayroll() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Employee Savings(₹)</label>
+                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">TDS (₹)</label>
                   <input
                     required
                     type="number"
@@ -323,7 +323,7 @@ export default function AdminPayroll() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Admin Tax (₹)</label>
+                  <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Admin tax (₹)</label>
                   <input
                     required
                     type="number"
@@ -375,7 +375,7 @@ export default function AdminPayroll() {
                     Basic: ₹{Number(payroll.basic).toLocaleString("en-IN")} — HRA: ₹{Number(payroll.hra).toLocaleString("en-IN")} — Deductions: ₹{Number(payroll.deductions).toLocaleString("en-IN")}
                     {(payroll.pf !== undefined || payroll.tds !== undefined || payroll.professionalTax !== undefined) && (
                       <span className="text-[9px] text-slate-400 block mt-0.5">
-                        Breakdown: PF: ₹{Number(payroll.pf || 0).toLocaleString("en-IN")} | TDS: ₹{Number(payroll.tds || 0).toLocaleString("en-IN")} | PT: ₹{Number(payroll.professionalTax || 0).toLocaleString("en-IN")}
+                        Breakdown: PF: ₹{Number(payroll.pf || 0).toLocaleString("en-IN")} | TDS: ₹{Number(payroll.tds || 0).toLocaleString("en-IN")} | Admin tax: ₹{Number(payroll.professionalTax || 0).toLocaleString("en-IN")}
                       </span>
                     )}
                   </span>

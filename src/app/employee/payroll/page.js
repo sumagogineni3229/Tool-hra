@@ -89,13 +89,27 @@ export default function EmployeePayroll() {
     const deductions = Number(slip.deductions || (slip.net * 0.15));
     const net = Number(slip.net);
 
-    const basic = gross * 0.50;
-    const hra = gross * 0.30;
-    const special = gross * 0.15;
-    const conveyance = gross * 0.05;
+    const hasDetailedFields = slip.pf !== undefined || slip.tds !== undefined || slip.professionalTax !== undefined;
 
-    const pf = deductions * 0.54;
-    const tds = deductions * 0.46;
+    const basic = slip.basic !== undefined ? Number(slip.basic) : (gross * 0.50);
+    const hra = slip.hra !== undefined ? Number(slip.hra) : (gross * 0.30);
+    
+    let special = 0;
+    let conveyance = 0;
+    if (hasDetailedFields) {
+      special = Number(slip.allowances || 0);
+      conveyance = 0;
+    } else {
+      special = gross * 0.15;
+      conveyance = gross * 0.05;
+    }
+
+    const pf = slip.pf !== undefined ? Number(slip.pf) : (deductions * 0.54);
+    const tds = slip.tds !== undefined ? Number(slip.tds) : (deductions * 0.46);
+    const professionalTax = slip.professionalTax !== undefined ? Number(slip.professionalTax) : 200;
+
+    const grossVal = basic + hra + special + conveyance;
+    const totalDeductionsVal = pf + tds + professionalTax;
 
     const printWindow = window.open("", "_blank", "width=800,height=900");
     if (!printWindow) {
@@ -371,8 +385,8 @@ export default function EmployeePayroll() {
             <tr>
               <td>Special Allowance</td>
               <td>₹${formatNum(special)}</td>
-              <td>Professional Tax</td>
-              <td>₹200.00</td>
+              <td>Admin tax</td>
+              <td>₹${formatNum(professionalTax)}</td>
             </tr>
             <tr>
               <td>Conveyance Allowance</td>
@@ -382,9 +396,9 @@ export default function EmployeePayroll() {
             </tr>
             <tr class="total-row">
               <td>Gross Salary</td>
-              <td>₹${formatNum(gross)}</td>
+              <td>₹${formatNum(grossVal)}</td>
               <td>Total Deductions</td>
-              <td>₹${formatNum(deductions + 200)}</td>
+              <td>₹${formatNum(totalDeductionsVal)}</td>
             </tr>
           </tbody>
         </table>
@@ -501,11 +515,22 @@ export default function EmployeePayroll() {
   const latestSlip = payslips[0];
   const netPayStr = latestSlip ? `₹${formatCurrency(latestSlip.net)}` : "₹72,500.00";
   const deductionsStr = latestSlip ? `₹${formatCurrency(latestSlip.deductions)}` : "₹12,500.00";
-  
-  const rawDeductions = latestSlip ? Number(String(latestSlip.deductions).replace(/[^\d.]/g, "")) : 12500;
-  const pfStr = `₹${formatCurrency(Math.round(rawDeductions * 0.54))}`;
-  const tdsStr = `₹${formatCurrency(Math.round(rawDeductions * 0.46))}`;
   const dateStr = latestSlip ? new Date(latestSlip.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) : "May 30, 2026";
+
+  let pfStr, tdsStr, ptStr;
+  if (latestSlip) {
+    const pfVal = latestSlip.pf !== undefined ? Number(latestSlip.pf) : Math.round(Number(String(latestSlip.deductions).replace(/[^\d.]/g, "")) * 0.54);
+    const tdsVal = latestSlip.tds !== undefined ? Number(latestSlip.tds) : Math.round(Number(String(latestSlip.deductions).replace(/[^\d.]/g, "")) * 0.46);
+    const ptVal = latestSlip.professionalTax !== undefined ? Number(latestSlip.professionalTax) : 200;
+    
+    pfStr = `₹${formatCurrency(pfVal)}`;
+    tdsStr = `₹${formatCurrency(tdsVal)}`;
+    ptStr = `₹${formatCurrency(ptVal)}`;
+  } else {
+    pfStr = "₹6,750.00";
+    tdsStr = "₹5,750.00";
+    ptStr = "₹200.00";
+  }
 
   return (
     <div className="flex flex-col gap-8 text-left">
@@ -551,7 +576,7 @@ export default function EmployeePayroll() {
           </div>
           <div className="mt-8">
             <span className="text-2xl font-bold text-slate-950">{deductionsStr}</span>
-            <span className="block text-[10px] text-slate-400 font-semibold mt-1">{pfStr} PF contribution + {tdsStr} TDS</span>
+            <span className="block text-[10px] text-slate-400 font-semibold mt-1">{pfStr} PF + {tdsStr} TDS + {ptStr} Admin tax</span>
           </div>
         </div>
 
@@ -632,8 +657,8 @@ export default function EmployeePayroll() {
                 <span>Verified Direct-Deposit</span>
               </div>
             </div>
-            
-            <button 
+
+            <button
               onClick={() => setIsEditingBank(true)}
               className="w-full py-2.5 bg-slate-900 hover:bg-indigo-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-sm"
             >
@@ -658,7 +683,7 @@ export default function EmployeePayroll() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md">
           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl overflow-hidden text-left border border-slate-100">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 blur-[100px] -z-10 rounded-full translate-x-1/2 -translate-y-1/2" />
-            
+
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Update Bank Account</h3>
               <button
