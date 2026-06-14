@@ -27,7 +27,7 @@ import AttendanceWebcam from "@/app/employee/attendance/AttendanceWebcam";
 export default function InternDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
   const [essRequests, setEssRequests] = useState([]);
-  
+
   // Real-Time Clock
   const [currentDateTime, setCurrentDateTime] = useState(null);
 
@@ -95,7 +95,7 @@ export default function InternDashboard() {
         if (res.ok) {
           const data = await res.json();
           const attendanceList = data.attendance || [];
-          
+
           const now = new Date();
           const month = now.getMonth();
           const year = now.getFullYear();
@@ -198,7 +198,7 @@ export default function InternDashboard() {
       if (activeProjects === 0) {
         const cached = localStorage.getItem("hra_projects");
         if (cached) {
-          const projectsList = JSON.parse(cached).filter(p => 
+          const projectsList = JSON.parse(cached).filter(p =>
             p.assignedMembers && p.assignedMembers.some(m => m.email.toLowerCase() === email.toLowerCase())
           );
           activeProjects = projectsList.filter(p => p.status !== "Completed").length;
@@ -252,7 +252,24 @@ export default function InternDashboard() {
       if (res.ok) {
         const data = await res.json();
         setTodayAttendance(data.attendance);
-        
+
+        // Get break seconds from localStorage
+        const todayDate = new Date();
+        const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+        const breakActiveKey = `break_active_${email}_${todayDateStr}`;
+        const breakSecsKey = `break_seconds_${email}_${todayDateStr}`;
+        const breakStartKey = `break_start_${email}_${todayDateStr}`;
+
+        const isBreakActive = localStorage.getItem(breakActiveKey) === "true";
+        let storedBreakSecs = parseInt(localStorage.getItem(breakSecsKey) || "0", 10);
+        if (isBreakActive) {
+          const breakStart = parseInt(localStorage.getItem(breakStartKey) || "0", 10);
+          if (breakStart > 0) {
+            storedBreakSecs += Math.floor((Date.now() - breakStart) / 1000);
+          }
+        }
+        setBreakSecs(storedBreakSecs);
+
         let totalMs = 0;
         if (data.attendance?.sessions) {
           data.attendance.sessions.forEach(s => {
@@ -263,12 +280,16 @@ export default function InternDashboard() {
             }
           });
         }
-        setSeconds(Math.floor(totalMs / 1000));
+        setSeconds(Math.max(Math.floor(totalMs / 1000) - storedBreakSecs, 0));
 
         // Sync local clock status matching backend active session
         const activeSession = data.attendance?.sessions?.find(s => !s.checkOut);
         if (activeSession) {
-          setStatus("ClockedIn");
+          if (isBreakActive) {
+            setStatus("Break");
+          } else {
+            setStatus("ClockedIn");
+          }
         } else if (data.attendance?.sessions && data.attendance.sessions.length > 0) {
           setStatus(prev => prev === "Break" ? "Break" : "ClockedOut");
         } else {
@@ -286,6 +307,23 @@ export default function InternDashboard() {
   // Set up statistics and today's attendance logs
   useEffect(() => {
     if (currentUser?.email) {
+      const todayDate = new Date();
+      const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+      const breakActiveKey = `break_active_${currentUser.email}_${todayDateStr}`;
+      const breakSecsKey = `break_seconds_${currentUser.email}_${todayDateStr}`;
+      const breakStartKey = `break_start_${currentUser.email}_${todayDateStr}`;
+
+      const isBreakActive = localStorage.getItem(breakActiveKey) === "true";
+      let storedBreakSecs = parseInt(localStorage.getItem(breakSecsKey) || "0", 10);
+      if (isBreakActive) {
+        const breakStart = parseInt(localStorage.getItem(breakStartKey) || "0", 10);
+        if (breakStart > 0) {
+          storedBreakSecs += Math.floor((Date.now() - breakStart) / 1000);
+        }
+        setStatus("Break");
+      }
+      setBreakSecs(storedBreakSecs);
+
       fetchDashboardStats(currentUser.email);
       fetchTodayAttendance(currentUser.email);
 
@@ -376,18 +414,26 @@ export default function InternDashboard() {
               totalMs += Math.max(end - start, 0);
             }
           });
-          setSeconds(Math.floor(totalMs / 1000));
+          setSeconds(Math.max(Math.floor(totalMs / 1000) - breakSecs, 0));
         } else {
           setSeconds(prev => prev + 1);
         }
       }, 1000);
     } else if (status === "Break") {
       interval = setInterval(() => {
-        setBreakSecs(prev => prev + 1);
+        setBreakSecs(prev => {
+          const next = prev + 1;
+          if (currentUser?.email) {
+            const todayDate = new Date();
+            const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+            localStorage.setItem(`break_seconds_${currentUser.email}_${todayDateStr}`, next.toString());
+          }
+          return next;
+        });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [status, todayAttendance]);
+  }, [status, todayAttendance, breakSecs, currentUser?.email]);
 
   const formatTime = (totalSecs) => {
     const hrs = Math.floor(totalSecs / 3600).toString().padStart(2, "0");
@@ -416,13 +462,14 @@ export default function InternDashboard() {
           body: JSON.stringify({
             email: currentUser.email,
             location: { lat, lng, address: resolvedAddress },
-            image: capturedImage
+            image: capturedImage,
+            breakDuration: activeSession ? breakSecs * 1000 : undefined
           }),
         });
         const data = await res.json();
         if (res.ok) {
           setTodayAttendance(data.attendance);
-          
+
           let totalMs = 0;
           data.attendance.sessions.forEach(s => {
             if (s.checkIn) {
@@ -431,17 +478,33 @@ export default function InternDashboard() {
               totalMs += Math.max(end - start, 0);
             }
           });
-          setSeconds(Math.floor(totalMs / 1000));
 
-          // Set status matching trigger
           const sessionActive = data.attendance.sessions.find(s => !s.checkOut);
+          let storedBreakSecs = breakSecs;
           if (sessionActive) {
+            // Just clocked in! Clear break records
+            const todayDate = new Date();
+            const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+            localStorage.removeItem(`break_active_${currentUser.email}_${todayDateStr}`);
+            localStorage.removeItem(`break_seconds_${currentUser.email}_${todayDateStr}`);
+            localStorage.removeItem(`break_start_${currentUser.email}_${todayDateStr}`);
+            setBreakSecs(0);
+            storedBreakSecs = 0;
             setStatus("ClockedIn");
             setAttendanceStatus("Logged-in successfully!");
           } else {
-            setStatus(prev => prev === "Break" ? "Break" : "ClockedOut");
+            // Clocked out! Clear break records
+            const todayDate = new Date();
+            const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+            localStorage.removeItem(`break_active_${currentUser.email}_${todayDateStr}`);
+            localStorage.removeItem(`break_seconds_${currentUser.email}_${todayDateStr}`);
+            localStorage.removeItem(`break_start_${currentUser.email}_${todayDateStr}`);
+            setBreakSecs(0);
+            storedBreakSecs = 0;
+            setStatus("ClockedOut");
             setAttendanceStatus("Logged-out successfully!");
           }
+          setSeconds(Math.max(Math.floor(totalMs / 1000) - storedBreakSecs, 0));
           fetchDashboardStats(currentUser.email); // Recalculate stats like attendance percentage
         } else {
           alert(data.message || "Attendance submission failed");
@@ -499,12 +562,27 @@ export default function InternDashboard() {
   };
 
   const handleBreak = () => {
+    if (!currentUser?.email) return;
+    const todayDate = new Date();
+    const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+    const breakActiveKey = `break_active_${currentUser.email}_${todayDateStr}`;
+    const breakSecsKey = `break_seconds_${currentUser.email}_${todayDateStr}`;
+    const breakStartKey = `break_start_${currentUser.email}_${todayDateStr}`;
+
     if (status === "ClockedIn") {
       setStatus("Break");
-      setIsWebcamOpen(true);
+      localStorage.setItem(breakActiveKey, "true");
+      localStorage.setItem(breakStartKey, Date.now().toString());
     } else if (status === "Break") {
       setStatus("ClockedIn");
-      setIsWebcamOpen(true);
+      localStorage.setItem(breakActiveKey, "false");
+      const start = parseInt(localStorage.getItem(breakStartKey) || "0", 10);
+      if (start > 0) {
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        const currentAccumulated = parseInt(localStorage.getItem(breakSecsKey) || "0", 10);
+        localStorage.setItem(breakSecsKey, (currentAccumulated + elapsed).toString());
+      }
+      localStorage.removeItem(breakStartKey);
     }
   };
 
@@ -526,7 +604,7 @@ export default function InternDashboard() {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      
+
       {/* 1. Dynamic Greeting Header with Real-Time Clock */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
         <div className="flex flex-col gap-1 text-left">
@@ -576,16 +654,14 @@ export default function InternDashboard() {
           <div className="lg:col-span-6 flex flex-col gap-4 border border-slate-100 p-5 rounded-2xl bg-slate-50/50">
             <div className="flex justify-between items-center">
               <span className="text-xs font-extrabold text-slate-800 font-sans">Today's Status</span>
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
-                status === "ClockedIn" 
-                  ? "bg-emerald-50 text-emerald-800 border-emerald-100" 
-                  : status === "Break" 
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${status === "ClockedIn"
+                ? "bg-emerald-50 text-emerald-800 border-emerald-100"
+                : status === "Break"
                   ? "bg-amber-50 text-amber-800 border-amber-100"
                   : "bg-slate-100 text-slate-500 border-slate-200"
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  status === "ClockedIn" ? "bg-emerald-500 animate-pulse" : status === "Break" ? "bg-amber-500 animate-pulse" : "bg-slate-400"
-                }`} />
+                }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${status === "ClockedIn" ? "bg-emerald-500 animate-pulse" : status === "Break" ? "bg-amber-500 animate-pulse" : "bg-slate-400"
+                  }`} />
                 {status === "ClockedIn" ? "Present" : status === "Break" ? "On Break" : status}
               </span>
             </div>
@@ -827,14 +903,14 @@ export default function InternDashboard() {
         </div>
 
         <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
+
           {/* Metrics scorecard (8 columns) */}
           <div className="lg:col-span-8 flex flex-col md:flex-row gap-6 items-stretch justify-between">
             {/* Stars Overall Rating Box */}
             <div className="md:w-1/3 p-6 rounded-2xl border border-slate-100 bg-slate-50/40 text-center flex flex-col items-center justify-center gap-3">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Evaluation Score</span>
               <span className="text-4xl font-extrabold text-slate-950 font-mono tracking-tight text-center">{performanceRatings.overall.toFixed(2)}</span>
-              
+
               {/* Star graphics */}
               <div className="flex items-center gap-1 justify-center">
                 {[...Array(5)].map((_, i) => (
@@ -922,9 +998,8 @@ export default function InternDashboard() {
               return (
                 <div key={req._id || idx} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50/40">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      req.requestType === "WFH" ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                    }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${req.requestType === "WFH" ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                      }`}>
                       {req.requestType === "WFH" ? <Home className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
                     </div>
                     <div>
@@ -932,11 +1007,10 @@ export default function InternDashboard() {
                       <span className="text-[10px] text-slate-400 font-medium block">{startStr} - {endStr}</span>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${
-                    req.status === "approved" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                  <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${req.status === "approved" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
                     req.status === "rejected" ? "bg-rose-50 text-rose-700 border-rose-100" :
-                    "bg-amber-50 text-amber-700 border-amber-100"
-                  }`}>
+                      "bg-amber-50 text-amber-700 border-amber-100"
+                    }`}>
                     {req.status}
                   </span>
                 </div>

@@ -138,7 +138,7 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
         const totalDays = new Date(year, month + 1, 0).getDate();
         const startOffset = new Date(year, month, 1).getDay();
         const days = [];
-        
+
         // Helper to format date as YYYY-MM-DD in local time
         const formatLocalYYYYMMDD = (d) => {
             const y = d.getFullYear();
@@ -401,16 +401,15 @@ export default function EmployeeAttendanceTab({ user: propUser }) {
                                     <div key={idx} className="aspect-square flex items-center justify-center">
                                         {day ? (
                                             <div className={`w-full h-full rounded-lg sm:rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all hover:scale-105 duration-200 overflow-hidden
-                                                ${day.status 
-                                                    ? `${STATUS_CONFIG[day.status].bg} ${STATUS_CONFIG[day.status].border}` 
+                                                ${day.status
+                                                    ? `${STATUS_CONFIG[day.status].bg} ${STATUS_CONFIG[day.status].border}`
                                                     : "bg-white border-slate-50"
                                                 }
                                             `}>
-                                                <span className={`text-[10px] sm:text-sm font-black leading-none ${
-                                                    day.status 
-                                                        ? STATUS_CONFIG[day.status].text 
+                                                <span className={`text-[10px] sm:text-sm font-black leading-none ${day.status
+                                                        ? STATUS_CONFIG[day.status].text
                                                         : "text-slate-300"
-                                                }`}>{day.day}</span>
+                                                    }`}>{day.day}</span>
                                                 {day.status && (
                                                     <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full flex-shrink-0 ${STATUS_CONFIG[day.status].color}`} />
                                                 )}

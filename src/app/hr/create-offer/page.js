@@ -414,9 +414,10 @@ Alignment with company culture and values`
           <!-- Document Title -->
           <h1 class="document-title">Internship Offer Letter</h1>
 
-          <!-- Date -->
+          <!-- Date & Ref -->
           <div class="date-row">
-            Date: <strong>${dateFormatted}</strong>
+            <span>Ref: <strong>${offer.offerNumber || 'Draft'}</strong></span>
+            <span>Date: <strong>${dateFormatted}</strong></span>
           </div>
 
           <!-- Recipient -->
@@ -644,9 +645,10 @@ Alignment with company culture and values`
           <!-- Document Title -->
           <h1 class="document-title">Employment Offer Letter</h1>
 
-          <!-- Date -->
+          <!-- Date & Ref -->
           <div class="date-row">
-            Date: <strong>${dateFormatted}</strong>
+            <span>Ref: <strong>${offer.offerNumber || 'Draft'}</strong></span>
+            <span>Date: <strong>${dateFormatted}</strong></span>
           </div>
 
           <!-- Recipient -->
@@ -982,8 +984,8 @@ Alignment with company culture and values`
               left: 0;
               right: 0;
               height: 10px;
-              background-color: #1e1b4b;
-              border-bottom: 3px solid #3b82f6;
+              background-color: #646199;
+              border-bottom: 3px solid #73a4a7;
             }
             
             /* Professional Page Number & Trademark Footer */
@@ -1030,7 +1032,8 @@ Alignment with company culture and values`
               letter-spacing: 1px;
             }
             .date-row {
-              text-align: right;
+              display: flex;
+              justify-content: space-between;
               font-size: 11px;
               color: #64748b;
               font-weight: 600;
@@ -1073,7 +1076,7 @@ Alignment with company culture and values`
               content: "";
               flex: 1;
               height: 1px;
-              background: linear-gradient(90deg, #4f46e5 0%, #e2e8f0 100%);
+              background: linear-gradient(90deg, #d7573b 0%, #e2e8f0 100%);
             }
 
             /* Dual-column Details Grid */

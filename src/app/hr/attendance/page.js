@@ -182,7 +182,7 @@ export default function HRAttendance() {
                 ? (r.totalDuration / (1000 * 60 * 60)).toFixed(2) + "h"
                 : "-";
             const dateStr = r.date ? new Date(r.date).toLocaleDateString() : "-";
-            
+
             return [
                 r.userId?.name || "-",
                 r.userId?.employeeId || "-",
@@ -431,12 +431,12 @@ export default function HRAttendance() {
                                                                     onClick={() => setSelectedRecord(r)}
                                                                 />
                                                             </div>
-                                                             <div className="leading-tight">
-                                                                 <p className="text-xs font-bold text-slate-900">{new Date(r.sessions[0].checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                                                 <span className="block text-[8px] text-indigo-500 font-extrabold truncate max-w-[150px] mt-0.5" title={r.sessions[0].checkInLocation?.address || "Live location"}>
-                                                                     📍 {r.sessions[0].checkInLocation?.address || "Live Location"}
-                                                                 </span>
-                                                             </div>
+                                                            <div className="leading-tight">
+                                                                <p className="text-xs font-bold text-slate-900">{new Date(r.sessions[0].checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                                <span className="block text-[8px] text-indigo-500 font-extrabold truncate max-w-[150px] mt-0.5" title={r.sessions[0].checkInLocation?.address || "Live location"}>
+                                                                    📍 {r.sessions[0].checkInLocation?.address || "Live Location"}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     ) : <span className="text-[10px] font-medium text-slate-300 italic">No entry vector</span>}
                                                 </td>
@@ -451,12 +451,12 @@ export default function HRAttendance() {
                                                                     onClick={() => setSelectedRecord(r)}
                                                                 />
                                                             </div>
-                                                             <div className="leading-tight">
-                                                                 <p className="text-xs font-bold text-slate-900">{new Date(r.sessions[r.sessions.length - 1].checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                                                 <span className="block text-[8px] text-rose-500 font-extrabold truncate max-w-[150px] mt-0.5" title={r.sessions[r.sessions.length - 1].checkOutLocation?.address || "Live location"}>
-                                                                     📍 {r.sessions[r.sessions.length - 1].checkOutLocation?.address || "Live Location"}
-                                                                 </span>
-                                                             </div>
+                                                            <div className="leading-tight">
+                                                                <p className="text-xs font-bold text-slate-900">{new Date(r.sessions[r.sessions.length - 1].checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                                <span className="block text-[8px] text-rose-500 font-extrabold truncate max-w-[150px] mt-0.5" title={r.sessions[r.sessions.length - 1].checkOutLocation?.address || "Live location"}>
+                                                                    📍 {r.sessions[r.sessions.length - 1].checkOutLocation?.address || "Live Location"}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-2">
@@ -526,8 +526,8 @@ export default function HRAttendance() {
                                     type="button"
                                     onClick={() => setSelectedStatus(s.id)}
                                     className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter transition-all border whitespace-nowrap cursor-pointer
-                                        ${selectedStatus === s.id 
-                                            ? "bg-slate-900 text-white border-slate-900" 
+                                        ${selectedStatus === s.id
+                                            ? "bg-slate-900 text-white border-slate-900"
                                             : "bg-white text-slate-400 border-slate-100 hover:border-slate-300"}`}
                                 >
                                     <s.icon className="w-2.5 h-2.5" />
@@ -659,40 +659,40 @@ export default function HRAttendance() {
 
                                             {(session.checkInLocation || session.checkOutLocation) && (
                                                 <div className="pt-4 border-t border-white grid grid-cols-2 gap-4">
-                                                     {session.checkInLocation && (
-                                                         <a
-                                                             href={`https://www.google.com/maps?q=${session.checkInLocation.lat},${session.checkInLocation.lng}`}
-                                                             target="_blank"
-                                                             className="flex items-center gap-2 p-2 bg-white rounded-xl border border-white shadow-sm hover:border-indigo-100 transition-all cursor-pointer min-w-0"
-                                                         >
-                                                             <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
-                                                                 <MapPin className="w-3 h-3" />
-                                                             </div>
-                                                             <div className="flex flex-col text-left min-w-0">
-                                                                 <span className="text-[8px] font-black text-indigo-600 uppercase tracking-wide">Entry Address</span>
-                                                                 <span className="text-[9px] font-bold text-slate-500 truncate max-w-[140px]" title={session.checkInLocation.address || "View Map"}>
-                                                                     {session.checkInLocation.address || "Entry Location"}
-                                                                 </span>
-                                                             </div>
-                                                         </a>
-                                                     )}
-                                                     {session.checkOutLocation && (
-                                                         <a
-                                                             href={`https://www.google.com/maps?q=${session.checkOutLocation.lat},${session.checkOutLocation.lng}`}
-                                                             target="_blank"
-                                                             className="flex items-center gap-2 p-2 bg-white rounded-xl border border-white shadow-sm hover:border-indigo-100 transition-all cursor-pointer min-w-0"
-                                                         >
-                                                             <div className="w-6 h-6 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600 shrink-0">
-                                                                 <MapPin className="w-3 h-3" />
-                                                             </div>
-                                                             <div className="flex flex-col text-left min-w-0">
-                                                                 <span className="text-[8px] font-black text-rose-600 uppercase tracking-wide">Exit Address</span>
-                                                                 <span className="text-[9px] font-bold text-slate-500 truncate max-w-[140px]" title={session.checkOutLocation.address || "View Map"}>
-                                                                     {session.checkOutLocation.address || "Exit Location"}
-                                                                 </span>
-                                                             </div>
-                                                         </a>
-                                                     )}
+                                                    {session.checkInLocation && (
+                                                        <a
+                                                            href={`https://www.google.com/maps?q=${session.checkInLocation.lat},${session.checkInLocation.lng}`}
+                                                            target="_blank"
+                                                            className="flex items-center gap-2 p-2 bg-white rounded-xl border border-white shadow-sm hover:border-indigo-100 transition-all cursor-pointer min-w-0"
+                                                        >
+                                                            <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                                                                <MapPin className="w-3 h-3" />
+                                                            </div>
+                                                            <div className="flex flex-col text-left min-w-0">
+                                                                <span className="text-[8px] font-black text-indigo-600 uppercase tracking-wide">Entry Address</span>
+                                                                <span className="text-[9px] font-bold text-slate-500 truncate max-w-[140px]" title={session.checkInLocation.address || "View Map"}>
+                                                                    {session.checkInLocation.address || "Entry Location"}
+                                                                </span>
+                                                            </div>
+                                                        </a>
+                                                    )}
+                                                    {session.checkOutLocation && (
+                                                        <a
+                                                            href={`https://www.google.com/maps?q=${session.checkOutLocation.lat},${session.checkOutLocation.lng}`}
+                                                            target="_blank"
+                                                            className="flex items-center gap-2 p-2 bg-white rounded-xl border border-white shadow-sm hover:border-indigo-100 transition-all cursor-pointer min-w-0"
+                                                        >
+                                                            <div className="w-6 h-6 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600 shrink-0">
+                                                                <MapPin className="w-3 h-3" />
+                                                            </div>
+                                                            <div className="flex flex-col text-left min-w-0">
+                                                                <span className="text-[8px] font-black text-rose-600 uppercase tracking-wide">Exit Address</span>
+                                                                <span className="text-[9px] font-bold text-slate-500 truncate max-w-[140px]" title={session.checkOutLocation.address || "View Map"}>
+                                                                    {session.checkOutLocation.address || "Exit Location"}
+                                                                </span>
+                                                            </div>
+                                                        </a>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

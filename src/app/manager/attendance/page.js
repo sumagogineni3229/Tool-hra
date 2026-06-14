@@ -117,8 +117,8 @@ export default function ManagerAttendance() {
       const session = apiClient.getCurrentSession();
       const managerEmail = session?.email;
       const cacheBust = `t=${Date.now()}`;
-      const queryStr = managerEmail 
-        ? `?managerEmail=${encodeURIComponent(managerEmail)}&${cacheBust}` 
+      const queryStr = managerEmail
+        ? `?managerEmail=${encodeURIComponent(managerEmail)}&${cacheBust}`
         : `?${cacheBust}`;
 
       let fetchedAttendance = [];
@@ -155,12 +155,12 @@ export default function ManagerAttendance() {
       const session = apiClient.getCurrentSession();
       setCurrentUser(session);
     }
-    
+
     fetchAllData();
     const poll = setInterval(() => {
       fetchAllData();
     }, 8000); // Sync data every 8 seconds in the background
-    
+
     return () => clearInterval(poll);
   }, [fetchAllData]);
 
@@ -169,11 +169,11 @@ export default function ManagerAttendance() {
     if (!currentUser) return [];
     const currentUserId = currentUser.id || currentUser._id;
     const currentUserEmail = currentUser.email?.toLowerCase().trim();
-    
+
     return teams.filter(t => {
       const tMgrId = t.managerId?.id || t.managerId?._id || t.managerId;
       const tMgrEmail = t.managerId?.email?.toLowerCase().trim();
-      
+
       return (
         tMgrId?.toString() === currentUserId?.toString() ||
         (tMgrEmail && currentUserEmail && tMgrEmail === currentUserEmail)
@@ -326,7 +326,7 @@ export default function ManagerAttendance() {
 
   const handleOpenEditModal = (record) => {
     setRecordToEdit(record);
-    
+
     let checkInTime = "09:00";
     let checkOutTime = "";
     const sessions = record.sessions || [];
@@ -355,8 +355,8 @@ export default function ManagerAttendance() {
     e.preventDefault();
     try {
       const checkInISO = new Date(`${formData.date}T${formData.checkInTime || "09:00"}:00`).toISOString();
-      const checkOutISO = formData.checkOutTime 
-        ? new Date(`${formData.date}T${formData.checkOutTime}:00`).toISOString() 
+      const checkOutISO = formData.checkOutTime
+        ? new Date(`${formData.date}T${formData.checkOutTime}:00`).toISOString()
         : null;
 
       const res = await fetch("/api/attendance", {
@@ -391,8 +391,8 @@ export default function ManagerAttendance() {
     if (!recordToEdit) return;
     try {
       const checkInISO = new Date(`${formData.date}T${formData.checkInTime || "09:00"}:00`).toISOString();
-      const checkOutISO = formData.checkOutTime 
-        ? new Date(`${formData.date}T${formData.checkOutTime}:00`).toISOString() 
+      const checkOutISO = formData.checkOutTime
+        ? new Date(`${formData.date}T${formData.checkOutTime}:00`).toISOString()
         : null;
 
       const sessions = [
@@ -458,7 +458,7 @@ export default function ManagerAttendance() {
         ? (r.totalDuration / (1000 * 60 * 60)).toFixed(2) + "h"
         : "-";
       const dateStr = r.date ? new Date(r.date).toLocaleDateString() : "-";
-      
+
       return [
         r.userId?.name || "-",
         r.userId?.employeeId || "-",
@@ -492,7 +492,7 @@ export default function ManagerAttendance() {
 
   return (
     <div className="space-y-10 pb-20 w-full max-w-none text-left font-sans">
-      
+
       {managedTeams.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200/80 p-16 text-center shadow-sm max-w-xl mx-auto flex flex-col items-center gap-6 mt-10">
           <div className="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 text-slate-400">
@@ -856,14 +856,14 @@ export default function ManagerAttendance() {
 
             {/* --- RIGHT COLUMN: CONTROLS & INSIGHTS --- */}
             <div className="lg:col-span-4 space-y-8">
-              
+
               {/* Filter console */}
               <div className="bg-white rounded-2xl p-3 border border-slate-100 shadow-xl shadow-slate-105/10 flex flex-col gap-3 text-left">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-50">
                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                     <Filter className="w-3 h-3 text-slate-400" /> Filter console
                   </span>
-                  { (selectedDate || selectedStatus !== "all") && (
+                  {(selectedDate || selectedStatus !== "all") && (
                     <button
                       onClick={() => { setSelectedDate(""); setSelectedStatus("all"); }}
                       className="text-[9px] font-bold text-indigo-655 hover:underline cursor-pointer"
@@ -897,8 +897,8 @@ export default function ManagerAttendance() {
                         type="button"
                         onClick={() => setSelectedStatus(s.id)}
                         className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border whitespace-nowrap cursor-pointer
-                          ${selectedStatus === s.id 
-                            ? "bg-slate-900 text-white border-slate-900" 
+                          ${selectedStatus === s.id
+                            ? "bg-slate-900 text-white border-slate-900"
                             : "bg-white text-slate-400 border-slate-100 hover:border-slate-300"}`}
                       >
                         <s.icon className="w-2.5 h-2.5" />

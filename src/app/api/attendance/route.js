@@ -300,7 +300,7 @@ export async function PUT(request) {
 
     const body = await request.json();
     const { id, status, notes, sessions } = body;
-    const { email, location, image } = body;
+    const { email, location, image, breakDuration } = body;
 
     // Manager adjustment path
     if (id) {
@@ -379,7 +379,7 @@ export async function PUT(request) {
     }
 
     // Calculate session duration and add to totalDuration
-    const durationMs = checkoutTime.getTime() - new Date(activeSession.checkIn).getTime();
+    const durationMs = Math.max(checkoutTime.getTime() - new Date(activeSession.checkIn).getTime() - (breakDuration || 0), 0);
     record.totalDuration = (record.totalDuration || 0) + durationMs;
 
     await record.save();

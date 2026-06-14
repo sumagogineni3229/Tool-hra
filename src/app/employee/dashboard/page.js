@@ -49,7 +49,7 @@ export default function EmployeeDashboard() {
 
   // Time Tracker State
   const [status, setStatus] = useState("Offline"); // Offline, ClockedIn, Break, ClockedOut
-  const [seconds, setSeconds] = useState(0); 
+  const [seconds, setSeconds] = useState(0);
   const [breakSecs, setBreakSecs] = useState(0);
 
   // Interactive Tasks Checklist (persisted in localStorage by email)
@@ -168,6 +168,23 @@ export default function EmployeeDashboard() {
         const record = data.attendance;
         setTodayAttendance(record);
 
+        // Get break seconds from localStorage
+        const todayDate = new Date();
+        const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+        const breakActiveKey = `break_active_${email}_${todayDateStr}`;
+        const breakSecsKey = `break_seconds_${email}_${todayDateStr}`;
+        const breakStartKey = `break_start_${email}_${todayDateStr}`;
+
+        const isBreakActive = localStorage.getItem(breakActiveKey) === "true";
+        let storedBreakSecs = parseInt(localStorage.getItem(breakSecsKey) || "0", 10);
+        if (isBreakActive) {
+          const breakStart = parseInt(localStorage.getItem(breakStartKey) || "0", 10);
+          if (breakStart > 0) {
+            storedBreakSecs += Math.floor((Date.now() - breakStart) / 1000);
+          }
+        }
+        setBreakSecs(storedBreakSecs);
+
         // Sum up completed duration in seconds
         let totalMs = 0;
         record.sessions.forEach(s => {
@@ -177,12 +194,16 @@ export default function EmployeeDashboard() {
             totalMs += Math.max(end - start, 0);
           }
         });
-        setSeconds(Math.floor(totalMs / 1000));
+        setSeconds(Math.max(Math.floor(totalMs / 1000) - storedBreakSecs, 0));
 
         // Sync Clock status
         const activeSession = record.sessions.find(s => !s.checkOut);
         if (activeSession) {
-          setStatus("ClockedIn");
+          if (isBreakActive) {
+            setStatus("Break");
+          } else {
+            setStatus("ClockedIn");
+          }
         } else if (record.sessions.length > 0) {
           // If clocked out but sessions exist, they are either clocked out or on break
           setStatus(prev => prev === "Break" ? "Break" : "ClockedOut");
@@ -312,6 +333,23 @@ export default function EmployeeDashboard() {
         });
 
       // 5. Initial Attendance fetch & periodic polling
+      const todayDate = new Date();
+      const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+      const breakActiveKey = `break_active_${currentUser.email}_${todayDateStr}`;
+      const breakSecsKey = `break_seconds_${currentUser.email}_${todayDateStr}`;
+      const breakStartKey = `break_start_${currentUser.email}_${todayDateStr}`;
+
+      const isBreakActive = localStorage.getItem(breakActiveKey) === "true";
+      let storedBreakSecs = parseInt(localStorage.getItem(breakSecsKey) || "0", 10);
+      if (isBreakActive) {
+        const breakStart = parseInt(localStorage.getItem(breakStartKey) || "0", 10);
+        if (breakStart > 0) {
+          storedBreakSecs += Math.floor((Date.now() - breakStart) / 1000);
+        }
+        setStatus("Break");
+      }
+      setBreakSecs(storedBreakSecs);
+
       fetchTodayAttendance(currentUser.email);
       const poll = setInterval(() => {
         fetchTodayAttendance(currentUser.email);
@@ -367,18 +405,26 @@ export default function EmployeeDashboard() {
               totalMs += Math.max(end - start, 0);
             }
           });
-          setSeconds(Math.floor(totalMs / 1000));
+          setSeconds(Math.max(Math.floor(totalMs / 1000) - breakSecs, 0));
         } else {
           setSeconds(prev => prev + 1);
         }
       }, 1000);
     } else if (status === "Break") {
       interval = setInterval(() => {
-        setBreakSecs(prev => prev + 1);
+        setBreakSecs(prev => {
+          const next = prev + 1;
+          if (currentUser?.email) {
+            const todayDate = new Date();
+            const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+            localStorage.setItem(`break_seconds_${currentUser.email}_${todayDateStr}`, next.toString());
+          }
+          return next;
+        });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [status, todayAttendance]);
+  }, [status, todayAttendance, breakSecs, currentUser?.email]);
 
   const formatTime = (totalSecs) => {
     const hrs = Math.floor(totalSecs / 3600).toString().padStart(2, "0");
@@ -401,13 +447,14 @@ export default function EmployeeDashboard() {
           body: JSON.stringify({
             email: currentUser.email,
             location: { lat, lng, address: resolvedAddress },
-            image: capturedImage
+            image: capturedImage,
+            breakDuration: activeSession ? breakSecs * 1000 : undefined
           }),
         });
         const data = await res.json();
         if (res.ok) {
           setTodayAttendance(data.attendance);
-          
+
           // Force update states
           let totalMs = 0;
           data.attendance.sessions.forEach(s => {
@@ -417,18 +464,33 @@ export default function EmployeeDashboard() {
               totalMs += Math.max(end - start, 0);
             }
           });
-          setSeconds(Math.floor(totalMs / 1000));
 
-          // Set status matching trigger
           const sessionActive = data.attendance.sessions.find(s => !s.checkOut);
+          let storedBreakSecs = breakSecs;
           if (sessionActive) {
+            // Just clocked in! Clear break records
+            const todayDate = new Date();
+            const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+            localStorage.removeItem(`break_active_${currentUser.email}_${todayDateStr}`);
+            localStorage.removeItem(`break_seconds_${currentUser.email}_${todayDateStr}`);
+            localStorage.removeItem(`break_start_${currentUser.email}_${todayDateStr}`);
+            setBreakSecs(0);
+            storedBreakSecs = 0;
             setStatus("ClockedIn");
             setAttendanceStatus("Logged-in successfully!");
           } else {
-            // Check if break was triggered locally
-            setStatus(prev => prev === "Break" ? "Break" : "ClockedOut");
+            // Clocked out! Clear break records
+            const todayDate = new Date();
+            const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+            localStorage.removeItem(`break_active_${currentUser.email}_${todayDateStr}`);
+            localStorage.removeItem(`break_seconds_${currentUser.email}_${todayDateStr}`);
+            localStorage.removeItem(`break_start_${currentUser.email}_${todayDateStr}`);
+            setBreakSecs(0);
+            storedBreakSecs = 0;
+            setStatus("ClockedOut");
             setAttendanceStatus("Logged-out successfully!");
           }
+          setSeconds(Math.max(Math.floor(totalMs / 1000) - storedBreakSecs, 0));
         } else {
           alert(data.message || "Attendance submission failed");
         }
@@ -487,12 +549,27 @@ export default function EmployeeDashboard() {
 
   // Break ends current active session, toggles local status
   const handleBreak = () => {
+    if (!currentUser?.email) return;
+    const todayDate = new Date();
+    const todayDateStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
+    const breakActiveKey = `break_active_${currentUser.email}_${todayDateStr}`;
+    const breakSecsKey = `break_seconds_${currentUser.email}_${todayDateStr}`;
+    const breakStartKey = `break_start_${currentUser.email}_${todayDateStr}`;
+
     if (status === "ClockedIn") {
       setStatus("Break");
-      setIsWebcamOpen(true); // End session first
+      localStorage.setItem(breakActiveKey, "true");
+      localStorage.setItem(breakStartKey, Date.now().toString());
     } else if (status === "Break") {
       setStatus("ClockedIn");
-      setIsWebcamOpen(true); // Start new session
+      localStorage.setItem(breakActiveKey, "false");
+      const start = parseInt(localStorage.getItem(breakStartKey) || "0", 10);
+      if (start > 0) {
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        const currentAccumulated = parseInt(localStorage.getItem(breakSecsKey) || "0", 10);
+        localStorage.setItem(breakSecsKey, (currentAccumulated + elapsed).toString());
+      }
+      localStorage.removeItem(breakStartKey);
     }
   };
 
@@ -569,7 +646,7 @@ export default function EmployeeDashboard() {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      
+
       {/* 1. Dynamic Header with Real-Time Clock */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
         <div className="flex flex-col gap-1 text-left">
@@ -590,8 +667,8 @@ export default function EmployeeDashboard() {
             )}
           </div>
           <p className="text-xs text-slate-500 font-medium">
-            {pendingLeavesCount > 0 
-              ? `You have ${pendingLeavesCount} leave request${pendingLeavesCount > 1 ? "s" : ""} pending approval.` 
+            {pendingLeavesCount > 0
+              ? `You have ${pendingLeavesCount} leave request${pendingLeavesCount > 1 ? "s" : ""} pending approval.`
               : "All employee shifts, assigned trainings, and calendar slots are up-to-date."}
           </p>
         </div>
@@ -610,7 +687,7 @@ export default function EmployeeDashboard() {
 
       {/* 2. Top Grid: Attendance Console (7 columns) & Tasks Tracker (5 columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        
+
         {/* Attendance Dashboard Card (Today console + Metrics list) */}
         <div className="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-6">
           <div className="flex flex-col gap-1">
@@ -624,16 +701,14 @@ export default function EmployeeDashboard() {
             <div className="sm:col-span-6 flex flex-col gap-4 border border-slate-100 p-5 rounded-2xl bg-slate-50/50">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-extrabold text-slate-800">Today's Status</span>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
-                  status === "ClockedIn" 
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-100" 
-                    : status === "Break" 
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${status === "ClockedIn"
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-100"
+                  : status === "Break"
                     ? "bg-amber-50 text-amber-800 border-amber-100"
                     : "bg-slate-100 text-slate-500 border-slate-200"
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    status === "ClockedIn" ? "bg-emerald-500 animate-pulse" : status === "Break" ? "bg-amber-500 animate-pulse" : "bg-slate-400"
-                  }`} />
+                  }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${status === "ClockedIn" ? "bg-emerald-500 animate-pulse" : status === "Break" ? "bg-amber-500 animate-pulse" : "bg-slate-400"
+                    }`} />
                   {status === "ClockedIn" ? "Present" : status === "Break" ? "On Break" : status}
                 </span>
               </div>
@@ -818,9 +893,8 @@ export default function EmployeeDashboard() {
                     onChange={() => handleToggleTask(task.id)}
                     className="w-4.5 h-4.5 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500/25 cursor-pointer mt-0.5"
                   />
-                  <span className={`text-[11px] font-bold text-slate-700 leading-normal ${
-                    task.checked ? "line-through text-slate-400" : ""
-                  }`}>
+                  <span className={`text-[11px] font-bold text-slate-700 leading-normal ${task.checked ? "line-through text-slate-400" : ""
+                    }`}>
                     {task.text}
                   </span>
                 </label>
@@ -906,9 +980,8 @@ export default function EmployeeDashboard() {
               return (
                 <div key={req._id || idx} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50/40">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      req.requestType === "WFH" ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                    }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${req.requestType === "WFH" ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                      }`}>
                       {req.requestType === "WFH" ? <Home className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
                     </div>
                     <div>
@@ -916,11 +989,10 @@ export default function EmployeeDashboard() {
                       <span className="text-[10px] text-slate-400 font-medium block">{startStr} - {endStr}</span>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${
-                    req.status === "approved" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                  <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${req.status === "approved" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
                     req.status === "rejected" ? "bg-rose-50 text-rose-700 border-rose-100" :
-                    "bg-amber-50 text-amber-700 border-amber-100"
-                  }`}>
+                      "bg-amber-50 text-amber-700 border-amber-100"
+                    }`}>
                     {req.status}
                   </span>
                 </div>
@@ -932,7 +1004,7 @@ export default function EmployeeDashboard() {
 
       {/* 5. Split Bottom Grid: Calendar/Holidays (4 columns) & Announcements (4 columns) & Trainings (4 columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        
+
         {/* Holidays Board (4 columns) */}
         <div className="lg:col-span-4 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-5 text-left">
           <div className="flex flex-col gap-1">
@@ -996,11 +1068,10 @@ export default function EmployeeDashboard() {
                 >
                   <div className="flex justify-between items-start gap-2">
                     <span className="font-bold text-[11px] text-slate-950 leading-tight line-clamp-1">{ann.title}</span>
-                    <span className={`shrink-0 text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                      isHighPriority 
-                        ? "bg-rose-50 text-rose-700 border border-rose-100" 
-                        : "bg-slate-100 text-slate-500 border border-slate-200"
-                    }`}>
+                    <span className={`shrink-0 text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider ${isHighPriority
+                      ? "bg-rose-50 text-rose-700 border border-rose-100"
+                      : "bg-slate-100 text-slate-500 border border-slate-200"
+                      }`}>
                       {ann.priority}
                     </span>
                   </div>
@@ -1045,13 +1116,12 @@ export default function EmployeeDashboard() {
               >
                 <div className="flex justify-between items-start gap-2">
                   <span className="font-bold text-[11px] text-slate-900 leading-tight line-clamp-1">{t.name}</span>
-                  <span className={`shrink-0 text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase ${
-                    t.status === "Completed" 
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-100" 
-                      : t.status === "In Progress" 
+                  <span className={`shrink-0 text-[8px] font-extrabold px-1.5 py-0.5 rounded border uppercase ${t.status === "Completed"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-100"
+                    : t.status === "In Progress"
                       ? "bg-indigo-50 text-indigo-850 border-indigo-150"
                       : "bg-slate-100 text-slate-400 border-slate-200"
-                  }`}>
+                    }`}>
                     {t.status}
                   </span>
                 </div>
@@ -1099,14 +1169,14 @@ export default function EmployeeDashboard() {
         </div>
 
         <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
+
           {/* Metrics scorecard (8 columns) */}
           <div className="lg:col-span-8 flex flex-col md:flex-row gap-6 items-stretch justify-between">
             {/* Stars Overall Rating Box */}
             <div className="md:w-1/3 p-6 rounded-2xl border border-slate-100 bg-slate-50/40 text-center flex flex-col items-center justify-center gap-3">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Evaluation Score</span>
               <span className="text-4xl font-extrabold text-slate-950 font-mono tracking-tight">{performanceRatings.overall.toFixed(2)}</span>
-              
+
               {/* Star graphics */}
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
@@ -1181,13 +1251,12 @@ export default function EmployeeDashboard() {
                 Review your health plan coverage, policy numbers, and validity periods.
               </p>
             </div>
-            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-              activeInsurance.status === "Active"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                : activeInsurance.status === "Expiring Soon"
+            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${activeInsurance.status === "Active"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+              : activeInsurance.status === "Expiring Soon"
                 ? "bg-amber-50 text-amber-700 border-amber-100"
                 : "bg-rose-50 text-rose-700 border-rose-100"
-            }`}>
+              }`}>
               {activeInsurance.status}
             </span>
           </div>
@@ -1226,7 +1295,7 @@ export default function EmployeeDashboard() {
       {selectedTraining && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-backdrop">
           <div className="bg-white border border-slate-200 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-modal">
-            
+
             {/* Header branding */}
             <div className="border-b border-slate-100 px-6 py-4.5 bg-slate-50 flex justify-between items-center">
               <div className="flex items-center gap-2.5">
@@ -1262,18 +1331,16 @@ export default function EmployeeDashboard() {
                 <div className="flex flex-col gap-1.5">
                   {selectedTraining.syllabus.map((syl, i) => (
                     <div key={i} className="flex items-center gap-2 p-2 rounded-lg border border-slate-50 bg-slate-50/20 text-xs">
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
-                        syl.includes("(Completed)") 
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
-                          : syl.includes("(Locked)")
+                      <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${syl.includes("(Completed)")
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                        : syl.includes("(Locked)")
                           ? "bg-slate-100 text-slate-350"
                           : "bg-indigo-50 text-indigo-700 border border-indigo-100"
-                      }`}>
+                        }`}>
                         <CheckCircle className="w-3 h-3" />
                       </div>
-                      <span className={`text-[10px] font-bold ${
-                        syl.includes("(Completed)") ? "text-slate-500 font-medium" : "text-slate-800"
-                      }`}>
+                      <span className={`text-[10px] font-bold ${syl.includes("(Completed)") ? "text-slate-500 font-medium" : "text-slate-800"
+                        }`}>
                         {syl}
                       </span>
                     </div>
@@ -1311,7 +1378,7 @@ export default function EmployeeDashboard() {
       {selectedAnnouncement && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-backdrop">
           <div className="bg-white border border-slate-200 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-modal">
-            
+
             {/* Header */}
             <div className="border-b border-slate-100 px-6 py-4.5 bg-slate-50 flex justify-between items-center">
               <div className="flex items-center gap-2">
@@ -1331,11 +1398,10 @@ export default function EmployeeDashboard() {
             {/* Modal Content */}
             <div className="p-6 flex flex-col gap-5 text-left">
               <div className="flex flex-col gap-2">
-                <span className={`text-[8px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider w-fit border ${
-                  selectedAnnouncement.priority === "High" || selectedAnnouncement.priority === "Critical"
-                    ? "bg-rose-50 text-rose-700 border border-rose-100" 
-                    : "bg-slate-100 text-slate-500 border border-slate-200"
-                }`}>
+                <span className={`text-[8px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider w-fit border ${selectedAnnouncement.priority === "High" || selectedAnnouncement.priority === "Critical"
+                  ? "bg-rose-50 text-rose-700 border border-rose-100"
+                  : "bg-slate-100 text-slate-500 border border-slate-200"
+                  }`}>
                   Priority: {selectedAnnouncement.priority}
                 </span>
                 <h3 className="text-base font-extrabold text-slate-950 leading-snug">{selectedAnnouncement.title}</h3>
