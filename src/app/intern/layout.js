@@ -20,7 +20,8 @@ import {
   Briefcase,
   TrendingUp,
   MessageSquare,
-  Menu
+  Menu,
+  CreditCard
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import NotificationBell from "@/components/Common/NotificationBell";
@@ -121,6 +122,7 @@ function InternLayoutContent({ children }) {
     { name: "Calendar", href: "/intern/calendar", icon: Calendar },
     { name: "My Tasks", href: "/intern/tasks", icon: CheckSquare },
     { name: "My Projects", href: "/intern/projects", icon: Briefcase },
+    { name: "Payroll", href: "/intern/payroll", icon: CreditCard },
     { name: "Reports", href: "/intern/reports", icon: TrendingUp },
     { name: "Training and Learning", href: "/intern/training", icon: GraduationCap },
     { name: "Helpdesk", href: "/intern/feedback", icon: MessageSquare }

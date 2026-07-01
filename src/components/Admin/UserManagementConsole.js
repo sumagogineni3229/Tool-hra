@@ -33,6 +33,14 @@ export default function UserManagementConsole() {
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalNotification, setModalNotification] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
+  };
 
   const [currentUser, setCurrentUser] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -117,6 +125,9 @@ export default function UserManagementConsole() {
         setNewStatus("Active");
         setNewDesignation("");
 
+        // Show floating success toast
+        showToast("success", `Successfully provisioned ${result.user.name} as ${result.user.role}!`);
+
         // Set success notification
         setModalNotification({
           type: "success",
@@ -128,6 +139,7 @@ export default function UserManagementConsole() {
           setModalNotification(null);
         }, 4000);
       } else {
+        showToast("error", "Verification Error: " + (result.message || "Failed to register user."));
         setModalNotification({
           type: "error",
           text: "Verification Error: " + (result.message || "Failed to register user.")
@@ -135,6 +147,7 @@ export default function UserManagementConsole() {
       }
     } catch (err) {
       console.error(err);
+      showToast("error", "Failed to connect to the session portal.");
       setModalNotification({
         type: "error",
         text: "Failed to connect to the session portal."
@@ -184,6 +197,18 @@ export default function UserManagementConsole() {
 
   return (
     <div className="flex flex-col gap-8">
+
+      {/* Floating Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-[99999] flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl border transition-all duration-300 animate-slide-in bg-white max-w-sm">
+          {toast.type === "success" ? (
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+          ) : (
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+          )}
+          <p className="text-xs font-bold text-slate-900 leading-snug">{toast.message}</p>
+        </div>
+      )}
 
       {/* Global Toast/Notification Banner */}
       {modalNotification && actionParam !== "create" && (
@@ -463,9 +488,9 @@ export default function UserManagementConsole() {
                       : "bg-rose-50/70 text-rose-800 border-rose-100/70"
                     }`}>
                     {modalNotification.type === "success" ? (
-                      <CheckCircle className="w-4.5 h-4.5 text-emerald-650 shrink-0 mt-0.5" />
+                      <CheckCircle className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
                     ) : (
-                      <AlertCircle className="w-4.5 h-4.5 text-rose-650 shrink-0 mt-0.5" />
+                      <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
                     )}
                     <span>{modalNotification.text}</span>
                   </div>

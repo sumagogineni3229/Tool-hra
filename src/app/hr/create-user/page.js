@@ -23,6 +23,14 @@ export default function HRCreateUserPage() {
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
+  };
 
   // Form State for creating a user (specifically for Employee or Intern roles)
   const [newName, setNewName] = useState("");
@@ -96,6 +104,9 @@ export default function HRCreateUserPage() {
         setNewStatus("Active");
         setNewDesignation("");
 
+        // Show floating success toast
+        showToast("success", `Successfully provisioned credentials for ${result.user.name} as ${result.user.role}!`);
+
         // Set success notification
         setNotification({
           type: "success",
@@ -107,6 +118,7 @@ export default function HRCreateUserPage() {
           setNotification(null);
         }, 5000);
       } else {
+        showToast("error", "Registration Error: " + (result.message || "Failed to provision user."));
         setNotification({
           type: "error",
           text: "Registration Error: " + (result.message || "Failed to provision user.")
@@ -114,6 +126,7 @@ export default function HRCreateUserPage() {
       }
     } catch (err) {
       console.error(err);
+      showToast("error", "Failed to connect to the session portal.");
       setNotification({
         type: "error",
         text: "Failed to connect to the session portal."
@@ -123,6 +136,18 @@ export default function HRCreateUserPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      
+      {/* Floating Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-[99999] flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl border transition-all duration-300 animate-slide-in bg-white max-w-sm">
+          {toast.type === "success" ? (
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+          ) : (
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+          )}
+          <p className="text-xs font-bold text-slate-900 leading-snug">{toast.message}</p>
+        </div>
+      )}
       
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-left">
@@ -160,9 +185,9 @@ export default function HRCreateUserPage() {
                 : "bg-rose-50/70 text-rose-800 border-rose-100/70"
             }`}>
               {notification.type === "success" ? (
-                <CheckCircle className="w-4.5 h-4.5 text-emerald-650 shrink-0 mt-0.5" />
+                <CheckCircle className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
               ) : (
-                <AlertCircle className="w-4.5 h-4.5 text-rose-650 shrink-0 mt-0.5" />
+                <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
               )}
               <span>{notification.text}</span>
             </div>
