@@ -143,7 +143,7 @@ export async function PUT(request) {
   try {
     await dbConnect();
     const body = await request.json();
-    const { id, status, progress, completionNotes } = body;
+    const { id, status, progress, completionNotes, title, description, assignedTo, assigneeRole, dueDate } = body;
 
     if (!id) {
       return NextResponse.json({ message: "Task ID is required" }, { status: 400 });
@@ -153,6 +153,11 @@ export async function PUT(request) {
     if (status !== undefined) updateFields.status = status;
     if (progress !== undefined) updateFields.progress = Number(progress);
     if (completionNotes !== undefined) updateFields.completionNotes = completionNotes;
+    if (title !== undefined) updateFields.title = title;
+    if (description !== undefined) updateFields.description = description;
+    if (assignedTo !== undefined) updateFields.assignedTo = assignedTo ? assignedTo.toLowerCase().trim() : "all";
+    if (assigneeRole !== undefined) updateFields.assigneeRole = assigneeRole;
+    if (dueDate !== undefined) updateFields.dueDate = dueDate ? new Date(dueDate) : null;
 
     const updatedTask = await Task.findByIdAndUpdate(
       id,

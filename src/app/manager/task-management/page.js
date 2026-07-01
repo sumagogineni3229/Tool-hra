@@ -18,7 +18,8 @@ import {
   Search,
   Briefcase,
   ArrowRight,
-  RefreshCw
+  RefreshCw,
+  Edit2
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
@@ -47,6 +48,17 @@ export default function ManagerTaskManagementPage() {
 
   // Details Modal State
   const [selectedTask, setSelectedTask] = useState(null);
+
+  // Edit Form Fields
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editAssignType, setEditAssignType] = useState("all");
+  const [editSelectedAssignee, setEditSelectedAssignee] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editErrorMsg, setEditErrorMsg] = useState("");
 
   const loadData = async () => {
     setLoading(true);
@@ -102,6 +114,16 @@ export default function ManagerTaskManagementPage() {
     return [];
   }, [managedTeamMembers, assignType]);
 
+  const editAssigneeOptions = useMemo(() => {
+    if (editAssignType === "employee") {
+      return managedTeamMembers.filter(m => m.role === "Employee");
+    }
+    if (editAssignType === "intern") {
+      return managedTeamMembers.filter(m => m.role === "Intern");
+    }
+    return [];
+  }, [managedTeamMembers, editAssignType]);
+
   // Sync selected assignee when type or options change
   useEffect(() => {
     if (assigneeOptions.length > 0) {
@@ -110,6 +132,17 @@ export default function ManagerTaskManagementPage() {
       setSelectedAssignee("");
     }
   }, [assigneeOptions]);
+
+  useEffect(() => {
+    if (editModalOpen && editAssigneeOptions.length > 0) {
+      const hasCurrent = editAssigneeOptions.some(o => o.email.toLowerCase().trim() === editSelectedAssignee?.toLowerCase().trim());
+      if (!hasCurrent) {
+        setEditSelectedAssignee(editAssigneeOptions[0].email);
+      }
+    } else if (editModalOpen) {
+      setEditSelectedAssignee("");
+    }
+  }, [editAssigneeOptions, editModalOpen]);
 
   // Stats computation
   const stats = useMemo(() => {
@@ -179,6 +212,83 @@ export default function ManagerTaskManagementPage() {
       console.error(err);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleOpenEditModal = (task, e) => {
+    if (e) e.stopPropagation();
+    setEditingTask(task);
+    setEditTitle(task.title || "");
+    setEditDescription(task.description || "");
+    
+    let type = "all";
+    if (task.assignedTo && task.assignedTo !== "all") {
+      if (task.assigneeRole === "Employee") {
+        type = "employee";
+      } else if (task.assigneeRole === "Intern") {
+        type = "intern";
+      } else {
+        const user = users.find(u => u.email.toLowerCase().trim() === task.assignedTo.toLowerCase().trim());
+        if (user) {
+          type = user.role.toLowerCase();
+        }
+      }
+    }
+    setEditAssignType(type);
+    setEditSelectedAssignee(task.assignedTo === "all" ? "" : task.assignedTo);
+    
+    let formattedDate = "";
+    if (task.dueDate) {
+      const d = new Date(task.dueDate);
+      if (!isNaN(d.getTime())) {
+        formattedDate = d.toISOString().split("T")[0];
+      }
+    }
+    setEditDueDate(formattedDate);
+    setEditErrorMsg("");
+    setEditModalOpen(true);
+  };
+
+  const handleUpdateTask = async (e) => {
+    e.preventDefault();
+    if (!editTitle.trim()) {
+      setEditErrorMsg("Task title is required");
+      return;
+    }
+
+    setEditSubmitting(true);
+    setEditErrorMsg("");
+
+    const taskId = editingTask.id || editingTask._id;
+
+    try {
+      const taskPayload = {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        assignedTo: editAssignType === "all" ? "all" : editSelectedAssignee,
+        assigneeRole: editAssignType === "all" ? "All" : (editAssignType === "employee" ? "Employee" : "Intern"),
+        dueDate: editDueDate || null,
+      };
+
+      const res = await apiClient.updateTask(taskId, taskPayload);
+      if (res.success) {
+        setEditModalOpen(false);
+        setEditingTask(null);
+        // Refresh task list
+        const updated = await apiClient.getTasks({ email: currentUser?.email });
+        setTasks(updated);
+        
+        if (selectedTask && (selectedTask.id === taskId || selectedTask._id === taskId)) {
+          setSelectedTask(res.task);
+        }
+      } else {
+        setEditErrorMsg(res.message || "Failed to update task");
+      }
+    } catch (err) {
+      setEditErrorMsg("An error occurred. Please try again.");
+      console.error(err);
+    } finally {
+      setEditSubmitting(false);
     }
   };
 
@@ -446,8 +556,16 @@ export default function ManagerTaskManagementPage() {
                   </span>
 
                   <button
+                    onClick={(e) => handleOpenEditModal(task, e)}
+                    className="p-2.5 bg-slate-50 hover:bg-slate-900 text-slate-500 hover:text-white border border-slate-200 hover:border-slate-900 rounded-xl cursor-pointer transition-all active:scale-95"
+                    title="Edit Task"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+
+                  <button
                     onClick={(e) => handleDeleteTask(task.id || task._id, e)}
-                    className="p-2.5 bg-rose-50 hover:bg-rose-600 text-rose-550 hover:text-white border border-rose-100 hover:border-rose-600 rounded-xl cursor-pointer transition-all active:scale-95"
+                    className="p-2.5 bg-rose-50 hover:bg-rose-600 text-rose-555 hover:text-white border border-rose-100 hover:border-rose-600 rounded-xl cursor-pointer transition-all active:scale-95"
                     title="Delete Task"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -699,7 +817,16 @@ export default function ManagerTaskManagementPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end">
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                <button
+                  onClick={(e) => {
+                    handleOpenEditModal(selectedTask, e);
+                    setSelectedTask(null);
+                  }}
+                  className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
+                >
+                  Edit Task Details
+                </button>
                 <button
                   onClick={() => setSelectedTask(null)}
                   className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
@@ -707,6 +834,165 @@ export default function ManagerTaskManagementPage() {
                   Close Drawer
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* EDIT TASK MODAL */}
+      <AnimatePresence>
+        {editModalOpen && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-6 overflow-y-auto select-none">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setEditModalOpen(false);
+                setEditingTask(null);
+              }}
+              className="absolute inset-0 bg-slate-950/70 backdrop-blur-xl"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              className="relative w-full max-w-lg bg-white rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-150 overflow-hidden flex flex-col gap-6 z-10 text-left"
+            >
+              <div className="flex justify-between items-center pb-5 border-b border-slate-100">
+                <div className="flex items-center gap-3 text-left">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 shadow-sm">
+                    <CheckSquare className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-extrabold text-slate-900 tracking-tight leading-none">Modify Assigned Task</h3>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider mt-1.5 block">Update task execution requirements</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditModalOpen(false);
+                    setEditingTask(null);
+                  }}
+                  className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-150 hover:bg-slate-100 text-slate-400 hover:text-slate-800 cursor-pointer active:scale-95 transition-all shrink-0"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+              </div>
+
+              {editErrorMsg && (
+                <div className="p-4 bg-rose-50 border border-rose-200/60 rounded-xl flex items-center gap-3 text-rose-700 text-xs font-semibold">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{editErrorMsg}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleUpdateTask} className="space-y-5 text-left">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Task Title</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Design Landing Page wireframes"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs bg-slate-50/50 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all font-semibold text-slate-850"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Task Description</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Add detailed task instructions, check-ins, or dependencies..."
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs bg-slate-50/50 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all font-semibold text-slate-850 resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2 text-left">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Assign Target</label>
+                    <select
+                      value={editAssignType}
+                      onChange={(e) => setEditAssignType(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 cursor-pointer transition-all"
+                    >
+                      <option value="all">Entire Team</option>
+                      <option value="employee">Specific Employee</option>
+                      <option value="intern">Specific Intern</option>
+                    </select>
+                  </div>
+
+                  {editAssignType !== "all" && (
+                    <div className="flex flex-col gap-2 text-left">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Select Assignee</label>
+                      {editAssigneeOptions.length === 0 ? (
+                        <div className="px-4 py-3 text-slate-450 border border-slate-200 bg-slate-50 text-xs font-semibold rounded-xl select-none truncate">
+                          No {editAssignType}s in squad
+                        </div>
+                      ) : (
+                        <select
+                          value={editSelectedAssignee}
+                          onChange={(e) => setEditSelectedAssignee(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 cursor-pointer transition-all"
+                        >
+                          {editAssigneeOptions.map(option => (
+                            <option key={option.id || option._id} value={option.email}>
+                              {option.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  )}
+
+                  {editAssignType === "all" && (
+                    <div className="flex flex-col gap-2 text-left">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Team Filter</label>
+                      <select
+                        disabled
+                        className="w-full bg-slate-100 border border-slate-200 text-slate-400 font-bold text-xs rounded-xl px-4 py-3 select-none"
+                      >
+                        <option>All Squad Members</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Due Date</label>
+                  <input
+                    type="date"
+                    value={editDueDate}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs bg-slate-50/50 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all font-semibold text-slate-850"
+                  />
+                </div>
+
+                <div className="pt-4 flex justify-end gap-3.5 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditModalOpen(false);
+                      setEditingTask(null);
+                    }}
+                    className="px-5 py-3 rounded-xl border border-slate-250 bg-white hover:bg-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-500 cursor-pointer active:scale-95 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editSubmitting || (editAssignType !== "all" && editAssigneeOptions.length === 0)}
+                    className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-[10px] font-black uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
+                  >
+                    {editSubmitting ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}
