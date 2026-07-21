@@ -30,6 +30,7 @@ export default function AdminPayroll() {
   const [pf, setPf] = useState("");
   const [tds, setTds] = useState("");
   const [professionalTax, setProfessionalTax] = useState("");
+  const [daysWorked, setDaysWorked] = useState("");
 
   const [success, setSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -247,6 +248,23 @@ export default function AdminPayroll() {
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-800 focus:border-slate-950"
               />
             </div>
+            {/* Days Worked */}
+<div className="flex flex-col gap-1.5">
+  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+    Days Worked
+  </label>
+
+  <input
+    required
+    type="number"
+    min="0"
+    max="31"
+    value={daysWorked}
+    onChange={(e) => setDaysWorked(e.target.value)}
+    placeholder="e.g. 26"
+    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-800 focus:border-slate-950"
+  />
+</div>
 
             {/* Financial Parameters */}
             <div className="grid grid-cols-2 gap-4">

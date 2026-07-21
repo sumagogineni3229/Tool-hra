@@ -513,8 +513,8 @@ export default function EmployeePayroll() {
   };
 
   const latestSlip = payslips[0];
-  const netPayStr = latestSlip ? `₹${formatCurrency(latestSlip.net)}` : "₹72,500.00";
-  const deductionsStr = latestSlip ? `₹${formatCurrency(latestSlip.deductions)}` : "₹12,500.00";
+  const netPayStr = latestSlip ? `₹${formatCurrency(latestSlip.net)}` : "00000";
+  const deductionsStr = latestSlip ? `₹${formatCurrency(latestSlip.deductions)}` : "₹00000";
   const dateStr = latestSlip ? new Date(latestSlip.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) : "May 30, 2026";
 
   let pfStr, tdsStr, ptStr;
@@ -590,7 +590,7 @@ export default function EmployeePayroll() {
             </span>
           </div>
           <div className="mt-8">
-            <span className="text-2xl font-bold text-slate-950">₹10.2 Lakhs</span>
+            <span className="text-2xl font-bold text-slate-950">Based Upon Your Band</span>
             <span className="block text-[10px] text-slate-400 font-semibold mt-1">Standard corporate bracket (L3 Grade)</span>
           </div>
         </div>
