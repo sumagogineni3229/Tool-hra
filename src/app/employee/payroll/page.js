@@ -383,7 +383,7 @@ export default function EmployeePayroll() {
               <td>₹${formatNum(tds)}</td>
             </tr>
             <tr>
-              <td>Special Allowance</td>
+              <td>Incentives</td>
               <td>₹${formatNum(special)}</td>
               <td>Admin tax</td>
               <td>₹${formatNum(professionalTax)}</td>

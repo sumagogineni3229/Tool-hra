@@ -293,7 +293,7 @@ export default function AdminPayroll() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Allowances (₹)</label>
+                <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Incentives (₹)</label>
                 <input
                   required
                   type="number"
