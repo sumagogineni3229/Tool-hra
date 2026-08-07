@@ -917,6 +917,81 @@ export const apiClient = {
     return { success: false, message: "Window environment not available" };
   },
 
+  // Update existing payroll record
+  updatePayroll: async (payrollData) => {
+    try {
+      const response = await fetch("/api/payroll", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payrollData),
+      });
+
+      if (response.ok) {
+        const updatedPayroll = await response.json();
+        console.log("[PAYROLL] Updated in MongoDB:", updatedPayroll.id);
+        if (typeof window !== "undefined") {
+          const existing = localStorage.getItem("hra_payrolls") || "[]";
+          let payrollsList = JSON.parse(existing);
+          payrollsList = payrollsList.map(p => (p.id === updatedPayroll.id || p._id === updatedPayroll.id) ? updatedPayroll : p);
+          localStorage.setItem("hra_payrolls", JSON.stringify(payrollsList));
+        }
+        return { success: true, payroll: updatedPayroll };
+      } else {
+        const errData = await response.json();
+        console.warn("[PAYROLL] DB update failed:", errData.message);
+      }
+    } catch (err) {
+      console.warn("[PAYROLL] MongoDB API unreachable. Updating payroll in localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const existing = localStorage.getItem("hra_payrolls") || "[]";
+      let payrollsList = JSON.parse(existing);
+      const targetId = payrollData.id || payrollData._id;
+      const index = payrollsList.findIndex(p => p.id === targetId || p._id === targetId);
+
+      if (index !== -1) {
+        payrollsList[index] = { ...payrollsList[index], ...payrollData };
+        localStorage.setItem("hra_payrolls", JSON.stringify(payrollsList));
+        return { success: true, payroll: payrollsList[index] };
+      }
+    }
+    return { success: false, message: "Payroll record not found for update" };
+  },
+
+  // Delete existing payroll record by ID
+  deletePayroll: async (id) => {
+    try {
+      const response = await fetch(`/api/payroll?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        console.log("[PAYROLL] Deleted from MongoDB:", id);
+        if (typeof window !== "undefined") {
+          const existing = localStorage.getItem("hra_payrolls") || "[]";
+          let payrollsList = JSON.parse(existing);
+          payrollsList = payrollsList.filter(p => p.id !== id && p._id !== id);
+          localStorage.setItem("hra_payrolls", JSON.stringify(payrollsList));
+        }
+        return { success: true };
+      }
+    } catch (err) {
+      console.warn("[PAYROLL] MongoDB API unreachable. Deleting payroll from localStorage...", err);
+    }
+
+    if (typeof window !== "undefined") {
+      const existing = localStorage.getItem("hra_payrolls") || "[]";
+      let payrollsList = JSON.parse(existing);
+      payrollsList = payrollsList.filter(p => p.id !== id && p._id !== id);
+      localStorage.setItem("hra_payrolls", JSON.stringify(payrollsList));
+      return { success: true };
+    }
+    return { success: false, message: "Window environment not available" };
+  },
+
+
+
   // Get all corporate holidays (with resilient local storage fallback)
   getHolidays: async () => {
     try {

@@ -11,31 +11,105 @@ const PayrollSchema = new mongoose.Schema({
     type: String,
     default: 'Staff Member',
   },
+  employeeId: {
+    type: String,
+    default: '',
+  },
+  designation: {
+    type: String,
+    default: '',
+  },
+  department: {
+    type: String,
+    default: '',
+  },
+  band: {
+    type: String,
+    default: 'H1',
+  },
+  location: {
+    type: String,
+    default: 'Hyderabad, Madhapur',
+  },
+  dateOfJoining: {
+    type: String,
+    default: '',
+  },
+  daysWorked: {
+    type: Number,
+    default: 30,
+  },
   period: {
     type: String,
     required: true,
   },
+  uanNumber: {
+    type: String,
+    default: '',
+  },
+  panNumber: {
+    type: String,
+    default: '',
+  },
+  bankName: {
+    type: String,
+    default: '',
+  },
+  accountNumber: {
+    type: String,
+    default: '',
+  },
+  ifscCode: {
+    type: String,
+    default: '',
+  },
+  // Earnings
   basic: {
     type: Number,
-    required: true,
+    default: 0,
   },
   hra: {
     type: Number,
-    required: true,
+    default: 0,
   },
-  allowances: {
+  medical: {
     type: Number,
     default: 0,
   },
-  deductions: {
+  incentives: {
     type: Number,
     default: 0,
   },
+  performancePay: {
+    type: Number,
+    default: 0,
+  },
+  bonus: {
+    type: Number,
+    default: 0,
+  },
+  gross: {
+    type: Number,
+    default: 0,
+  },
+  // Deductions
   pf: {
     type: Number,
     default: 0,
   },
-  tds: {
+  healthInsurance: {
+    type: Number,
+    default: 0,
+  },
+  lop: {
+    type: Number,
+    default: 0,
+  },
+  employeeSavings: {
+    type: Number,
+    default: 0,
+  },
+  adminTax: {
     type: Number,
     default: 0,
   },
@@ -43,9 +117,18 @@ const PayrollSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  deductions: {
+    type: Number,
+    default: 0,
+  },
   net: {
     type: Number,
     required: true,
+  },
+
+  netPayable: {
+    type: Number,
+    default: 0,
   },
   date: {
     type: String,
@@ -56,8 +139,9 @@ const PayrollSchema = new mongoose.Schema({
 });
 
 // Recompile if schema is stale from hot-reload
-if (mongoose.models.Payroll && (!mongoose.models.Payroll.schema.paths.userName || !mongoose.models.Payroll.schema.paths.professionalTax)) {
+if (mongoose.models.Payroll) {
   delete mongoose.models.Payroll;
 }
 
 export default mongoose.models.Payroll || mongoose.model('Payroll', PayrollSchema);
+

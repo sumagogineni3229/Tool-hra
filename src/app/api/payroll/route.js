@@ -36,23 +36,20 @@ export async function POST(request) {
     await dbConnect();
 
     const body = await request.json();
-    const { userEmail, userName, period, basic, hra, allowances, deductions, net } = body;
+    const { userEmail, userName, period } = body;
 
-    if (!userEmail || !period || basic === undefined || hra === undefined || net === undefined) {
-      return NextResponse.json({ message: 'Missing required payroll fields (userEmail, period, basic, hra, net)' }, { status: 400 });
+    if (!userEmail || !period) {
+      return NextResponse.json({ message: 'Missing required payroll fields (userEmail, period)' }, { status: 400 });
     }
 
-    const newPayroll = await Payroll.create({
+    const payload = {
+      ...body,
       userEmail: userEmail.toLowerCase().trim(),
       userName: userName || 'Staff Member',
-      period,
-      basic: Number(basic),
-      hra: Number(hra),
-      allowances: Number(allowances) || 0,
-      deductions: Number(deductions) || 0,
-      net: Number(net),
-      date: new Date().toISOString().split('T')[0],
-    });
+      date: body.date || new Date().toISOString().split('T')[0],
+    };
+
+    const newPayroll = await Payroll.create(payload);
 
     return NextResponse.json({
       ...newPayroll.toObject(),
@@ -63,3 +60,63 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Failed to create payroll record', error: error.message }, { status: 500 });
   }
 }
+
+// PUT /api/payroll — Update an existing payroll record
+export async function PUT(request) {
+  try {
+    await dbConnect();
+
+    const body = await request.json();
+    const { id, _id, ...updateFields } = body;
+    const targetId = id || _id;
+
+    if (!targetId) {
+      return NextResponse.json({ message: 'Missing payroll ID' }, { status: 400 });
+    }
+
+    if (updateFields.userEmail) {
+      updateFields.userEmail = updateFields.userEmail.toLowerCase().trim();
+    }
+
+    const updated = await Payroll.findByIdAndUpdate(targetId, updateFields, { new: true }).lean();
+
+    if (!updated) {
+      return NextResponse.json({ message: 'Payroll record not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      ...updated,
+      id: updated._id.toString(),
+    }, { status: 200 });
+  } catch (error) {
+    console.error('Payroll PUT error:', error.message);
+    return NextResponse.json({ message: 'Failed to update payroll record', error: error.message }, { status: 500 });
+  }
+}
+
+// DELETE /api/payroll — Delete a payroll record by ID
+export async function DELETE(request) {
+
+  try {
+    await dbConnect();
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ message: 'Missing payroll ID' }, { status: 400 });
+    }
+
+    const deleted = await Payroll.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return NextResponse.json({ message: 'Payroll record not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Payroll record deleted successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('Payroll DELETE error:', error.message);
+    return NextResponse.json({ message: 'Failed to delete payroll record', error: error.message }, { status: 500 });
+  }
+}
+

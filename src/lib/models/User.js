@@ -131,6 +131,14 @@ const UserSchema = new mongoose.Schema({
   designation: {
     type: String,
     default: '',
+  },
+  panNumber: {
+    type: String,
+    default: '',
+  },
+  panCard: {
+    type: String,
+    default: '',
   }
 }, {
   timestamps: true,
@@ -153,9 +161,12 @@ if (mongoose.models.User && (
   !mongoose.models.User.schema.paths.bankIfscCode ||
   !mongoose.models.User.schema.paths.bankBranch ||
   !mongoose.models.User.schema.paths.employeeId ||
-  !mongoose.models.User.schema.paths.designation
+  !mongoose.models.User.schema.paths.designation ||
+  !mongoose.models.User.schema.paths.panNumber ||
+  !mongoose.models.User.schema.paths.panCard
 )) {
   delete mongoose.models.User;
 }
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);
+

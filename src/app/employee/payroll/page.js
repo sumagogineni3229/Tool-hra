@@ -10,9 +10,14 @@ import {
   Building,
   CheckCircle,
   Clock,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  Printer
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
+import PayslipViewModal from "@/components/Common/PayslipViewModal";
+import { printOrDownloadPayslip } from "@/lib/payslipGenerator";
+
 
 export default function EmployeePayroll() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -26,8 +31,13 @@ export default function EmployeePayroll() {
   const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [bankIfscCode, setBankIfscCode] = useState("");
   const [bankBranch, setBankBranch] = useState("");
+  const [panCard, setPanCard] = useState("");
   const [isEditingBank, setIsEditingBank] = useState(false);
   const [bankUpdating, setBankUpdating] = useState(false);
+
+  const [selectedSlip, setSelectedSlip] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   useEffect(() => {
     async function loadData() {
@@ -39,6 +49,7 @@ export default function EmployeePayroll() {
         setBankAccountNumber(session.bankAccountNumber || "");
         setBankIfscCode(session.bankIfscCode || "");
         setBankBranch(session.bankBranch || "");
+        setPanCard(session.panCard || session.panNumber || "");
 
         // Fetch fresh user data from database/api to get latest bank details
         try {
@@ -50,9 +61,11 @@ export default function EmployeePayroll() {
             setBankAccountNumber(freshUser.bankAccountNumber || "");
             setBankIfscCode(freshUser.bankIfscCode || "");
             setBankBranch(freshUser.bankBranch || "");
+            setPanCard(freshUser.panCard || freshUser.panNumber || "");
             localStorage.setItem("currentUser", JSON.stringify(freshUser));
           }
         } catch (e) {
+
           console.warn("Failed to fetch fresh user bank details, using session data.", e);
         }
 
@@ -453,12 +466,20 @@ export default function EmployeePayroll() {
       bankName,
       bankAccountNumber,
       bankIfscCode,
-      bankBranch
+      bankBranch,
+      panCard,
+      panNumber: panCard
     });
+
 
     if (res.success) {
       setIsEditingBank(false);
+      if (res.user) {
+        setCurrentUser(res.user);
+        setPanCard(res.user.panCard || res.user.panNumber || panCard);
+      }
       try {
+
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (AudioContextClass) {
           const audioCtx = new AudioContextClass();
@@ -604,39 +625,81 @@ export default function EmployeePayroll() {
           </div>
 
           <div className="divide-y divide-slate-100 flex-1">
-            {payslips.map((slip) => (
-              <div key={slip.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/30 transition-colors text-left">
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-950 text-xs">Payslip — {slip.id}</span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 uppercase tracking-wide">₹{formatCurrency(slip.net)} Net Pay</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-semibold">
-                    Cycle period: {slip.period}
-                  </span>
-                </div>
+            {payslips.map((slip) => {
+              const formattedDisbursedDate = (() => {
+                if (slip.createdAt) {
+                  const d = new Date(slip.createdAt);
+                  if (!isNaN(d.getTime())) {
+                    return d.toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    }) + " at " + d.toLocaleTimeString("en-IN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true
+                    });
+                  }
+                }
+                if (slip.date) return `${slip.date} at 10:00 AM`;
+                return "01 Jun 2026 at 10:00 AM";
+              })();
 
-                <div className="shrink-0">
+              return (
+                <div key={slip.id || slip._id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/30 transition-colors text-left">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-slate-950 text-xs">Payslip — {slip.id || slip._id}</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 uppercase tracking-wide">
+                        ₹{formatCurrency(slip.net)} Net Pay
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-semibold mt-0.5 flex-wrap">
+                      <span>Pay Period: <strong className="text-slate-700 font-bold">{slip.period}</strong></span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1 text-slate-600">
+                        <Clock className="w-3 h-3 text-indigo-500 shrink-0" />
+                        <span>Issued On: <strong className="text-slate-900 font-bold">{formattedDisbursedDate}</strong></span>
+                      </span>
+                    </div>
+                  </div>
+
+
+
+                <div className="shrink-0 flex items-center gap-1.5">
                   <button
-                    onClick={() => handleDownload(slip.id)}
-                    disabled={downloadingId === slip.id}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-extrabold text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 disabled:bg-slate-50 disabled:text-slate-400 cursor-pointer transition-all shadow-sm"
+                    onClick={() => {
+                      setSelectedSlip(slip);
+                      setIsModalOpen(true);
+                    }}
+                    className="py-1 px-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all border border-slate-200/60 shadow-2xs"
+                    title="View Payslip"
                   >
-                    {downloadingId === slip.id ? (
-                      <>
-                        <div className="w-3 h-3 rounded-full border-2 border-slate-300 border-t-slate-800 animate-spin" />
-                        <span>Saving...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Download PDF</span>
-                      </>
-                    )}
+                    <Eye className="w-3 h-3 text-indigo-600" />
+                    <span>View</span>
+                  </button>
+
+                  <button
+                    onClick={() => printOrDownloadPayslip(slip, currentUser || {}, 'pdf')}
+                    className="py-1 px-2 rounded-[8px] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all border border-emerald-100 shadow-2xs"
+                    title="Download PDF"
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>PDF</span>
+                  </button>
+
+                  <button
+                    onClick={() => printOrDownloadPayslip(slip, currentUser || {}, 'print')}
+                    className="py-1 px-2 rounded-[8px] bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
+                    title="Print Payslip"
+                  >
+                    <Printer className="w-3 h-3" />
+                    <span>Print</span>
                   </button>
                 </div>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -653,6 +716,7 @@ export default function EmployeePayroll() {
               <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">{bankName || "HDFC Bank Limited"}</span>
               <span className="text-xs font-bold text-slate-900 leading-none">Savings A/C: {bankAccountNumber || "•••• 8902"}</span>
               <span className="text-[9px] font-semibold text-slate-400">Branch: {bankBranch || "HQ Main Branch"} (IFSC: {bankIfscCode || "HDFC0000001"})</span>
+              <span className="text-[9px] font-bold text-indigo-600">PAN Card: {panCard || "Not Specified (Optional)"}</span>
               <div className="mt-1 flex items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 w-fit px-1.5 py-0.5 rounded border border-emerald-100">
                 <span>Verified Direct-Deposit</span>
               </div>
@@ -662,7 +726,7 @@ export default function EmployeePayroll() {
               onClick={() => setIsEditingBank(true)}
               className="w-full py-2.5 bg-slate-900 hover:bg-indigo-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-sm"
             >
-              Edit Bank Details
+              Edit Bank & Tax Details
             </button>
           </div>
 
@@ -685,7 +749,7 @@ export default function EmployeePayroll() {
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 blur-[100px] -z-10 rounded-full translate-x-1/2 -translate-y-1/2" />
 
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Update Bank Account</h3>
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Update Account & Tax Details</h3>
               <button
                 onClick={() => setIsEditingBank(false)}
                 className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all cursor-pointer font-bold"
@@ -743,6 +807,18 @@ export default function EmployeePayroll() {
                 />
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-bold text-indigo-600 uppercase tracking-wider block">PAN Card Number (Optional)</label>
+                <input
+                  type="text"
+                  value={panCard}
+                  onChange={(e) => setPanCard(e.target.value.toUpperCase())}
+                  placeholder="e.g. ABCDE1234F"
+                  className="w-full px-4 py-3 rounded-xl border border-indigo-200 text-xs bg-indigo-50/30 text-indigo-950 font-bold focus:outline-none focus:border-indigo-600 transition-all uppercase"
+                />
+              </div>
+
+
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"
@@ -767,6 +843,19 @@ export default function EmployeePayroll() {
           </div>
         </div>
       )}
+
+      {/* Payslip Detailed View Modal (Read-only for Employee) */}
+      <PayslipViewModal
+        slip={selectedSlip}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedSlip(null);
+        }}
+        canEdit={false}
+      />
     </div>
   );
 }
+
+

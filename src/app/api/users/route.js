@@ -69,10 +69,13 @@ export async function GET(request) {
         bankIfscCode: user.bankIfscCode || '',
         bankBranch: user.bankBranch || '',
         employeeId: user.employeeId || '',
-        designation: user.designation || ''
+        designation: user.designation || '',
+        panCard: user.panCard || user.panNumber || '',
+        panNumber: user.panNumber || user.panCard || ''
       };
       return NextResponse.json(sanitized, { status: 200 });
     }
+
 
     const filter = {};
     if (verificationStatus) {
@@ -111,8 +114,11 @@ export async function GET(request) {
         bankIfscCode: user.bankIfscCode || '',
         bankBranch: user.bankBranch || '',
         employeeId: user.employeeId || '',
-        designation: user.designation || ''
+        designation: user.designation || '',
+        panCard: user.panCard || user.panNumber || '',
+        panNumber: user.panNumber || user.panCard || ''
       };
+
 
       if (includePhotos) {
         u.userPhoto = user.userPhoto || '';
@@ -371,8 +377,11 @@ export async function PUT(req) {
     if (bankAccountNumber !== undefined) user.bankAccountNumber = bankAccountNumber;
     if (bankIfscCode !== undefined) user.bankIfscCode = bankIfscCode;
     if (bankBranch !== undefined) user.bankBranch = bankBranch;
+    if (body.panCard !== undefined) user.panCard = body.panCard;
+    if (body.panNumber !== undefined) user.panNumber = body.panNumber;
     if (userPhoto !== undefined) user.userPhoto = userPhoto;
     if (aadhaarPhoto !== undefined) user.aadhaarPhoto = aadhaarPhoto;
+
 
     await user.save();
     return NextResponse.json({ message: 'User updated successfully', user }, { status: 200 });
