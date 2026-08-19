@@ -30,7 +30,8 @@ import {
   Globe,
   Trash2,
   PenTool,
-  Eraser
+  Eraser,
+  Edit3
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
@@ -132,7 +133,7 @@ Learning attitude and professional development`,
     templateName: "Internship Offer Letter"
   });
 
-  // Action states
+  const [editingOfferId, setEditingOfferId] = useState(null); // null when creating new, or offer ID when editing
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -384,6 +385,87 @@ Alignment with company culture and values`
     reader.readAsDataURL(file);
   };
 
+  // Start editing existing offer
+  const handleStartEdit = (offer) => {
+    const offerId = offer.id || offer._id;
+    setEditingOfferId(offerId);
+    setFormData({
+      candidateName: offer.candidateName || "",
+      candidateId: offer.candidateId || "",
+      email: offer.email || "",
+      phone: offer.phone || "",
+      address: offer.address || "",
+      position: offer.position || "",
+      department: offer.department || "",
+      reportingManager: offer.reportingManager || "",
+
+      employmentType: offer.employmentType || "Full Time",
+      gradeBand: offer.gradeBand || "G1",
+      workLocation: offer.workLocation || "",
+      workMode: offer.workMode || "WFO",
+      joiningDate: offer.joiningDate || "",
+      probationPeriod: offer.probationPeriod || "6 Months",
+      noticePeriod: offer.noticePeriod || "90 Days",
+
+      // Company profile
+      companyName: offer.companyName || "HRA GROUPS PRIVATE LIMITED",
+      companyAddress: offer.companyAddress || "Madhapur - Hyderabad",
+      companyContact: offer.companyContact || "+91 9676272283",
+      companyWebsite: offer.companyWebsite || "www.hragroups.com",
+      companyLogo: offer.companyLogo || "",
+
+      // Working schedule
+      workingDays: offer.workingDays || "Monday to Saturday",
+      workingHours: offer.workingHours || "9:30 AM to 6:30 PM",
+
+      // Compensation
+      baseSalary: offer.baseSalary || 0,
+      hra: offer.hra || 0,
+      specialAllowance: offer.specialAllowance || 0,
+      conveyanceAllowance: offer.conveyanceAllowance || 0,
+      medicalAllowance: offer.medicalAllowance || 0,
+      otherAllowances: offer.otherAllowances || 0,
+      variablePay: offer.variablePay || 0,
+      bonus: offer.bonus || 0,
+      pfContribution: offer.pfContribution || 0,
+      esiContribution: offer.esiContribution || 0,
+      gratuity: offer.gratuity || 0,
+      adminTaxDeduction: offer.adminTaxDeduction || 0,
+
+      // Internship specific
+      internshipDuration: offer.internshipDuration || "3 Months",
+      monthlyStipend: offer.monthlyStipend || 0,
+      trainingProgram: offer.trainingProgram || "",
+      internshipCertificateEligibility: offer.internshipCertificateEligibility || "Yes",
+      learningModules: offer.learningModules || "",
+      mentorAssigned: offer.mentorAssigned || "",
+      internshipNote: offer.internshipNote || "",
+
+      rolesResponsibilities: offer.rolesResponsibilities || "",
+      trainingSessions: offer.trainingSessions || "",
+      codeOfConduct: offer.codeOfConduct || "",
+      performanceEvaluation: offer.performanceEvaluation || "",
+
+      // HR Specialist Digital Signature
+      hrSignatureName: offer.hrSignatureName || "Sarah Jenkins",
+      hrSignatureDesignation: offer.hrSignatureDesignation || "Human Resources Specialist",
+      hrSignatureDate: offer.hrSignatureDate || new Date().toISOString().split("T")[0],
+      hrSignatureType: offer.hrSignatureType || "draw",
+      hrSignatureImage: offer.hrSignatureImage || "",
+
+      templateName: offer.templateName || "Employee Offer Letter"
+    });
+
+    setShowPreviewModal(false);
+    setActiveTab("create");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingOfferId(null);
+    setActiveTab("dashboard");
+  };
+
   // Form submission handler
   const handleSubmitOffer = async (e, customStatus = "Draft") => {
     e.preventDefault();
@@ -398,24 +480,50 @@ Alignment with company culture and values`
       createdBy: currentUser?.name || "HR Manager"
     };
 
-    const res = await apiClient.createOffer(payload);
-    if (res.success) {
-      setSuccessMsg(`Offer created successfully in state "${customStatus}"!`);
-      setOffers(prev => [res.offer, ...prev]);
+    if (editingOfferId) {
+      // Update existing offer
+      const updatePayload = {
+        ...formData,
+        status: customStatus,
+        updatedBy: currentUser?.name || "HR Manager",
+        comments: `Offer details updated and saved as ${customStatus}`
+      };
 
-      // Immediately show the preview modal so user can approve the saved draft
-      if (customStatus === "Draft") {
+      const res = await apiClient.updateOffer(editingOfferId, updatePayload);
+      if (res.success) {
+        setSuccessMsg(`Offer updated successfully!`);
+        setOffers(prev => prev.map(o => (o.id === editingOfferId || o._id === editingOfferId) ? res.offer : o));
         setSelectedOffer(res.offer);
-        setShowPreviewModal(true);
-      }
 
-      // Switch to dashboard tab
-      setTimeout(() => {
-        setActiveTab("dashboard");
-        setSuccessMsg("");
-      }, 2000);
+        setTimeout(() => {
+          setEditingOfferId(null);
+          setActiveTab("dashboard");
+          setSuccessMsg("");
+        }, 1500);
+      } else {
+        setErrorMsg(res.message || "Failed to update offer. Please try again.");
+      }
     } else {
-      setErrorMsg(res.message || "Failed to create offer. Please try again.");
+      // Create new offer
+      const res = await apiClient.createOffer(payload);
+      if (res.success) {
+        setSuccessMsg(`Offer created successfully in state "${customStatus}"!`);
+        setOffers(prev => [res.offer, ...prev]);
+
+        // Immediately show the preview modal so user can approve the saved draft
+        if (customStatus === "Draft") {
+          setSelectedOffer(res.offer);
+          setShowPreviewModal(true);
+        }
+
+        // Switch to dashboard tab
+        setTimeout(() => {
+          setActiveTab("dashboard");
+          setSuccessMsg("");
+        }, 2000);
+      } else {
+        setErrorMsg(res.message || "Failed to create offer. Please try again.");
+      }
     }
     setSubmitting(false);
   };
@@ -1655,8 +1763,24 @@ Alignment with company culture and values`
           <p className="text-xs text-slate-500">Draft, approve, and send internship and employee offer letters. Automatically preview and print/download letter documents.</p>
         </div>
         <div className="flex gap-3">
+          {editingOfferId && (
+            <button
+              onClick={handleCancelEdit}
+              className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200 cursor-pointer shadow-sm"
+            >
+              <span>Cancel Editing</span>
+            </button>
+          )}
           <button
-            onClick={() => setActiveTab(activeTab === "dashboard" ? "create" : "dashboard")}
+            onClick={() => {
+              if (activeTab === "dashboard") {
+                setEditingOfferId(null);
+                setActiveTab("create");
+              } else {
+                setEditingOfferId(null);
+                setActiveTab("dashboard");
+              }
+            }}
             className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
           >
             {activeTab === "dashboard" ? (
@@ -1828,7 +1952,7 @@ Alignment with company culture and values`
                             </span>
                           </td>
                           <td className="py-4 px-6 text-right">
-                            <div className="flex gap-2 justify-end">
+                            <div className="flex gap-2 justify-end items-center">
                               {offer.status === "Draft" ? (
                                 <button
                                   onClick={() => handleUpdateStatus(offer.id || offer._id, "Approved", "Offer approved from list console.")}
@@ -1836,28 +1960,35 @@ Alignment with company culture and values`
                                 >
                                   Approve
                                 </button>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => {
-                                      setSelectedOffer(offer);
-                                      setShowPreviewModal(true);
-                                    }}
-                                    className="px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-[10px] font-bold shadow-sm transition-all cursor-pointer"
-                                  >
-                                    View / Review
-                                  </button>
+                              ) : null}
 
-                                  <button
-                                    onClick={() => handlePrintOffer(offer)}
-                                    className="p-1 px-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg border border-indigo-100 flex items-center gap-1 text-[10px] font-bold transition-all cursor-pointer"
-                                    title="Print / Download PDF"
-                                  >
-                                    <Printer className="w-3 h-3" />
-                                    <span>PDF</span>
-                                  </button>
-                                </>
-                              )}
+                              <button
+                                onClick={() => handleStartEdit(offer)}
+                                className="p-1 px-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg border border-amber-200 flex items-center gap-1 text-[10px] font-bold transition-all cursor-pointer shadow-sm"
+                                title="Edit Offer Letter"
+                              >
+                                <Edit3 className="w-3 h-3 text-amber-600" />
+                                <span>Edit</span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setSelectedOffer(offer);
+                                  setShowPreviewModal(true);
+                                }}
+                                className="px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-[10px] font-bold shadow-sm transition-all cursor-pointer"
+                              >
+                                View / Review
+                              </button>
+
+                              <button
+                                onClick={() => handlePrintOffer(offer)}
+                                className="p-1 px-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg border border-indigo-100 flex items-center gap-1 text-[10px] font-bold transition-all cursor-pointer"
+                                title="Print / Download PDF"
+                              >
+                                <Printer className="w-3 h-3" />
+                                <span>PDF</span>
+                              </button>
 
                               <button
                                 onClick={() => handleDeleteOffer(offer.id || offer._id)}
@@ -1883,9 +2014,29 @@ Alignment with company culture and values`
         <form onSubmit={e => handleSubmitOffer(e, "Draft")} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left Fields - 7 Columns */}
           <div className="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl p-8 shadow-sm flex flex-col gap-6 text-left">
+            {editingOfferId && (
+              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Edit3 className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div>
+                    <span className="text-xs font-bold text-amber-900 block">Editing Existing Offer Letter</span>
+                    <span className="text-[10px] text-amber-700 font-medium">Make changes below and click "Update Draft" or "Approve & Update".</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="px-2.5 py-1 bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                >
+                  Cancel Edit
+                </button>
+              </div>
+            )}
             <div className="flex justify-between items-center pb-4 border-b border-slate-100">
               <div className="flex flex-col gap-0.5">
-                <h3 className="font-bold text-slate-900 text-sm">Candidate & Offer Specifications</h3>
+                <h3 className="font-bold text-slate-900 text-sm">
+                  {editingOfferId ? "Edit Candidate & Offer Specifications" : "Candidate & Offer Specifications"}
+                </h3>
                 <p className="text-[11px] text-slate-400">Complete information brackets to dynamically compile contract templates.</p>
               </div>
               <select
@@ -2789,7 +2940,7 @@ Alignment with company culture and values`
                   disabled={submitting}
                   className="w-full py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all border border-slate-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {submitting ? "Processing..." : "Save Draft Option"}
+                  {submitting ? "Processing..." : (editingOfferId ? "Save / Update Draft" : "Save Draft Option")}
                 </button>
 
                 <button
@@ -2799,8 +2950,18 @@ Alignment with company culture and values`
                   className="w-full py-3 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>Approve & Lock Offer</span>
+                  <span>{editingOfferId ? "Save & Approve Offer" : "Approve & Lock Offer"}</span>
                 </button>
+
+                {editingOfferId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="w-full py-2.5 rounded-xl text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-all border border-rose-100 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>Cancel Editing</span>
+                  </button>
+                )}
               </div>
 
               <div className="p-3 bg-indigo-50 text-indigo-800 border border-indigo-100 rounded-xl text-[10px] font-semibold flex items-start gap-2">
@@ -2837,15 +2998,26 @@ Alignment with company culture and values`
                 </h3>
               </div>
 
-              <button
-                onClick={() => {
-                  setShowPreviewModal(false);
-                  setSelectedOffer(null);
-                }}
-                className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all cursor-pointer font-bold"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleStartEdit(selectedOffer)}
+                  className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  title="Edit this Offer Letter"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit Offer</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowPreviewModal(false);
+                    setSelectedOffer(null);
+                  }}
+                  className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all cursor-pointer font-bold"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Scrollable details area */}
@@ -3041,6 +3213,13 @@ Alignment with company culture and values`
             {/* Workflow Control Footer */}
             <div className="border-t border-slate-100 pt-6 mt-6 flex flex-wrap gap-3 justify-between items-center">
               <div className="flex gap-2">
+                <button
+                  onClick={() => handleStartEdit(selectedOffer)}
+                  className="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                >
+                  <Edit3 className="w-4 h-4 text-amber-600" />
+                  <span>Edit Offer</span>
+                </button>
                 <button
                   onClick={() => handlePrintOffer(selectedOffer)}
                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
