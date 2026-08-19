@@ -115,6 +115,10 @@ const OfferSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  adminTaxDeduction: {
+    type: Number,
+    default: 0
+  },
   fixedComp: {
     type: Number,
     default: 0
@@ -148,6 +152,10 @@ const OfferSchema = new mongoose.Schema({
   mentorAssigned: {
     type: String,
     default: ''
+  },
+  internshipNote: {
+    type: String,
+    default: 'Note: Internship performance will be evaluated based on skills, productivity, discipline, attendance, and overall performance. Based on the evaluation and company requirements, interns may be considered for full-time employment. Full-time conversion is not guaranteed. Failure to meet company expectations may result in termination of the internship.'
   },
 
   // Company profile customization
@@ -215,6 +223,22 @@ const OfferSchema = new mongoose.Schema({
     required: true
   },
   approvedBy: {
+    type: String,
+    default: ''
+  },
+  hrSignatureName: {
+    type: String,
+    default: ''
+  },
+  hrSignatureDesignation: {
+    type: String,
+    default: 'Human Resources Specialist'
+  },
+  hrSignatureDate: {
+    type: String,
+    default: ''
+  },
+  hrSignatureImage: {
     type: String,
     default: ''
   },

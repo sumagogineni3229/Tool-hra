@@ -594,6 +594,27 @@ export default function UserManagementConsole() {
                         onChange={(e) => setNewDepartment(e.target.value)}
                         className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 focus:ring-2 focus:ring-slate-950/5 focus:border-slate-950 focus:outline-none transition-all cursor-pointer font-semibold text-slate-750"
                       >
+                        <option value="Intern">Intern</option>
+                        <option value="Trainee">Trainee</option>
+                        <option value="Associate">Associate</option>
+                        <option value="Executive">Executive</option>
+                        <option value="Senior Executive">Senior Executive</option>
+                        <option value="Specialist">Specialist</option>
+                        <option value="Senior Specialist">Senior Specialist</option>
+                        <option value="Coordinator">Coordinator</option>
+                        <option value="Team Lead">Team Lead</option>
+                        <option value="Assistant Manager">Assistant Manager</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Senior Manager">Senior Manager</option>
+                        <option value="Assistant General Manager">Assistant General Manager</option>
+                        <option value="Deputy General Manager">Deputy General Manager</option>
+                        <option value="General Manager">General Manager</option>
+                        <option value="Head">Head</option>
+                        <option value="Director">Director</option>
+                        <option value="Senior Director">Senior Director</option>
+                        <option value="Vice President">Vice President</option>
+                        <option value="Senior Vice President">Senior Vice President</option>
+                        <option value="Chief Executive Officer (CEO)">Chief Executive Officer (CEO)</option>
                         <option value="Human Resource">Human Resource</option>
                         <option value="Team Manager">Team Manager</option>
                         <option value="Engineer">Engineer</option>

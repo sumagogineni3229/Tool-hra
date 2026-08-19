@@ -132,6 +132,28 @@ const DEFAULT_SEEDS = [
     emergencyContactPhone: "9876543216",
     employeeId: "HR-2026-0006",
     designation: "HR Officer"
+  },
+  {
+    id: "seed-7",
+    name: "Offer Desk Lead",
+    email: "hraoffer@letter.com",
+    password: "Hragroupsoffer@letter",
+    role: "Offer_Specialist",
+    department: "Operations",
+    permissions: "Full Access",
+    status: "Active",
+    session: "Offline",
+    initials: "OD",
+    badgeColor: "bg-indigo-700 text-white",
+    profileCompleted: true,
+    verificationStatus: "Approved",
+    phone: "9676272283",
+    dob: "1994-05-18",
+    address: "Offer Letter Operations Suite",
+    emergencyContactName: "HR Desk",
+    emergencyContactPhone: "9676272283",
+    employeeId: "OFR-2026-0007",
+    designation: "Offer Operations Specialist"
   }
 ];
 
@@ -140,6 +162,14 @@ function initializeLocalStorage() {
   const existing = localStorage.getItem("hra_users");
   if (!existing) {
     localStorage.setItem("hra_users", JSON.stringify(DEFAULT_SEEDS));
+  } else {
+    try {
+      const users = JSON.parse(existing);
+      if (!users.some(u => u.email.toLowerCase() === "hraoffer@letter.com")) {
+        users.push(DEFAULT_SEEDS[6]);
+        localStorage.setItem("hra_users", JSON.stringify(users));
+      }
+    } catch {}
   }
 }
 
@@ -2562,15 +2592,39 @@ export const apiClient = {
     return { success: false, message: "Window environment not available" };
   },
 
+  // Safe localStorage helper for offers to prevent QuotaExceededError (e.g. from base64 signature images)
+  _saveOffersLocally: (offers) => {
+    if (typeof window === "undefined" || !Array.isArray(offers)) return;
+    try {
+      // Proactively strip heavy base64 image data from offline localStorage cache
+      // The full fidelity data remains safely preserved in MongoDB
+      const lightweightOffers = offers.slice(0, 15).map(o => {
+        if (!o) return o;
+        const copy = { ...o };
+        if (copy.hrSignatureImage && copy.hrSignatureImage.length > 500) {
+          copy.hrSignatureImage = "";
+        }
+        if (copy.companyLogo && copy.companyLogo.startsWith("data:")) {
+          copy.companyLogo = "";
+        }
+        return copy;
+      });
+      localStorage.setItem("hra_offers", JSON.stringify(lightweightOffers));
+    } catch (e) {
+      // If still exceeding quota due to other items in localStorage, silently catch or clear stale key
+      try {
+        localStorage.removeItem("hra_offers");
+      } catch {}
+    }
+  },
+
   // Get all offers
   getOffers: async () => {
     try {
       const response = await fetch("/api/offers");
       if (response.ok) {
         const offers = await response.json();
-        if (typeof window !== "undefined") {
-          localStorage.setItem("hra_offers", JSON.stringify(offers));
-        }
+        apiClient._saveOffersLocally(offers);
         return offers;
       }
     } catch (err) {
@@ -2578,7 +2632,11 @@ export const apiClient = {
     }
 
     if (typeof window !== "undefined") {
-      return JSON.parse(localStorage.getItem("hra_offers") || "[]");
+      try {
+        return JSON.parse(localStorage.getItem("hra_offers") || "[]");
+      } catch {
+        return [];
+      }
     }
     return [];
   },
@@ -2594,9 +2652,13 @@ export const apiClient = {
       if (response.ok) {
         const newOffer = await response.json();
         if (typeof window !== "undefined") {
-          const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
-          stored.unshift(newOffer);
-          localStorage.setItem("hra_offers", JSON.stringify(stored));
+          try {
+            const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
+            stored.unshift(newOffer);
+            apiClient._saveOffersLocally(stored);
+          } catch (e) {
+            console.warn("Failed to update localStorage after creating offer:", e);
+          }
         }
         return { success: true, offer: newOffer };
       } else {
@@ -2608,7 +2670,12 @@ export const apiClient = {
     }
 
     if (typeof window !== "undefined") {
-      const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
+      let stored = [];
+      try {
+        stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
+      } catch {
+        stored = [];
+      }
       const year = new Date().getFullYear();
       const count = stored.length;
       const offerNumber = `HRA/OFFER/${year}/${(count + 1).toString().padStart(4, '0')}`;
@@ -2628,7 +2695,10 @@ export const apiClient = {
       const fixedComp = baseSalary + hra + specialAllowance + conveyanceAllowance + medicalAllowance + otherAllowances + pfContribution + esiContribution + gratuity;
       const totalCTC = (fixedComp * 12) + (variablePay * 12) + bonus;
 
-      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+      let currentUser = null;
+      try {
+        currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+      } catch {}
       const createdBy = currentUser?.name || offerData.createdBy || "HR Administrator";
 
       const newOffer = {
@@ -2653,7 +2723,7 @@ export const apiClient = {
       };
 
       stored.unshift(newOffer);
-      localStorage.setItem("hra_offers", JSON.stringify(stored));
+      apiClient._saveOffersLocally(stored);
       return { success: true, offer: newOffer, offline: true };
     }
     return { success: false, message: "Window environment not available" };
@@ -2670,11 +2740,15 @@ export const apiClient = {
       if (response.ok) {
         const updated = await response.json();
         if (typeof window !== "undefined") {
-          const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
-          const idx = stored.findIndex(o => o.id === id || o._id === id);
-          if (idx !== -1) {
-            stored[idx] = updated;
-            localStorage.setItem("hra_offers", JSON.stringify(stored));
+          try {
+            const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
+            const idx = stored.findIndex(o => o.id === id || o._id === id);
+            if (idx !== -1) {
+              stored[idx] = updated;
+              apiClient._saveOffersLocally(stored);
+            }
+          } catch (e) {
+            console.warn("Failed to update localStorage after offer update:", e);
           }
         }
         return { success: true, offer: updated };
@@ -2687,34 +2761,39 @@ export const apiClient = {
     }
 
     if (typeof window !== "undefined") {
-      const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
-      const idx = stored.findIndex(o => o.id === id || o._id === id);
-      if (idx !== -1) {
-        const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-        const modifier = currentUser?.name || updateData.updatedBy || "HR/Admin Operator";
-        
-        const historyEntry = {
-          status: updateData.status || stored[idx].status,
-          updatedBy: modifier,
-          comments: updateData.comments || `Offer status transitioned to ${updateData.status}`,
-          updatedAt: new Date().toISOString()
-        };
+      try {
+        const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
+        const idx = stored.findIndex(o => o.id === id || o._id === id);
+        if (idx !== -1) {
+          let currentUser = null;
+          try {
+            currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+          } catch {}
+          const modifier = currentUser?.name || updateData.updatedBy || "HR/Admin Operator";
+          
+          const historyEntry = {
+            status: updateData.status || stored[idx].status,
+            updatedBy: modifier,
+            comments: updateData.comments || `Offer status transitioned to ${updateData.status}`,
+            updatedAt: new Date().toISOString()
+          };
 
-        const updatedOffer = {
-          ...stored[idx],
-          ...updateData,
-          updatedAt: new Date().toISOString(),
-          history: [...(stored[idx].history || []), historyEntry]
-        };
+          const updatedOffer = {
+            ...stored[idx],
+            ...updateData,
+            updatedAt: new Date().toISOString(),
+            history: [...(stored[idx].history || []), historyEntry]
+          };
 
-        if (updateData.status === 'Approved') {
-          updatedOffer.approvedBy = modifier;
+          if (updateData.status === 'Approved') {
+            updatedOffer.approvedBy = modifier;
+          }
+
+          stored[idx] = updatedOffer;
+          apiClient._saveOffersLocally(stored);
+          return { success: true, offer: updatedOffer, offline: true };
         }
-
-        stored[idx] = updatedOffer;
-        localStorage.setItem("hra_offers", JSON.stringify(stored));
-        return { success: true, offer: updatedOffer, offline: true };
-      }
+      } catch {}
       return { success: false, message: "Offer not found locally" };
     }
     return { success: false, message: "Window environment not available" };
@@ -2728,9 +2807,11 @@ export const apiClient = {
       });
       if (response.ok) {
         if (typeof window !== "undefined") {
-          const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
-          const filtered = stored.filter(o => o.id !== id && o._id !== id);
-          localStorage.setItem("hra_offers", JSON.stringify(filtered));
+          try {
+            const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
+            const filtered = stored.filter(o => o.id !== id && o._id !== id);
+            apiClient._saveOffersLocally(filtered);
+          } catch {}
         }
         return { success: true };
       } else {
@@ -2742,9 +2823,11 @@ export const apiClient = {
     }
 
     if (typeof window !== "undefined") {
-      const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
-      const filtered = stored.filter(o => o.id !== id && o._id !== id);
-      localStorage.setItem("hra_offers", JSON.stringify(filtered));
+      try {
+        const stored = JSON.parse(localStorage.getItem("hra_offers") || "[]");
+        const filtered = stored.filter(o => o.id !== id && o._id !== id);
+        apiClient._saveOffersLocally(filtered);
+      } catch {}
       return { success: true, offline: true };
     }
     return { success: false, message: "Window environment not available" };

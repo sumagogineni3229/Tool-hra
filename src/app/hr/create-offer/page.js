@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FileText,
   Plus,
@@ -28,7 +28,9 @@ import {
   ArrowRight,
   TrendingUp,
   Globe,
-  Trash2
+  Trash2,
+  PenTool,
+  Eraser
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
@@ -82,6 +84,7 @@ export default function CreateOfferPage() {
     pfContribution: 0,
     esiContribution: 0,
     gratuity: 0,
+    adminTaxDeduction: 0,
 
     // Internship specific
     internshipDuration: "3 Months",
@@ -90,6 +93,7 @@ export default function CreateOfferPage() {
     internshipCertificateEligibility: "Yes",
     learningModules: "React, Next.js, Node.js, TailwindCSS",
     mentorAssigned: "Sarah Jenkins",
+    internshipNote: "Note: Internship performance will be evaluated based on skills, productivity, discipline, attendance, and overall performance. Based on the evaluation and company requirements, interns may be considered for full-time employment. Full-time conversion is not guaranteed. Failure to meet company expectations may result in termination of the internship.",
 
     // Detailed points from screenshots
     rolesResponsibilities: `Making outbound and follow-up calls to customers and prospects
@@ -118,6 +122,13 @@ Attendance and punctuality
 Team collaboration and participation
 Learning attitude and professional development`,
 
+    // HR Specialist Digital Signature
+    hrSignatureName: "Sarah Jenkins",
+    hrSignatureDesignation: "Human Resources Specialist",
+    hrSignatureDate: new Date().toISOString().split("T")[0],
+    hrSignatureType: "draw", // "draw" | "type" | "upload"
+    hrSignatureImage: "",
+
     templateName: "Internship Offer Letter"
   });
 
@@ -127,6 +138,83 @@ Learning attitude and professional development`,
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedOffer, setSelectedOffer] = useState(null); // For detail preview/workflow modal
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  // Digital Signature Canvas Ref & State
+  const sigCanvasRef = useRef(null);
+  const isDrawingRef = useRef(false);
+  const [hasDrawn, setHasDrawn] = useState(false);
+
+  const getCanvasPos = (e, canvas) => {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  };
+
+  const startDrawing = (e) => {
+    e.preventDefault();
+    const canvas = sigCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const pos = getCanvasPos(e, canvas);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    isDrawingRef.current = true;
+    setHasDrawn(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawingRef.current) return;
+    e.preventDefault();
+    const canvas = sigCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const pos = getCanvasPos(e, canvas);
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#1e1b4b";
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = (e) => {
+    if (!isDrawingRef.current) return;
+    if (e) e.preventDefault();
+    isDrawingRef.current = false;
+    const canvas = sigCanvasRef.current;
+    if (canvas) {
+      const dataUrl = canvas.toDataURL("image/png");
+      setFormData(prev => ({ ...prev, hrSignatureImage: dataUrl }));
+    }
+  };
+
+  const clearSignatureCanvas = () => {
+    const canvas = sigCanvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    isDrawingRef.current = false;
+    setHasDrawn(false);
+    setFormData(prev => ({ ...prev, hrSignatureImage: "" }));
+  };
+
+  const handleSignatureUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        setFormData(prev => ({ ...prev, hrSignatureImage: uploadEvent.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Load offers & employees
   const loadData = async () => {
@@ -181,7 +269,8 @@ Communication effectiveness
 Attendance and punctuality
 Team collaboration and participation
 Learning attitude and professional development`
-          : prev.performanceEvaluation
+          : prev.performanceEvaluation,
+        internshipNote: prev.internshipNote || "Note: Internship performance will be evaluated based on skills, productivity, discipline, attendance, and overall performance. Based on the evaluation and company requirements, interns may be considered for full-time employment. Full-time conversion is not guaranteed. Failure to meet company expectations may result in termination of the internship."
       }));
     } else {
       setFormData(prev => ({
@@ -239,6 +328,7 @@ Alignment with company culture and values`
     const pf = Number(data.pfContribution) || 0;
     const esi = Number(data.esiContribution) || 0;
     const gratuity = Number(data.gratuity) || 0;
+    const adminTax = Number(data.adminTaxDeduction) || 0;
 
     const variable = Number(data.variablePay) || 0;
     const bonus = Number(data.bonus) || 0;
@@ -250,6 +340,7 @@ Alignment with company culture and values`
     const annualVariable = variable * 12;
 
     const totalCTC = annualFixed + annualVariable + bonus;
+    const fixedCompInHand = Math.max(0, monthlyFixed - adminTax);
 
     return {
       monthlyFixed,
@@ -257,7 +348,9 @@ Alignment with company culture and values`
       monthlyVariable,
       annualVariable,
       bonus,
+      adminTaxDeduction: adminTax,
       fixedComp: monthlyFixed,
+      fixedCompInHand,
       totalCTC
     };
   };
@@ -428,7 +521,7 @@ Alignment with company culture and values`
 
           <!-- Opening Paragraph -->
           <p class="body-p">
-            We are pleased to offer you the position of <strong>${offer.position}</strong> at <strong>${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</strong>. We are delighted to welcome you to our organization and believe that your dedication, communication skills, and willingness to learn will contribute positively to our team. This internship is designed to provide practical exposure, workplace learning, and professional development opportunities.
+            We are pleased to offer you the position of <strong>${offer.position}</strong> in the <strong>${offer.department || "Operations"}</strong> division at <strong>${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</strong>. We are delighted to welcome you to our organization and believe that your dedication, communication skills, and willingness to learn will contribute positively to our team. This internship is designed to provide practical exposure, workplace learning, and professional development opportunities.
           </p>
 
           <!-- Internship Details Section -->
@@ -437,6 +530,10 @@ Alignment with company culture and values`
             <div class="grid-card">
               <span class="card-label">Position</span>
               <span class="card-value">${offer.position}</span>
+            </div>
+            <div class="grid-card">
+              <span class="card-label">Department</span>
+              <span class="card-value">${offer.department || "—"}</span>
             </div>
             <div class="grid-card">
               <span class="card-label">Company Name</span>
@@ -458,7 +555,7 @@ Alignment with company culture and values`
               <span class="card-label">Working Hours</span>
               <span class="card-value">${offer.workingHours || "9:30 AM to 6:30 PM"}</span>
             </div>
-            <div class="grid-card" style="grid-column: span 2;">
+            <div class="grid-card">
               <span class="card-label">Mode of Work</span>
               <span class="card-value">${offer.workMode || "Internship"}</span>
             </div>
@@ -517,76 +614,100 @@ Alignment with company culture and values`
             ${renderListItems(offer.performanceEvaluation)}
           </ul>
 
-          <p class="body-p" style="margin-top: 25px;">
+          <p class="body-p" style="margin-top: 20px;">
             Successful completion of the internship may provide future growth opportunities based on organizational requirements and performance standards.
           </p>
 
-          <p class="body-p">
+          ${offer.internshipNote ? `
+            <!-- Internship Note Callout -->
+            <div class="internship-note-box" style="margin-top: 18px; padding: 12px 14px; background: #f8fafc; border-left: 3.5px solid #6366f1; border-radius: 6px;">
+              <p class="body-p" style="font-size: 10px; line-height: 1.5; color: #334155; margin: 0; font-weight: 500;">
+                <strong style="color: #4338ca; font-weight: 700;">Note:</strong> ${offer.internshipNote.replace(/^Note:\s*/i, '')}
+              </p>
+            </div>
+          ` : ''}
+
+          <p class="body-p" style="margin-top: 18px;">
             We are excited to welcome you to <strong>${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</strong> and look forward to supporting your professional learning journey. We wish you success and a rewarding internship experience with our organization.
           </p>
           
-          <p class="body-p" style="font-weight: 800; color: #673de6; margin-top: 20px;">
+          <p class="body-p" style="font-weight: 800; color: #673de6; margin-top: 18px;">
             Welcome to HRA GROUPS and wishing you a great journey ahead.
           </p>
 
           <!-- Sign-Off & Corporate Stamp Block -->
           <div class="footer-signoff-row" style="margin-top: 30px;">
-            <!-- Regards & Stamp Left -->
-            <div class="stamp-col">
+            <div class="signoff-main-block">
               <span class="regards-title">Regards,</span>
               
-              <div style="display: flex; align-items: center; gap: 20px;">
-                <!-- High fidelity corporate stamp -->
-                <div class="circular-stamp">
-                  <svg viewBox="0 0 100 100" class="stamp-svg" style="fill: transparent;">
-                    <!-- Outer double circle -->
-                    <circle cx="50" cy="50" r="45" stroke="#5025d1" stroke-width="1.8" fill="none" />
-                    <circle cx="50" cy="50" r="42" stroke="#5025d1" stroke-width="0.6" fill="none" />
-                    
-                    <!-- Inner dashed circle -->
-                    <circle cx="50" cy="50" r="28" stroke="#5025d1" stroke-width="0.6" fill="none" stroke-dasharray="0.8, 0.8" />
-                    
-                    <!-- Text paths -->
-                    <path id="stampTextTop" d="M 14 50 A 36 36 0 0 1 86 50" fill="none" />
-                    <path id="stampTextBottom" d="M 14 50 A 36 36 0 0 0 86 50" fill="none" />
-                    
-                    <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
-                      <textPath href="#stampTextTop" startOffset="50%" text-anchor="middle">HRA GROUPS</textPath>
-                    </text>
-                    
-                    <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
-                      <textPath href="#stampTextBottom" startOffset="50%" text-anchor="middle">PVT LTD</textPath>
-                    </text>
-                    
-                    <!-- Stars -->
-                    <text x="17.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
-                    <text x="82.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
-                    
-                    <!-- Center elements -->
-                    <text x="50" y="42" fill="#5025d1" font-size="17" font-weight="900" font-family="'Roboto', sans-serif" text-anchor="middle" letter-spacing="0.5">HRA</text>
-                    
-                    <!-- Cursive Signature for P. Hemanth -->
-                    <text x="50" y="52" fill="#5025d1" font-size="9" font-family="'Dancing Script', 'Brush Script MT', cursive" font-weight="bold" text-anchor="middle">P. Hemanth</text>
-                    <line x1="30" y1="54" x2="70" y2="54" stroke="#5025d1" stroke-width="0.8" />
-                    
-                    <!-- Subtexts -->
-                    <text x="50" y="63" fill="#5025d1" font-size="4.8" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Founder & CEO</text>
-                    <text x="50" y="69" fill="#5025d1" font-size="5.2" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Hemanth Pulavarthi</text>
-                  </svg>
+              <!-- Left side: Circular Stamp + Corporate Logo | Right side: HR Digital Signature -->
+              <div class="stamp-signature-row">
+                <div class="stamp-and-logo-left">
+                  <!-- High fidelity corporate stamp -->
+                  <div class="circular-stamp">
+                    <svg viewBox="0 0 100 100" class="stamp-svg" style="fill: transparent;">
+                      <!-- Outer double circle -->
+                      <circle cx="50" cy="50" r="45" stroke="#5025d1" stroke-width="1.8" fill="none" />
+                      <circle cx="50" cy="50" r="42" stroke="#5025d1" stroke-width="0.6" fill="none" />
+                      
+                      <!-- Inner dashed circle -->
+                      <circle cx="50" cy="50" r="28" stroke="#5025d1" stroke-width="0.6" fill="none" stroke-dasharray="0.8, 0.8" />
+                      
+                      <!-- Text paths -->
+                      <path id="stampTextTop" d="M 14 50 A 36 36 0 0 1 86 50" fill="none" />
+                      <path id="stampTextBottom" d="M 14 50 A 36 36 0 0 0 86 50" fill="none" />
+                      
+                      <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
+                        <textPath href="#stampTextTop" startOffset="50%" text-anchor="middle">HRA GROUPS</textPath>
+                      </text>
+                      
+                      <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
+                        <textPath href="#stampTextBottom" startOffset="50%" text-anchor="middle">PVT LTD</textPath>
+                      </text>
+                      
+                      <!-- Stars -->
+                      <text x="17.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
+                      <text x="82.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
+                      
+                      <!-- Center elements -->
+                      <text x="50" y="42" fill="#5025d1" font-size="17" font-weight="900" font-family="'Roboto', sans-serif" text-anchor="middle" letter-spacing="0.5">HRA</text>
+                      
+                      <!-- Cursive Signature for P. Hemanth -->
+                      <text x="50" y="52" fill="#5025d1" font-size="9" font-family="'Dancing Script', 'Brush Script MT', cursive" font-weight="bold" text-anchor="middle">P. Hemanth</text>
+                      <line x1="30" y1="54" x2="70" y2="54" stroke="#5025d1" stroke-width="0.8" />
+                      
+                      <!-- Subtexts -->
+                      <text x="50" y="63" fill="#5025d1" font-size="4.8" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Founder & CEO</text>
+                      <text x="50" y="69" fill="#5025d1" font-size="5.2" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Hemanth Pulavarthi</text>
+                    </svg>
+                  </div>
+
+                  ${offer.companyLogo ? `
+                    <!-- Custom Org Logo -->
+                    <div class="custom-org-logo-container">
+                      <img src="${offer.companyLogo}" alt="Organization Logo" class="custom-org-logo-img" />
+                    </div>
+                  ` : ''}
                 </div>
 
-                ${offer.companyLogo ? `
-                  <!-- Custom Org Logo -->
-                  <div class="custom-org-logo-container">
-                    <img src="${offer.companyLogo}" alt="Organization Logo" class="custom-org-logo-img" />
+                <!-- HR Specialist Digital Signature (Positioned on the Right side) -->
+                <div class="hr-digital-sig-box">
+                  <div class="hr-sig-badge">
+                    <span>✓ Digitally Verified HR</span>
                   </div>
-                ` : ''}
+                  ${offer.hrSignatureImage ? `
+                    <img src="${offer.hrSignatureImage}" alt="HR Signature" class="hr-sig-img" />
+                  ` : ''}
+                  <div class="hr-sig-name">${offer.hrSignatureName || "Sarah Jenkins"}</div>
+                  <div class="hr-sig-title">${offer.hrSignatureDesignation || "Human Resources Specialist"}</div>
+                  <div class="hr-sig-date">Date: ${offer.hrSignatureDate ? formatDateDMY(offer.hrSignatureDate) : dateFormatted}</div>
+                </div>
               </div>
 
               <span class="sign-name">HRA GROUPS MANAGEMENT</span>
             </div>
 
-            <!-- Address contact block Right -->
+            <!-- Address contact block below -->
             <div class="contact-card">
               <div class="contact-item">
                 <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -671,6 +792,10 @@ Alignment with company culture and values`
               <span class="card-value">${offer.position}</span>
             </div>
             <div class="grid-card">
+              <span class="card-label">Department</span>
+              <span class="card-value">${offer.department || "—"}</span>
+            </div>
+            <div class="grid-card">
               <span class="card-label">Company Name</span>
               <span class="card-value">${offer.companyName || "HRA GROUPS PRIVATE LIMITED"}</span>
             </div>
@@ -686,7 +811,7 @@ Alignment with company culture and values`
               <span class="card-label">Working Hours</span>
               <span class="card-value">${offer.workingHours || "9:30 AM to 6:30 PM"}</span>
             </div>
-            <div class="grid-card">
+            <div class="grid-card" style="grid-column: span 2;">
               <span class="card-label">Mode of Work</span>
               <span class="card-value">${offer.workMode || "Full-Time"}</span>
             </div>
@@ -823,10 +948,23 @@ Alignment with company culture and values`
                 <td>up to ${Number(offer.variablePay || 0).toLocaleString("en-IN")}</td>
                 <td>up to ${(Number(offer.variablePay || 0) * 12).toLocaleString("en-IN")}</td>
               </tr>
+              ${Number(offer.adminTaxDeduction || 0) > 0 ? `
+              <tr>
+                <td>Admin Tax / Deductions</td>
+                <td style="color: #dc2626;">- ₹${Number(offer.adminTaxDeduction || 0).toLocaleString("en-IN")}</td>
+                <td style="color: #dc2626;">- ₹${(Number(offer.adminTaxDeduction || 0) * 12).toLocaleString("en-IN")}</td>
+              </tr>
+              ` : `
+              <tr>
+                <td>Admin Tax / Deductions</td>
+                <td>₹0</td>
+                <td>₹0</td>
+              </tr>
+              `}
               <tr class="highlight-row">
                 <td>Fixed compensation (In Hand)</td>
-                <td>${results.fixedComp.toLocaleString("en-IN")}</td>
-                <td>${(results.fixedComp * 12).toLocaleString("en-IN")}</td>
+                <td>${(results.fixedCompInHand ?? results.fixedComp).toLocaleString("en-IN")}</td>
+                <td>${((results.fixedCompInHand ?? results.fixedComp) * 12).toLocaleString("en-IN")}</td>
               </tr>
               <tr class="highlight-row font-bold">
                 <td>Cost to Company (CTC)</td>
@@ -838,62 +976,77 @@ Alignment with company culture and values`
 
           <!-- Sign-Off Footer -->
           <div class="footer-signoff-row" style="margin-top: 35px;">
-            <!-- Regards & Stamp Left -->
-            <div class="stamp-col">
+            <div class="signoff-main-block">
               <span class="regards-title">Regards,</span>
               
-              <div style="display: flex; align-items: center; gap: 20px;">
-                <!-- Circular stamp -->
-                <div class="circular-stamp">
-                  <svg viewBox="0 0 100 100" class="stamp-svg" style="fill: transparent;">
-                    <!-- Outer double circle -->
-                    <circle cx="50" cy="50" r="45" stroke="#5025d1" stroke-width="1.8" fill="none" />
-                    <circle cx="50" cy="50" r="42" stroke="#5025d1" stroke-width="0.6" fill="none" />
-                    
-                    <!-- Inner dashed circle -->
-                    <circle cx="50" cy="50" r="28" stroke="#5025d1" stroke-width="0.6" fill="none" stroke-dasharray="0.8, 0.8" />
-                    
-                    <!-- Text paths -->
-                    <path id="stampTextTop" d="M 14 50 A 36 36 0 0 1 86 50" fill="none" />
-                    <path id="stampTextBottom" d="M 14 50 A 36 36 0 0 0 86 50" fill="none" />
-                    
-                    <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
-                      <textPath href="#stampTextTop" startOffset="50%" text-anchor="middle">HRA GROUPS</textPath>
-                    </text>
-                    
-                    <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
-                      <textPath href="#stampTextBottom" startOffset="50%" text-anchor="middle">PVT LTD</textPath>
-                    </text>
-                    
-                    <!-- Stars -->
-                    <text x="17.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
-                    <text x="82.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
-                    
-                    <!-- Center elements -->
-                    <text x="50" y="42" fill="#5025d1" font-size="17" font-weight="900" font-family="'Roboto', sans-serif" text-anchor="middle" letter-spacing="0.5">HRA</text>
-                    
-                    <!-- Cursive Signature for P. Hemanth -->
-                    <text x="50" y="52" fill="#5025d1" font-size="9" font-family="'Dancing Script', 'Brush Script MT', cursive" font-weight="bold" text-anchor="middle">P. Hemanth</text>
-                    <line x1="30" y1="54" x2="70" y2="54" stroke="#5025d1" stroke-width="0.8" />
-                    
-                    <!-- Subtexts -->
-                    <text x="50" y="63" fill="#5025d1" font-size="4.8" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Founder &amp; CEO</text>
-                    <text x="50" y="69" fill="#5025d1" font-size="5.2" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Hemanth Pulavarthi</text>
-                  </svg>
+              <!-- Left side: Circular Stamp + Corporate Logo | Right side: HR Digital Signature -->
+              <div class="stamp-signature-row">
+                <div class="stamp-and-logo-left">
+                  <!-- Circular stamp -->
+                  <div class="circular-stamp">
+                    <svg viewBox="0 0 100 100" class="stamp-svg" style="fill: transparent;">
+                      <!-- Outer double circle -->
+                      <circle cx="50" cy="50" r="45" stroke="#5025d1" stroke-width="1.8" fill="none" />
+                      <circle cx="50" cy="50" r="42" stroke="#5025d1" stroke-width="0.6" fill="none" />
+                      
+                      <!-- Inner dashed circle -->
+                      <circle cx="50" cy="50" r="28" stroke="#5025d1" stroke-width="0.6" fill="none" stroke-dasharray="0.8, 0.8" />
+                      
+                      <!-- Text paths -->
+                      <path id="stampTextTop" d="M 14 50 A 36 36 0 0 1 86 50" fill="none" />
+                      <path id="stampTextBottom" d="M 14 50 A 36 36 0 0 0 86 50" fill="none" />
+                      
+                      <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
+                        <textPath href="#stampTextTop" startOffset="50%" text-anchor="middle">HRA GROUPS</textPath>
+                      </text>
+                      
+                      <text fill="#5025d1" font-size="8" font-weight="800" font-family="'Roboto', sans-serif" letter-spacing="1">
+                        <textPath href="#stampTextBottom" startOffset="50%" text-anchor="middle">PVT LTD</textPath>
+                      </text>
+                      
+                      <!-- Stars -->
+                      <text x="17.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
+                      <text x="82.5" y="52.5" fill="#5025d1" font-size="7.5" font-weight="bold" text-anchor="middle">★</text>
+                      
+                      <!-- Center elements -->
+                      <text x="50" y="42" fill="#5025d1" font-size="17" font-weight="900" font-family="'Roboto', sans-serif" text-anchor="middle" letter-spacing="0.5">HRA</text>
+                      
+                      <!-- Cursive Signature for P. Hemanth -->
+                      <text x="50" y="52" fill="#5025d1" font-size="9" font-family="'Dancing Script', 'Brush Script MT', cursive" font-weight="bold" text-anchor="middle">P. Hemanth</text>
+                      <line x1="30" y1="54" x2="70" y2="54" stroke="#5025d1" stroke-width="0.8" />
+                      
+                      <!-- Subtexts -->
+                      <text x="50" y="63" fill="#5025d1" font-size="4.8" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Founder &amp; CEO</text>
+                      <text x="50" y="69" fill="#5025d1" font-size="5.2" font-weight="700" font-family="'Roboto', sans-serif" text-anchor="middle">Hemanth Pulavarthi</text>
+                    </svg>
+                  </div>
+
+                  ${offer.companyLogo ? `
+                    <!-- Custom Org Logo -->
+                    <div class="custom-org-logo-container">
+                      <img src="${offer.companyLogo}" alt="Organization Logo" class="custom-org-logo-img" />
+                    </div>
+                  ` : ''}
                 </div>
 
-                ${offer.companyLogo ? `
-                  <!-- Custom Org Logo -->
-                  <div class="custom-org-logo-container">
-                    <img src="${offer.companyLogo}" alt="Organization Logo" class="custom-org-logo-img" />
+                <!-- HR Specialist Digital Signature (Positioned on the Right side) -->
+                <div class="hr-digital-sig-box">
+                  <div class="hr-sig-badge">
+                    <span>✓ Digitally Verified HR</span>
                   </div>
-                ` : ''}
+                  ${offer.hrSignatureImage ? `
+                    <img src="${offer.hrSignatureImage}" alt="HR Signature" class="hr-sig-img" />
+                  ` : ''}
+                  <div class="hr-sig-name">${offer.hrSignatureName || "Sarah Jenkins"}</div>
+                  <div class="hr-sig-title">${offer.hrSignatureDesignation || "Human Resources Specialist"}</div>
+                  <div class="hr-sig-date">Date: ${offer.hrSignatureDate ? formatDateDMY(offer.hrSignatureDate) : dateFormatted}</div>
+                </div>
               </div>
 
               <span class="sign-name">HRA GROUPS MANAGEMENT</span>
             </div>
 
-            <!-- Address contact block Right -->
+            <!-- Address contact block below -->
             <div class="contact-card">
               <div class="contact-item">
                 <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -1187,11 +1340,11 @@ Alignment with company culture and values`
             /* Sign-Off Footer styling */
             .footer-signoff-row {
               display: flex;
-              justify-content: space-between;
-              align-items: flex-end;
-              margin-top: 35px;
+              flex-direction: column;
+              gap: 20px;
+              margin-top: 30px;
             }
-            .stamp-col {
+            .signoff-main-block {
               display: flex;
               flex-direction: column;
               gap: 8px;
@@ -1201,20 +1354,31 @@ Alignment with company culture and values`
               font-weight: 800;
               color: #475569;
             }
+            .stamp-signature-row {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              width: 100%;
+              gap: 24px;
+            }
+            .stamp-and-logo-left {
+              display: flex;
+              align-items: center;
+              gap: 20px;
+            }
             .sign-name {
               font-size: 10.5px;
               font-weight: 800;
               color: #1e1b4b;
-              margin-top: 5px;
+              margin-top: 4px;
             }
 
             /* High fidelity circular stamp */
             .circular-stamp {
               position: relative;
-              width: 120px;
-              height: 120px;
+              width: 110px;
+              height: 110px;
               transform: rotate(-6deg);
-              margin: 10px 0;
               background-color: transparent;
             }
             .stamp-svg {
@@ -1225,14 +1389,14 @@ Alignment with company culture and values`
               left: 0;
             }
             .custom-org-logo-container {
-              width: 120px;
-              height: 120px;
+              width: 110px;
+              height: 110px;
               display: flex;
               align-items: center;
               justify-content: center;
               border: 1px solid #f1f5f9;
               border-radius: 8px;
-              padding: 8px;
+              padding: 6px;
               background-color: #ffffff;
             }
             .custom-org-logo-img {
@@ -1241,16 +1405,80 @@ Alignment with company culture and values`
               object-fit: contain;
             }
 
-            /* Modern Contact Card */
-            .contact-card {
+            /* HR Digital Signature Box (Centered Alignment on the Right Side) */
+            .hr-digital-sig-box {
               display: flex;
               flex-direction: column;
-              gap: 8px;
+              gap: 3px;
+              padding: 4px 0;
+              background-color: transparent !important;
+              background: transparent !important;
+              border: none !important;
+              min-width: 180px;
+              max-width: 220px;
+              text-align: center;
+              align-items: center;
+              justify-content: center;
+            }
+            .hr-sig-badge {
+              font-size: 7.5px;
+              font-weight: 800;
+              color: #4f46e5;
+              text-transform: uppercase;
+              letter-spacing: 0.6px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 4px;
+              text-align: center;
+              width: 100%;
+            }
+            .hr-sig-img {
+              max-height: 46px;
+              max-width: 150px;
+              object-fit: contain;
+              background-color: transparent !important;
+              background: transparent !important;
+              border: none !important;
+              margin: 3px auto;
+              display: block;
+            }
+            .hr-sig-name {
+              font-size: 9.5px;
+              font-weight: 800;
+              color: #0f172a;
+              line-height: 1.2;
+              text-align: center;
+              width: 100%;
+            }
+            .hr-sig-title {
+              font-size: 8px;
+              font-weight: 600;
+              color: #64748b;
+              line-height: 1.2;
+              text-align: center;
+              width: 100%;
+            }
+            .hr-sig-date {
+              font-size: 7.5px;
+              font-weight: 700;
+              color: #4338ca;
+              margin-top: 2px;
+              text-align: center;
+              width: 100%;
+            }
+
+            /* Modern Contact Card (Positioned below) */
+            .contact-card {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 12px;
               background-color: #f8fafc;
               border: 1px solid #e2e8f0;
               border-radius: 12px;
-              padding: 12px;
-              width: 250px;
+              padding: 10px 14px;
+              width: 100%;
+              max-width: 620px;
             }
             .contact-item {
               display: flex;
@@ -1419,9 +1647,9 @@ Alignment with company culture and values`
   });
 
   return (
-    <div className="flex flex-col gap-8 text-left">
+    <div className="flex flex-col gap-8 text-left w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 w-full">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Offer Management Module</h1>
           <p className="text-xs text-slate-500">Draft, approve, and send internship and employee offer letters. Automatically preview and print/download letter documents.</p>
@@ -1767,11 +1995,24 @@ Alignment with company culture and values`
                     onChange={handleChange}
                     className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 focus:outline-none font-bold"
                   >
-                    <option value="Operations">Operations</option>
-                    <option value="Human Resource">Human Resource</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Sales & Marketing">Sales & Marketing</option>
-                    <option value="Finance">Finance</option>
+                    <option value="SEO">SEO</option>
+                    <option value="Business Operations">Business Operations</option>
+                    <option value="Human Resources (HR)">Human Resources (HR)</option>
+                    <option value="Soft Skills Training">Soft Skills Training</option>
+                    <option value="Digital Marketing">Digital Marketing</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Social Media">Social Media</option>
+                    <option value="Business Development (BDE)">Business Development (BDE)</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Finance & Accounts">Finance & Accounts</option>
+                    <option value="Recruitment">Recruitment</option>
+                    <option value="Administration">Administration</option>
+                    <option value="Customer Support">Customer Support</option>
+                    <option value="Project Management">Project Management</option>
+                    <option value="UI/UX & Design">UI/UX & Design</option>
+                    <option value="Content & Communications">Content & Communications</option>
+                    <option value="IT & Technical Support">IT & Technical Support</option>
+                    <option value="Training & Development">Training & Development</option>
                   </select>
                 </div>
 
@@ -2195,6 +2436,18 @@ Alignment with company culture and values`
                       className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-850"
                     />
                   </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Admin Tax / Deductions (Monthly ₹)</label>
+                    <input
+                      type="number"
+                      name="adminTaxDeduction"
+                      value={formData.adminTaxDeduction}
+                      onChange={handleChange}
+                      placeholder="e.g. 1000"
+                      className="w-full px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50/20 text-xs text-rose-900 focus:outline-none focus:border-rose-500 font-bold"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -2252,6 +2505,175 @@ Alignment with company culture and values`
                   className="w-full p-3 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none text-slate-800 focus:border-slate-950 font-medium"
                   placeholder="Enter performance evaluation criteria or KRAs..."
                 />
+              </div>
+
+              {formData.employmentType === "Internship" && (
+                <div className="flex flex-col gap-1.5 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">
+                      Internship Evaluation & Conversion Note (Editable)
+                    </label>
+                    <span className="text-[9px] font-bold text-indigo-600 bg-indigo-100/70 px-2 py-0.5 rounded-full">
+                      Internship Only
+                    </span>
+                  </div>
+                  <textarea
+                    rows={3}
+                    name="internshipNote"
+                    value={formData.internshipNote}
+                    onChange={handleChange}
+                    className="w-full p-3 rounded-xl border border-indigo-200 text-xs bg-white focus:outline-none text-slate-800 focus:border-indigo-600 font-medium leading-relaxed"
+                    placeholder="Enter custom internship evaluation note..."
+                  />
+                  <span className="text-[10px] text-slate-500">
+                    This note will be rendered above the sign-off section on page 2 of the internship offer letter.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* HR Specialist Digital Signature Interactive Panel */}
+            <div className="flex flex-col gap-4 border-t border-slate-100 pt-6">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <PenTool className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>HR Specialist Digital Signature & Verification</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[9px] border border-emerald-200">
+                  Digital Sign Enabled
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100 flex flex-col gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">HR Signatory Name</label>
+                    <input
+                      type="text"
+                      name="hrSignatureName"
+                      value={formData.hrSignatureName}
+                      onChange={handleChange}
+                      placeholder="e.g. Sarah Jenkins"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 font-bold focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">HR Title / Designation</label>
+                    <input
+                      type="text"
+                      name="hrSignatureDesignation"
+                      value={formData.hrSignatureDesignation}
+                      onChange={handleChange}
+                      placeholder="Human Resources Specialist"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 font-semibold focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">Digital Sign Date</label>
+                    <input
+                      type="date"
+                      name="hrSignatureDate"
+                      value={formData.hrSignatureDate}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 font-bold focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Signature Mode Selector */}
+                {/* Signature Mode Selector (Draw & Upload only) */}
+                <div className="flex flex-col gap-2 pt-2 border-t border-indigo-100/70">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">Digital Signature Mode</label>
+                    <div className="flex gap-1.5 bg-white p-1 rounded-xl border border-slate-200 text-[10px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, hrSignatureType: "draw" }))}
+                        className={`px-3 py-1 rounded-lg transition-all ${
+                          formData.hrSignatureType === "draw"
+                            ? "bg-indigo-600 text-white shadow-sm"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        Draw Signature
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, hrSignatureType: "upload" }))}
+                        className={`px-3 py-1 rounded-lg transition-all ${
+                          formData.hrSignatureType === "upload"
+                            ? "bg-indigo-600 text-white shadow-sm"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        Upload Image
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Mode: Draw */}
+                  {formData.hrSignatureType === "draw" && (
+                    <div className="flex flex-col gap-2">
+                      <div className="relative border-2 border-dashed border-indigo-300 rounded-xl bg-transparent overflow-hidden h-32 flex items-center justify-center cursor-crosshair select-none">
+                        <canvas
+                          ref={sigCanvasRef}
+                          width={600}
+                          height={128}
+                          onPointerDown={startDrawing}
+                          onPointerMove={draw}
+                          onPointerUp={stopDrawing}
+                          onPointerLeave={stopDrawing}
+                          onPointerCancel={stopDrawing}
+                          style={{ touchAction: "none", backgroundColor: "transparent" }}
+                          className="w-full h-full block cursor-crosshair"
+                        />
+                        {!hasDrawn && !formData.hrSignatureImage && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-slate-400 text-xs font-semibold gap-1.5 bg-white/40">
+                            <PenTool className="w-4 h-4 text-indigo-500" />
+                            <span>Click/Tap and drag here to draw signature</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-500 font-medium">Draw transparent signature on the pad above</span>
+                        <button
+                          type="button"
+                          onClick={clearSignatureCanvas}
+                          className="flex items-center gap-1 text-rose-600 font-bold hover:underline cursor-pointer"
+                        >
+                          <Eraser className="w-3.5 h-3.5" />
+                          <span>Clear Pad</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mode: Upload */}
+                  {formData.hrSignatureType === "upload" && (
+                    <div className="flex flex-col gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSignatureUpload}
+                        className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                      />
+                      {formData.hrSignatureImage && (
+                        <div className="p-2 border border-slate-200 rounded-xl bg-transparent flex items-center justify-between">
+                          <img src={formData.hrSignatureImage} alt="Uploaded Signature" className="h-10 object-contain" />
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, hrSignatureImage: "" }))}
+                            className="text-rose-600 text-xs font-bold hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -2325,10 +2747,15 @@ Alignment with company culture and values`
                             ).toLocaleString("en-IN")}
                           </td>
                         </tr>
+                        <tr>
+                          <td className="py-2 px-3 text-rose-700">Admin Tax / Deductions</td>
+                          <td className="py-2 px-3 text-right text-rose-700">- ₹{(Number(formData.adminTaxDeduction) || 0).toLocaleString("en-IN")}</td>
+                          <td className="py-2 px-3 text-right text-rose-700">- ₹{((Number(formData.adminTaxDeduction) || 0) * 12).toLocaleString("en-IN")}</td>
+                        </tr>
                         <tr className="bg-emerald-50/40 text-emerald-800 font-bold text-xs">
                           <td className="py-2 px-3">Fixed Compensation (In Hand)</td>
-                          <td className="py-2 px-3 text-right">₹{compResults.fixedComp.toLocaleString("en-IN")}</td>
-                          <td className="py-2 px-3 text-right">₹{(compResults.fixedComp * 12).toLocaleString("en-IN")}</td>
+                          <td className="py-2 px-3 text-right">₹{compResults.fixedCompInHand.toLocaleString("en-IN")}</td>
+                          <td className="py-2 px-3 text-right">₹{(compResults.fixedCompInHand * 12).toLocaleString("en-IN")}</td>
                         </tr>
                         <tr>
                           <td className="py-2 px-3">Performance Incentive (Variable)</td>
@@ -2510,6 +2937,12 @@ Alignment with company culture and values`
                           <span className="text-slate-400 font-semibold block text-[8px] uppercase">Learning Modules</span>
                           <span className="font-bold text-slate-800">{selectedOffer.learningModules || "—"}</span>
                         </div>
+                        {selectedOffer.internshipNote && (
+                          <div className="col-span-2 mt-1 p-2.5 bg-indigo-50/70 border border-indigo-100 rounded-xl">
+                            <span className="text-indigo-800 font-bold block text-[8px] uppercase">Internship Evaluation & Conversion Note</span>
+                            <span className="font-medium text-slate-700 text-[11px] leading-relaxed block mt-0.5">{selectedOffer.internshipNote}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -2550,9 +2983,35 @@ Alignment with company culture and values`
                             ).toLocaleString("en-IN")}
                           </span>
                         </div>
+                        <div>
+                          <span className="text-rose-500 font-semibold block text-[8px] uppercase">Admin Tax / Deductions</span>
+                          <span className="font-bold text-rose-600">
+                            - ₹{Number(selectedOffer.adminTaxDeduction || 0).toLocaleString("en-IN")}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )}
+
+                  {/* HR Specialist Digital Verification in Modal */}
+                  <div className="p-4 border border-indigo-100 rounded-2xl flex flex-col gap-2 bg-indigo-50/30">
+                    <span className="text-[10px] font-bold text-indigo-900 uppercase tracking-wider block border-b border-indigo-100 pb-1.5 flex items-center justify-between">
+                      <span>HR Digital Signatory</span>
+                      <span className="text-[9px] text-emerald-700 font-extrabold">✓ Digitally Signed</span>
+                    </span>
+                    <div className="flex items-center justify-between gap-3 text-xs">
+                      <div>
+                        <span className="font-bold text-slate-900 block">{selectedOffer.hrSignatureName || "Sarah Jenkins"}</span>
+                        <span className="text-[10px] text-slate-500 font-medium">{selectedOffer.hrSignatureDesignation || "Human Resources Specialist"}</span>
+                        <span className="text-[9px] text-indigo-600 font-bold block mt-0.5">
+                          Signed on: {selectedOffer.hrSignatureDate ? formatDateDMY(selectedOffer.hrSignatureDate) : "Draft Creation Date"}
+                        </span>
+                      </div>
+                      {selectedOffer.hrSignatureImage && (
+                        <img src={selectedOffer.hrSignatureImage} alt="HR Signature" className="h-9 object-contain bg-transparent p-0.5" />
+                      )}
+                    </div>
+                  </div>
 
                   {/* History Logs */}
                   <div className="p-5 border border-slate-100 rounded-2xl flex flex-col gap-4 bg-slate-50/30">

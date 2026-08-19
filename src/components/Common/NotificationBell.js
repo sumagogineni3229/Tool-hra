@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { Bell, Pin, X, Clock, User, Megaphone, CheckCheck, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 
-export default function NotificationBell({ currentUser }) {
+export default function NotificationBell({ currentUser: propUser }) {
+  const [currentUser, setCurrentUser] = useState(propUser || null);
   const [announcements, setAnnouncements] = useState([]);
   const [readIds, setReadIds] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -12,9 +13,18 @@ export default function NotificationBell({ currentUser }) {
   
   const dropdownRef = useRef(null);
 
+  useEffect(() => {
+    if (propUser) {
+      setCurrentUser(propUser);
+    } else {
+      const session = apiClient.getCurrentSession();
+      if (session) setCurrentUser(session);
+    }
+  }, [propUser]);
+
   // Load announcements and read status on mount
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser?.email) return;
     
     // Load read announcements tracking for this user from localStorage
     const storedRead = localStorage.getItem(`hra_read_announcements_${currentUser.email}`);
@@ -80,10 +90,12 @@ export default function NotificationBell({ currentUser }) {
       }
     });
     setReadIds(updatedRead);
-    localStorage.setItem(
-      `hra_read_announcements_${currentUser.email}`,
-      JSON.stringify(updatedRead)
-    );
+    if (currentUser?.email) {
+      localStorage.setItem(
+        `hra_read_announcements_${currentUser.email}`,
+        JSON.stringify(updatedRead)
+      );
+    }
   };
 
   const handleSelectAnnouncement = (announcement) => {
@@ -95,10 +107,12 @@ export default function NotificationBell({ currentUser }) {
     if (id && !readIds.includes(id)) {
       const updatedRead = [...readIds, id];
       setReadIds(updatedRead);
-      localStorage.setItem(
-        `hra_read_announcements_${currentUser.email}`,
-        JSON.stringify(updatedRead)
-      );
+      if (currentUser?.email) {
+        localStorage.setItem(
+          `hra_read_announcements_${currentUser.email}`,
+          JSON.stringify(updatedRead)
+        );
+      }
     }
   };
 

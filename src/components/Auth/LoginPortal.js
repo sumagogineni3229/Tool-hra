@@ -43,6 +43,8 @@ export default function LoginPortal() {
         path = "/manager/dashboard";
       } else if (session.role === "Intern") {
         path = "/intern/dashboard";
+      } else if (session.role === "Offer_Specialist" || session.role === "Offer Specialist") {
+        path = "/offer-management";
       }
 
       if ((session.role === "Employee" || session.role === "Intern") && !session.profileCompleted) {
@@ -83,6 +85,9 @@ export default function LoginPortal() {
         } else if (role === "Intern") {
           path = "/intern/dashboard";
           roleDisplay = "Intern";
+        } else if (role === "Offer_Specialist" || role === "Offer Specialist") {
+          path = "/offer-management";
+          roleDisplay = "Offer Letter Operations Specialist";
         }
 
         setLoginMessage({

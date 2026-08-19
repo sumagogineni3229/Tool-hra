@@ -12,39 +12,92 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await dbConnect();
-    const list = await Team.find({})
-      .populate("departmentId")
-      .populate("managerId")
-      .populate("members")
-      .sort({ name: 1 });
+    const list = await Team.find({}).sort({ name: 1 }).lean();
+
+    // Fetch all departments and users to safely map in-memory if populated or stored as strings/ObjectIds
+    const [allDepts, allUsers] = await Promise.all([
+      Department.find({}).lean(),
+      User.find({}).lean(),
+    ]);
+
+    const deptMap = new Map();
+    allDepts.forEach((d) => {
+      deptMap.set(d._id.toString(), d);
+      deptMap.set(d.name.toLowerCase().trim(), d);
+    });
+
+    const userMap = new Map();
+    allUsers.forEach((u) => {
+      userMap.set(u._id.toString(), u);
+      userMap.set(u.email.toLowerCase().trim(), u);
+      userMap.set(u.name.toLowerCase().trim(), u);
+    });
 
     const formatted = list.map((t) => {
-      // Safely resolve values if they are populated objects or remain IDs/null
-      const deptObj = t.departmentId && typeof t.departmentId === "object" ? {
-        id: t.departmentId._id?.toString(),
-        name: t.departmentId.name,
-      } : t.departmentId;
+      // Safely resolve department
+      let deptObj = t.departmentId;
+      if (t.departmentId) {
+        const rawDeptKey = typeof t.departmentId === "object" && t.departmentId._id
+          ? t.departmentId._id.toString()
+          : t.departmentId.toString();
 
-      const managerObj = t.managerId && typeof t.managerId === "object" ? {
-        id: t.managerId._id?.toString(),
-        name: t.managerId.name,
-        email: t.managerId.email,
-        role: t.managerId.role,
-        initials: t.managerId.initials,
-        badgeColor: t.managerId.badgeColor,
-      } : t.managerId;
+        const foundDept = deptMap.get(rawDeptKey) || deptMap.get(rawDeptKey.toLowerCase().trim());
+        if (foundDept) {
+          deptObj = {
+            id: foundDept._id.toString(),
+            name: foundDept.name,
+          };
+        } else if (typeof t.departmentId === "string") {
+          deptObj = {
+            id: t.departmentId,
+            name: t.departmentId,
+          };
+        }
+      }
 
-      const membersArr = Array.isArray(t.members) ? t.members.map((m) => {
-        return m && typeof m === "object" ? {
-          id: m._id?.toString(),
-          name: m.name,
-          email: m.email,
-          role: m.role,
-          initials: m.initials,
-          badgeColor: m.badgeColor,
-          session: m.session,
-        } : m;
-      }) : [];
+      // Safely resolve manager
+      let managerObj = t.managerId;
+      if (t.managerId) {
+        const rawMgrKey = typeof t.managerId === "object" && t.managerId._id
+          ? t.managerId._id.toString()
+          : t.managerId.toString();
+
+        const foundMgr = userMap.get(rawMgrKey) || userMap.get(rawMgrKey.toLowerCase().trim());
+        if (foundMgr) {
+          managerObj = {
+            id: foundMgr._id.toString(),
+            name: foundMgr.name,
+            email: foundMgr.email,
+            role: foundMgr.role,
+            initials: foundMgr.initials,
+            badgeColor: foundMgr.badgeColor,
+          };
+        }
+      }
+
+      // Safely resolve members
+      const membersArr = Array.isArray(t.members)
+        ? t.members.map((m) => {
+            if (!m) return null;
+            const rawMemKey = typeof m === "object" && m._id
+              ? m._id.toString()
+              : m.toString();
+
+            const foundMem = userMap.get(rawMemKey) || userMap.get(rawMemKey.toLowerCase().trim());
+            if (foundMem) {
+              return {
+                id: foundMem._id.toString(),
+                name: foundMem.name,
+                email: foundMem.email,
+                role: foundMem.role,
+                initials: foundMem.initials,
+                badgeColor: foundMem.badgeColor,
+                session: foundMem.session,
+              };
+            }
+            return typeof m === "object" ? m : { id: m, name: m };
+          }).filter(Boolean)
+        : [];
 
       return {
         id: t._id.toString(),
