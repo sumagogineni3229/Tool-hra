@@ -421,7 +421,7 @@ export default function ProfileCompletionPage() {
 
                     {/* DOB */}
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Date of Birth</label>
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Date of joining</label>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
                           <Calendar className="w-4 h-4" />
