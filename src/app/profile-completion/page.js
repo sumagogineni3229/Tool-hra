@@ -173,7 +173,7 @@ export default function ProfileCompletionPage() {
     try {
       const result = await apiClient.submitProfile(currentUser.id || currentUser._id, {
         phone,
-        dateofjoining,
+        dob,
         address,
         emergencyContactName,
         emergencyContactPhone,
@@ -314,7 +314,7 @@ export default function ProfileCompletionPage() {
                         <span className="text-slate-800">{phone}</span>
                       </div>
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Date of Joining</span>
+                        <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Date of Birth</span>
                         <span className="text-slate-800">{dob}</span>
                       </div>
                       <div className="flex flex-col gap-0.5">
