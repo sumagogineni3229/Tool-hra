@@ -430,7 +430,7 @@ export default function PayslipViewModal({ slip, isOpen, onClose, onUpdateSucces
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-rose-600 uppercase">LOP (No of Days) (Manual Entry)</label>
+                  <label className="text-[10px] font-bold text-rose-600 uppercase">Other deductions(Manual Entry)</label>
                   <input
 
                     type="number"
