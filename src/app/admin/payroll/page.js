@@ -575,7 +575,7 @@ export default function AdminPayroll() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-amber-700 uppercase">Performance Pay (Manual Entry) (₹)</label>
+                  <label className="text-[10px] font-bold text-amber-700 uppercase">Internet Bill(Manual Entry) (₹)</label>
                   <input
                     type="number"
                     value={performancePay}
