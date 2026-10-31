@@ -476,7 +476,7 @@ export default function AdminPayroll() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">UAN Number</label>
+                  <label className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">LOP</label>
                   <input
                     type="text"
                     value={uanNumber}
@@ -627,7 +627,7 @@ export default function AdminPayroll() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-rose-700 uppercase">LOP (No of Days) (Manual Entry) (₹)</label>
+                  <label className="text-[10px] font-bold text-rose-700 uppercase">Employee Savings (Manual Entry) (₹)</label>
                   <input
 
                     type="number"
