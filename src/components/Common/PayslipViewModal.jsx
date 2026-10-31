@@ -296,7 +296,7 @@ export default function PayslipViewModal({ slip, isOpen, onClose, onUpdateSucces
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-indigo-600 uppercase">UAN Number (Setup/Update)</label>
+                  <label className="text-[10px] font-bold text-indigo-600 uppercase">LOP(Setup/Update)</label>
                   <input
                     type="text"
                     value={formData.uanNumber}
@@ -380,7 +380,7 @@ export default function PayslipViewModal({ slip, isOpen, onClose, onUpdateSucces
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-amber-600 uppercase">Performance Pay (Manual Entry)</label>
+                  <label className="text-[10px] font-bold text-amber-600 uppercase">Internet Bill (Manual Entry)</label>
                   <input
                     type="number"
                     value={formData.performancePay}
