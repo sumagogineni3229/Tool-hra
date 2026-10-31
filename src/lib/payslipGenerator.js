@@ -312,7 +312,7 @@ export function generatePayslipHTML(slip, user = {}) {
             <span class="info-value">${daysWorked}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">UAN Number</span>
+            <span class="info-label">LOP</span>
             <span class="info-value">${uanNumber}</span>
           </div>
           <div class="info-row">
@@ -363,7 +363,7 @@ export function generatePayslipHTML(slip, user = {}) {
                 <td>${formatNum(incentives)}</td>
               </tr>
               <tr>
-                <td>Performance Pay</td>
+                <td>Internet Bill</td>
                 <td>${formatNum(performancePay)}</td>
               </tr>
               <tr>
@@ -397,7 +397,7 @@ export function generatePayslipHTML(slip, user = {}) {
                 <td>${formatNum(healthInsurance)}</td>
               </tr>
               <tr>
-                <td>LOP (No of Days)</td>
+                <td>Other Deductions</td>
                 <td>${formatNum(lop)}</td>
               </tr>
 
