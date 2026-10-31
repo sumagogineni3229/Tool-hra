@@ -638,7 +638,7 @@ export default function AdminPayroll() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-rose-700 uppercase">Other deductions(Manual Entry) (₹)</label>
+                  <label className="text-[10px] font-bold text-rose-700 uppercase">LOP deductions(Manual Entry) (₹)</label>
                   <input
                     type="number"
                     value={employeeSavings}

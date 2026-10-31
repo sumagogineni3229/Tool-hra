@@ -397,7 +397,7 @@ export function generatePayslipHTML(slip, user = {}) {
                 <td>${formatNum(healthInsurance)}</td>
               </tr>
               <tr>
-                <td>Other Deductions</td>
+                <td>LOP Deductions</td>
                 <td>${formatNum(lop)}</td>
               </tr>
 
